@@ -85,6 +85,7 @@ paths.css_vendor = [
     paths.modules + "intro.js/introjs.css",
     paths.modules + "dragula/dist/dragula.css",
     paths.modules + "awesomplete/awesomplete.css",
+    paths.modules + "flatpickr/dist/flatpickr.min.css",
     paths.app + "styles/vendor/*.css",
     paths.modules + "@highlightjs/cdn-assets/styles/dracula.min.css"
 ];
@@ -179,6 +180,7 @@ paths.libs = [
     paths.modules + "moment/moment.js",
     paths.modules + "checksley/checksley.js",
     paths.modules + "pikaday/pikaday.js",
+    paths.modules + "flatpickr/dist/flatpickr.js",
     paths.modules + "Flot/jquery.flot.js",
     paths.modules + "Flot/jquery.flot.pie.js",
     paths.modules + "Flot/jquery.flot.time.js",
@@ -694,7 +696,7 @@ gulp.task("express", function(cb) {
         res.sendFile("index.html", {root: __dirname + "/dist/"});
     });
 
-    app.listen(9001);
+    app.listen(9009);
     cb();
 });
 

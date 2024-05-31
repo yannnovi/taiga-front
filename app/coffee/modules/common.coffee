@@ -9,6 +9,14 @@
 taiga = @.taiga
 
 module = angular.module("taigaCommon", [])
+FlatPickrConfig = ($translate, $config, $auth) ->
+    return {
+        get: () ->
+            user = $auth.getUser()
+            locale = user?.lang || $translate.preferredLanguage()
+    }
+
+module.factory("tgFlatPickrConfigService", ["$translate", "$tgConfig", "$tgAuth", FlatPickrConfig])
 
 #############################################################################
 ## Default datepicker config

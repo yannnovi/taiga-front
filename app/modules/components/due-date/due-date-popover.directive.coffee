@@ -8,13 +8,15 @@
 
 module = angular.module("taigaComponents")
 
-dueDatePopoverDirective = ($translate, datePickerConfigService) ->
+dueDatePopoverDirective = ($translate, flatPickrConfigService) ->
     return {
         link: (scope, el, attrs, ctrl) ->
             scope.open = false
-
-            datePickerConfig = datePickerConfigService.get()
+            ###
+            datePickerConfig = flatPickrConfigService.get()
             _.merge(datePickerConfig, {
+                enableTime: true
+                dateFormat: "Y-m-d H:i"
                 field: el.find('.due-date-button')[0]
                 container: el.find('.date-picker-container')[0]
                 bound: true
@@ -24,17 +26,28 @@ dueDatePopoverDirective = ($translate, datePickerConfigService) ->
                 onSelect: () ->
                     ctrl.dueDate = this.getMoment().format('YYYY-MM-DD')
             })
-            el.picker = new Pikaday(datePickerConfig)
+            ###
+            datePickerConfig = {
+                enableTime: true,
+                dateFormat: "Y-m-d H:i"
+                
+                
+            }
+            el.picker = new flatpickr(el.find('.due-date-button')[0],datePickerConfig)
 
             el.on "click", ".due-date-button", (event) ->
                 event.preventDefault()
                 event.stopPropagation()
                 if scope.open
-                    el.picker.hide()
+                    el.picker.close()
                     return
+                ###    
                 if !el.picker.getDate() && ctrl.dueDate
                     el.picker.setDate(moment(ctrl.dueDate).format('YYYY-MM-DD'))
-                el.picker.show()
+                
+                ###
+                el.picker.open()
+                el.picker.redraw()
                 scope.open = true
                 scope.$apply()
 
@@ -64,4 +77,4 @@ dueDatePopoverDirective = ($translate, datePickerConfigService) ->
         }
     }
 
-module.directive('tgDueDatePopover', ['$translate', 'tgDatePickerConfigService', dueDatePopoverDirective])
+module.directive('tgDueDatePopover', ['$translate', 'tgFlatPickrConfigService', dueDatePopoverDirective])

@@ -8,7 +8,7 @@
 
 module = angular.module("taigaComponents")
 
-dueDateDirective = ($translate, datePickerConfigService) ->
+dueDateDirective = ($translate, FlatPickrConfigService) ->
     templateUrl = (el, attrs) ->
         if attrs.format
             return "components/due-date/due-date-" + attrs.format + ".html"
@@ -35,8 +35,10 @@ dueDateDirective = ($translate, datePickerConfigService) ->
                     scope.$apply()
                     el.find(".date-picker-popover").popover().close()
 
-                datePickerConfig = datePickerConfigService.get()
+                flatPickrConfig = flatPickrConfigService.get()
                 _.merge(datePickerConfig, {
+                    enableTime: true
+                    dateFormat: "Y-m-d H:i"
                     field: el.find('input.due-date')[0]
                     container: el.find('.date-picker-container')[0]
                     bound: false
@@ -46,7 +48,7 @@ dueDateDirective = ($translate, datePickerConfigService) ->
                         scope.$apply()
                 })
 
-                el.picker = new Pikaday(datePickerConfig)
+                el.picker = new flatpickr(datePickerConfig)
 
             if attrs.format == 'button-popover'
                 renderDatePicker()
@@ -65,4 +67,4 @@ dueDateDirective = ($translate, datePickerConfigService) ->
         }
     }
 
-module.directive('tgDueDate', ['$translate', 'tgDatePickerConfigService', dueDateDirective])
+module.directive('tgDueDate', ['$translate', 'tgFlatPickrConfigService', dueDateDirective])
