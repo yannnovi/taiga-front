@@ -115,6 +115,6 @@ describe "DueDate", ->
             it "get appearance in #{run.objType} view with #{run.days} days left", () ->
                 ctrl.objType = run.objType
                 ctrl.dueDate = moment().add(moment.duration(run.days, "days"))
-                formatedDate = ctrl.dueDate.format('DD MMM YYYY')
+                formatedDate = ctrl.dueDate.format('YYYY-MM-DD HH:mm:ss')
                 expect(ctrl.title()).to.be.eql("#{formatedDate} (#{run.expect[0]})")
                 expect(ctrl.color()).to.be.eql(run.expect[1])

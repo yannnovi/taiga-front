@@ -5,7 +5,7 @@
 //-
 //- Copyright (c) 2021-present Kaleidos INC
 
-.flatpickr
+.due-date-button-wrapper
     button.btn-icon.due-date-button.is-editable.date-picker-popover-trigger(
         ng-class="{'date-set':  vm.color()}"
         ng-disabled="vm.disabled()"
@@ -17,7 +17,7 @@
         type="hidden"
         picker-value="{{ vm.dueDate }}"
     )
-    div.date-picker-popover(ng-hide="!open")
+    div.date-picker-popover()
         div.date-picker-container
         div.date-picker-popover-footer(ng-if="vm.dueDate")
             a.date-picker-clean(href="", title="{{'LIGHTBOX.SET_DUE_DATE.TITLE_ACTION_DELETE_DUE_DATE' | translate}}")
