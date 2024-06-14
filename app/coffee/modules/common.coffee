@@ -13,7 +13,11 @@ FlatPickrConfig = ($translate, $config, $auth) ->
     return {
         get: () ->
             user = $auth.getUser()
-            locale = user?.lang || $translate.preferredLanguage()
+            return {
+                enableTime:true
+                dateFormat: "Y-m-d H:i"
+                locale: user?.lang || $translate.preferredLanguage()
+            }
     }
 
 module.factory("tgFlatPickrConfigService", ["$translate", "$tgConfig", "$tgAuth", FlatPickrConfig])

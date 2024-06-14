@@ -27,12 +27,15 @@ dueDatePopoverDirective = ($translate, flatPickrConfigService) ->
                     ctrl.dueDate = this.getMoment().format('YYYY-MM-DD HH:mm:ss')
             })
             ###
-            datePickerConfig = {
-                enableTime: true,
-                dateFormat: "Y-m-d H:i"
+            datePickerConfig = flatPickrConfigService.get()
+            _.merge(datePickerConfig, {
+
+ 
+                onClose: () ->
+                    scope.open = false
+                    scope.$apply()
                 
-                
-            }
+            })
             
             el.picker = new flatpickr(el.find('.due-date-button')[0],datePickerConfig)
 
@@ -44,12 +47,6 @@ dueDatePopoverDirective = ($translate, flatPickrConfigService) ->
                     scope.open = false
                     ctrl.dueDate = el.picker.selectedDates[0]
                 else    
-                    ###    
-                    if !el.picker.getDate() && ctrl.dueDate
-
-                        el.picker.setDate(moment(ctrl.dueDate).format('YYYY-MM-DD'))
-                    
-                    ###
                     if !el.picker.selectedDates[0] && ctrl.dueDate
                         el.picker.setDate(ctrl.dueDate)
                     el.picker.open()
