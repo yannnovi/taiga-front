@@ -45,9 +45,7 @@ class ConfirmService extends taiga.Service
         # Render content
         el.find(".title").text(title || '')
         el.find(".subtitle").text(subtitle || '')
-        if message
-            message = @filter('textToHTML')(message)
-        el.find(".message").html(message || '')
+        el.find(".message").text(message || '')
 
         # Assign event handlers
         el.on "click.confirm-dialog", ".js-confirm", debounce 2000, (event) =>
@@ -86,9 +84,7 @@ class ConfirmService extends taiga.Service
         # Render content
         lightbox.find(".title").text(title || '')
         lightbox.find(".subtitle").text(subtitle || '')
-        if message
-            message = @filter('textToHTML')(message)
-        lightbox.find(".message").html(message || '')
+        lightbox.find(".message").text(message || '')
 
         # Assign event handlers
         lightbox.on "click.confirm-dialog", ".js-confirm", debounce 2000, (event) =>
