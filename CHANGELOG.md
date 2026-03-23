@@ -1,8 +1,12 @@
 # Changelog
 
-## 6.9.1 (unreleased)
+## 6.9.2 (unreleased)
 
 - ...
+
+## 6.9.1 (2026-03-23)
+
+- Fix regexp in ConfirmService
 
 ## 6.9.0 (2025-10-13)
 
