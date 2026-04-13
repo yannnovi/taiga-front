@@ -140,7 +140,7 @@
             "ADD": "Add tag"
         },
         "DESCRIPTION": {
-            "EMPTY": "Empty space is so boring... go on, be descriptive...",
+            "EMPTY": "This is solely where instructions go. For card correspondence, use \"comments\" below. Make sure to @toddt in comments also.",
             "NO_DESCRIPTION": "No description yet"
         },
         "FIELDS": {
