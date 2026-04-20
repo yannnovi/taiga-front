@@ -1,8 +1,11 @@
 # Changelog
 
-## 6.9.2 (unreleased)
+## 6.11.0 (unreleased)
 
 - ...
+
+## 6.10.0 (2026-04-20)
+- Allow archiving projects.
 
 ## 6.9.1 (2026-03-23)
 
