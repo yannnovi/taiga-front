@@ -42,6 +42,9 @@
         .issue-field {
             justify-content: flex-end;
         }
+        .votes-field {
+            justify-content: center;
+        }
         .subject {
             justify-content: flex-start;
         }
@@ -87,6 +90,18 @@
                 @include svg-size(.75rem);
                 fill: currentColor;
                 margin-left: .25rem;
+            }
+        }
+        .votes-field {
+            align-items: center;
+            color: $color-link-tertiary;
+            display: flex;
+            justify-content: center;
+
+            .icon {
+                @include svg-size(.875rem);
+                fill: currentColor;
+                margin-right: .25rem;
             }
         }
         .issue-status {
@@ -228,11 +243,20 @@
     .assigned-field,
     .attachments-field,
     .options-field,
-    .issue-field {
+    .issue-field,
+    .votes-field {
         flex-grow: 0;
         flex-shrink: 0;
         margin: 0 .5rem;
         position: relative;
+    }
+    .votes-field {
+        flex-basis: 80px;
+        text-align: center;
+
+        @include until($widescreen) {
+            flex-basis: 3.5rem;
+        }
     }
     .issue-field {
         display: block;

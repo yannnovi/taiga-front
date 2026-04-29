@@ -141,6 +141,13 @@ div.wrapper(
             required-perm="modify_issue"
         )
 
+        section.ticket-section.upvote-btn(
+            tg-vote-button
+            item="issue"
+            on-upvote="ctrl.onUpvote"
+            on-downvote="ctrl.onDownvote"
+        )
+
         section.ticket-section.ticket-detail-settings
             tg-due-date(
                 due-date="issue.due_date"
