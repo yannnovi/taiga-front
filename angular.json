@@ -1,0 +1,52 @@
+{
+    "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+    "version": 1,
+    "newProjectRoot": "projects",
+    "projects": {
+        "taiga-ng": {
+            "projectType": "application",
+            "root": "",
+            "sourceRoot": "src",
+            "prefix": "tg",
+            "architect": {
+                "build": {
+                    "builder": "@angular-devkit/build-angular:browser",
+                    "options": {
+                        "outputPath": "dist-ng",
+                        "index": "src/index.html",
+                        "main": "src/main.ts",
+                        "tsConfig": "tsconfig.app.json",
+                        "polyfills": ["zone.js"],
+                        "assets": [],
+                        "styles": [],
+                        "scripts": [],
+                        "outputHashing": "none"
+                    },
+                    "configurations": {
+                        "production": {
+                            "optimization": true,
+                            "sourceMap": false
+                        },
+                        "development": {
+                            "optimization": false,
+                            "sourceMap": false
+                        }
+                    },
+                    "defaultConfiguration": "development"
+                },
+                "serve": {
+                    "builder": "@angular-devkit/build-angular:dev-server",
+                    "configurations": {
+                        "production": {
+                            "buildTarget": "taiga-ng:build:production"
+                        },
+                        "development": {
+                            "buildTarget": "taiga-ng:build:development"
+                        }
+                    },
+                    "defaultConfiguration": "development"
+                }
+            }
+        }
+    }
+}

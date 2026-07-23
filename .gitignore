@@ -1,5 +1,7 @@
 .sass-cache/
 dist/
+dist-ng/
+.angular/
 node_modules/
 app/vendor
 vendor/

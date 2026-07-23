@@ -69,14 +69,13 @@ configure = ($routeProvider, $locationProvider, $httpProvider, $provide, $tgEven
         return originalWhen.call($routeProvider, path, route)
 
     # Home
+    # Migrated to an Angular component (src/app/home/), downgraded as <tg-home> - see
+    # MIGRATION.md. AngularJS keeps owning routing (ngRoute) during the migration.
     $routeProvider.when("/",
         {
-            templateUrl: "home/home.html",
-            controller: "Home",
-            controllerAs: "vm"
+            template: "<tg-home></tg-home>",
             loader: true,
             title: "HOME.PAGE_TITLE",
-            loader: true,
             description: "HOME.PAGE_DESCRIPTION",
             joyride: "dashboard"
         }

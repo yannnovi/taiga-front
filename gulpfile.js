@@ -17,7 +17,7 @@ var gulp = require("gulp"),
     rename = require("gulp-rename"),
     gulpif = require("gulp-if"),
     replace = require("gulp-replace"),
-    sass = require('gulp-sass')(require('node-sass'));
+    sass = require('gulp-sass')(require('sass'));
     minifyCSS = require("gulp-clean-css"),
     stylelint = require('gulp-stylelint');
     cache = require("gulp-cache"),
@@ -91,6 +91,9 @@ paths.css_vendor = [
 paths.locales = paths.app + "locales/**/*.json";
 paths.modulesLocales = paths.app + "modules/**/locales/*.json";
 paths.elements = `./elements.js`;
+// Output of the Angular hybrid bundle, built separately via `npm run build:ng`
+// (ngUpgrade migration - see MIGRATION.md). Not compiled by gulp itself.
+paths.ngApp = "./dist-ng/**/*.js";
 
 paths.sass = [
     paths.app + "**/*.scss",
@@ -565,6 +568,16 @@ gulp.task("elements", function() {
         .pipe(gulp.dest(paths.distVersion + "js/"));
 });
 
+// Copies the Angular hybrid bundle (built beforehand via `npm run build:ng`) next to
+// libs.js/app.js. It is not compiled here: run `npm run build:ng` (or `npm run watch:ng`
+// during development) before/alongside this gulp task. See MIGRATION.md.
+gulp.task("ng-app", function() {
+    // allowEmpty: dist-ng/ only exists once `npm run build:ng` has been run at least
+    // once; the legacy build must not fail just because that hasn't happened yet.
+    return gulp.src(paths.ngApp, { allowEmpty: true })
+        .pipe(gulp.dest(paths.distVersion + "js/"));
+});
+
 gulp.task("app-watch", gulp.series("coffee", "conf", "locales", "moment-locales", "app-loader"));
 
 gulp.task("app-deploy", gulp.series("coffee", "conf", "locales", "moment-locales", "app-loader", function() {
@@ -708,6 +721,7 @@ gulp.task("watch", function(cb) {
     gulp.watch(paths.coffee, gulp.parallel(["app-watch"]));
     gulp.watch(paths.libs, gulp.parallel(["jslibs-watch"]));
     gulp.watch(paths.elements, gulp.parallel(["elements"]));
+    gulp.watch(paths.ngApp, gulp.parallel(["ng-app"]));
     gulp.watch([paths.locales, paths.modulesLocales], gulp.parallel(["locales"]));
     gulp.watch(paths.images, gulp.parallel(["copy-images"]));
 
@@ -724,6 +738,7 @@ gulp.task("deploy", gulp.series(
         "app-deploy",
         "jslibs-deploy",
         "elements",
+        "ng-app",
         "link-images",
         "compile-themes"
     )
@@ -740,6 +755,7 @@ gulp.task("default", gulp.series(
         "jslibs-watch",
         "jade-deploy",
         "elements",
+        "ng-app",
         "express",
         "watch"
     ))

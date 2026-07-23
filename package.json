@@ -15,12 +15,17 @@
     "type": "git",
     "url": "https://github.com/taigaio/taiga-front.git"
   },
+  "overrides": {
+    "ajv": "^8.12.0"
+  },
   "scripts": {
     "scss-lint": "gulp scss-lint --fail",
     "test": "./node_modules/karma/bin/karma start",
     "e2e": "./node_modules/.bin/babel-node run-e2e.js",
     "start": "npx gulp",
-    "ci:test": "npx gulp deploy && ./node_modules/karma/bin/karma start --single-run --browsers=ChromeHeadlessCI"
+    "build:ng": "ng build && node scripts/strip-ng-sourcemap-comments.js",
+    "watch:ng": "ng build --watch",
+    "ci:test": "npm run build:ng && npx gulp deploy && ./node_modules/karma/bin/karma start --single-run --browsers=ChromeHeadlessCI"
   },
   "devDependencies": {
     "angular-mocks": "1.5.5",
@@ -84,24 +89,35 @@
     "merge-stream": "^1.0.0",
     "minimist": "^1.1.1",
     "mocha": "^2.2.4",
-    "node-sass": "8.0.0",
     "photoswipe": "^4.1.0",
     "pre-commit": "^1.0.5",
     "readable-stream": "~2.1.2",
     "reporter-file": "^1.0.0",
+    "sass": "^1.71.0",
     "sinon": "^1.14.1",
     "stylelint": "^13.6.1",
     "stylelint-config-standard": "^20.0.0",
     "stylelint-order": "^4.1.0",
     "stylelint-scss": "^3.18.0",
     "through2": "^2.0.1",
+    "typescript": "~5.4.5",
     "uuid": "^3.3.2",
-    "vinyl-fs": "^2.1.1"
+    "vinyl-fs": "^2.1.1",
+    "@angular-devkit/build-angular": "^17.3.0",
+    "@angular/cli": "^17.3.0",
+    "@angular/compiler-cli": "^17.3.0"
   },
   "pre-commit": [
     "scss-lint"
   ],
   "dependencies": {
+    "@angular/animations": "^17.3.0",
+    "@angular/common": "^17.3.0",
+    "@angular/compiler": "^17.3.0",
+    "@angular/core": "^17.3.0",
+    "@angular/platform-browser": "^17.3.0",
+    "@angular/platform-browser-dynamic": "^17.3.0",
+    "@angular/upgrade": "^17.3.0",
     "@highlightjs/cdn-assets": "^10.5.0",
     "angular": "1.5.10",
     "angular-animate": "1.5.10",
@@ -133,6 +149,7 @@
     "pikaday": "^1.8.2",
     "raven-js": "^3.7.0",
     "showdown": "^1.4.3",
-    "taiga-html-editor": "https://github.com/taigaio/taiga-html-editor#stable"
+    "taiga-html-editor": "https://github.com/taigaio/taiga-html-editor#stable",
+    "zone.js": "^0.14.4"
   }
 }

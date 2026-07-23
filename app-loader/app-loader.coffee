@@ -97,21 +97,40 @@ mainLoad = ->
     .then((response) => response.json())
     .then (emojis) ->
         window.emojis = emojis
-    if window.taigaConfig.contribPlugins.length > 0
-        loadJS("#{window._version}/js/libs.js")
-            .then(() => loadJS("#{window._version}/js/templates.js"))
-            .then(() => loadPlugins(window.taigaConfig.contribPlugins))
-            .then(() => loadApp(emojisPromise))
-    else
-        loadJS("#{window._version}/js/libs.js")
-            .then(() => loadJS("#{window._version}/js/templates.js"))
-            .then(() => loadApp(emojisPromise))
 
+    # zone.js (in polyfills.js) monkey-patches globals (addEventListener, XHR, timers...)
+    # to track async work for Angular's change detection. It needs to do this *before*
+    # any other script patches the same APIs (raven-js in libs.js does), otherwise the
+    # patches nest in the wrong order and can recurse into each other infinitely
+    # ("too much recursion" in polyfills.js). runtime.js/polyfills.js have no dependency
+    # on anything else, so they're safe to load first; main.js (the actual bootstrap)
+    # still loads last, once window.angular/app.js are ready - see loadApp below.
+    loadNgPolyfills = loadJS("#{window._version}/js/runtime.js")
+        .then(() => loadJS("#{window._version}/js/polyfills.js"))
+
+    loadRest = ->
+        if window.taigaConfig.contribPlugins.length > 0
+            loadJS("#{window._version}/js/libs.js")
+                .then(() => loadJS("#{window._version}/js/templates.js"))
+                .then(() => loadPlugins(window.taigaConfig.contribPlugins))
+                .then(() => loadApp(emojisPromise))
+        else
+            loadJS("#{window._version}/js/libs.js")
+                .then(() => loadJS("#{window._version}/js/templates.js"))
+                .then(() => loadApp(emojisPromise))
+
+    loadNgPolyfills.then(loadRest)
+
+# Bootstraps the Angular hybrid shell (see src/app/app.module.ts), which upgrades and
+# bootstraps the AngularJS "taiga" app itself via UpgradeModule - this replaces the old
+# direct `angular.bootstrap(document, ['taiga'])` call. Built separately by
+# `npm run build:ng` (see MIGRATION.md). runtime.js/polyfills.js are already loaded by
+# the time this runs (see mainLoad above).
 loadApp = (emojisPromise) ->
     loadJS("#{window._version}/js/elements.js").then () ->
         loadJS("#{window._version}/js/app.js").then () ->
             emojisPromise.then ->
-                angular.bootstrap(document, ['taiga'])
+                loadJS("#{window._version}/js/main.js")
 
 promise = fetch "conf.json"
 promise
