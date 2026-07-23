@@ -1,0 +1,15 @@
+<div class="ticket-section-label">{{ "COMMON.FIELDS.VOTES" | tgTranslate }}</div>
+
+<div class="votes" [title]="'COMMON.VOTE_BUTTON.COUNTER_TITLE' | tgTranslate:{ total: item.total_voters || 0 }:'messageformat'">{{ item.total_voters }}</div>
+
+<!-- Registered user button -->
+<a
+    class="vote-button"
+    *ngIf="user"
+    href=""
+    [title]="'COMMON.VOTE_BUTTON.BUTTON_TITLE' | tgTranslate"
+    (click)="toggleVote()"
+    [class.voted]="item.is_voter"
+>
+    <tg-svg svg-icon="icon-upvote"></tg-svg>
+</a>

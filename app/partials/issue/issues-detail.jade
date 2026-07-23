@@ -141,11 +141,10 @@ div.wrapper(
             required-perm="modify_issue"
         )
 
-        section.ticket-section.upvote-btn(
-            tg-vote-button
-            item="issue"
-            on-upvote="ctrl.onUpvote"
-            on-downvote="ctrl.onDownvote"
+        tg-vote-button.ticket-section.upvote-btn(
+            bind-item="issue"
+            bind-on-upvote="ctrl.onUpvote"
+            bind-on-downvote="ctrl.onDownvote"
         )
 
         section.ticket-section.ticket-detail-settings
