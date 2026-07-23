@@ -1,0 +1,11 @@
+<h4>
+    <tg-svg svg-icon="icon-question"></tg-svg>
+    <span>{{ "HINTS.SECTION_NAME" | tgTranslate }}</span>
+</h4>
+
+<p>{{ hint.title }}</p>
+<p>
+    {{ hint.text }}
+    &nbsp;
+    <a *ngIf="hint.url" target="_blank" [href]="hint.url" [title]="'HINTS.LINK_TITLE' | tgTranslate">{{ linkTextTranslated }}</a>
+</p>

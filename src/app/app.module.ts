@@ -14,6 +14,8 @@ import { NotificationsComponent } from "./notifications/notifications.component"
 import "./notifications/register-legacy";
 import { ExternalAppComponent } from "./external-app/external-app.component";
 import "./external-app/register-legacy";
+import { ProfileHintsComponent } from "./profile-hints/profile-hints.component";
+import "./profile-hints/register-legacy";
 import { TgHomeProjectListUpgradedDirective } from "./upgraded/tg-home-project-list.upgraded-directive";
 import { TgWorkingOnUpgradedDirective } from "./upgraded/tg-working-on.upgraded-directive";
 import { TgDiscoverSearchBarUpgradedDirective } from "./upgraded/tg-discover-search-bar.upgraded-directive";
@@ -55,6 +57,7 @@ import { TgTranslatePipe } from "./shared/translate.pipe";
         DiscoverSearchListHeaderComponent,
         NotificationsComponent,
         ExternalAppComponent,
+        ProfileHintsComponent,
         TgWorkingOnUpgradedDirective,
         TgHomeProjectListUpgradedDirective,
         TgDiscoverSearchBarUpgradedDirective,

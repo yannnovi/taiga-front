@@ -263,6 +263,44 @@ pas être satisfait avec juste `localStorage` sans un vrai `taiga-back`. Vérifi
 limitée à : build Angular propre (`strictTemplates`), relecture attentive de la fidélité du
 portage, et karma **455/455** (459 - 4 tests du contrôleur supprimé).
 
+### `profile-hints` (et pourquoi pas `profile` en entier)
+
+Le plan initial pour ce cinquième module était de migrer la route `/profile` en entier
+(même patron que `home`/`discover-home`/`notifications`/`external-app`). En creusant son
+template (`profile.jade`), il s'est avéré nettement plus complexe que prévu :
+`tg-profile-tabs`/`tg-profile-tab` utilisent `transclude: true` **et**
+`require: "^tgProfileTabs"` (le tab enfant va chercher le contrôleur du tabset parent en
+remontant l'arbre de compilation AngularJS). Si on wrap `tg-profile-tabs` en
+`UpgradeComponent` et qu'on essaie de wrap CHAQUE `tg-profile-tab` séparément pour les
+placer dans le template Angular, chacun devient sa propre racine de compilation AngularJS
+isolée - `require: "^tgProfileTabs"` ne retrouverait alors plus le contrôleur parent,
+puisque les deux ne feraient plus partie du même arbre de compilation AngularJS. Ce
+patron (transclusion imbriquée + `require` inter-directives) ne rentre pas dans le
+patron "wrap simple" établi jusqu'ici, et le tester correctement demanderait une vraie
+session utilisateur (page `/profile`, bloquée par le mur d'authentification - cf.
+`external-app` ci-dessus). Plutôt que de forcer quelque chose de risqué et non vérifiable,
+`profile` en entier est reporté à plus tard (noté dans la feuille de route) et remplacé
+par un composant plus modeste **à l'intérieur** de `profile` : `tg-profile-hints`
+(un encart d'astuce aléatoire dans la barre latérale du profil).
+
+Patron "leaf en place", comme `discover-home-order-by`/`discover-search-list-header`, mais
+plus simple encore : aucun binding (`scope: {}`, aucun attribut passé par l'appelant), donc
+aucun des pièges input/output rencontrés précédemment.
+
+**Nouveau piège découvert, cette fois côté élément vs attribut** : la directive d'origine
+était utilisée comme **attribut** (`div.profile-hints(tg-profile-hints)`), mais le
+directive definition object que génère `downgradeComponent` a toujours `restrict: 'E'`
+(élément uniquement - vu dans `node_modules/@angular/upgrade/fesm2022/static.mjs`). Un
+downgrade ne peut donc **jamais** être appelé comme attribut, même si l'original
+l'était. Corrigé en changeant l'appelant (`profile-sidebar.jade`, toujours 100 % AngularJS)
+en syntaxe élément : `tg-profile-hints.profile-hints` (classe conservée pour le style).
+
+Vérifié : `ng build` propre, template `profile-sidebar.html` recompilé confirmé (contient
+bien `<tg-profile-hints class="profile-hints">`, vérifié directement dans le
+`templates.js` généré). Rendu réel non testable : `/profile` est bloqué par le même mur
+d'authentification qu'`external-app` (confirmé indépendant de ce changement précis).
+karma **454/454** (455 - 1 test du contrôleur supprimé).
+
 ### Écart connu par rapport au plan initial : tests
 Le plan prévoyait de migrer les tests du module vers "Jasmine/Karma via Angular CLI". En
 pratique, le `karma.conf.js` existant est verrouillé sur **karma `^0.13.10`** (2015, pour
@@ -354,13 +392,19 @@ en navigateur réel (Chrome headless) : plus de récursion, page rendue normalem
 
 ## Hors scope (feuille de route)
 
-- Les ~34 autres modules feature (`projects`, `epics`, `wiki`, `attachments`,
-  `notifications`, etc.) - module par module, feuilles d'abord.
+- Les modules feature restants (`projects`, `epics`, `wiki`, `attachments`, `profile` en
+  entier, etc.) - module par module, feuilles d'abord.
+- `profile` (la route complète) : bloqué sur `tg-profile-tabs`/`tg-profile-tab`
+  (transclusion imbriquée + `require: "^tgProfileTabs"` entre les deux directives - voir
+  section `profile-hints` ci-dessus pour le détail). Nécessitera soit de garder les deux
+  wrappées ENSEMBLE dans un seul `UpgradeComponent` (tout l'intérieur du tabset reste
+  AngularJS, pas de composants Angular imbriqués à l'intérieur), soit de réécrire le
+  système de tabs en Angular natif plutôt que de le wrapper.
 - Bascule ngRoute → Angular Router (dernière étape).
 - Suppression finale d'AngularJS, de `@angular/upgrade`, et du pipeline gulp coffee/jade.
 - Résoudre le conflit de version karma pour activer `ng test` (voir ci-dessus).
-- Modules sans aucun test aujourd'hui (`resources`, `utils`, `attachments`,
-  `notifications`) : en écrire avant/pendant leur migration.
+- Modules sans aucun test aujourd'hui (`resources`, `utils`, `attachments`) : en écrire
+  avant/pendant leur migration.
 
 ## Vérification
 
