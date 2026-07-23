@@ -1,0 +1,12 @@
+<div class="live-announcement" [class.visible]="open">
+    <div class="live-announcement-inner">
+        <img class="anouncement-decoration" [src]="imgSrc" alt="Loading..." />
+        <div class="text">
+            <h2 class="title">{{ title }}</h2>
+            <p class="warning" [innerHTML]="desc"></p>
+            <a class="close" href="" (click)="close()">
+                <tg-svg svg-icon="icon-close"></tg-svg>
+            </a>
+        </div>
+    </div>
+</div>
