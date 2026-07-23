@@ -48,7 +48,9 @@ AngularJS une fois que tout est passé côté Angular.
   `node_modules/angular`. C'est la technique documentée officiellement par Angular pour ce
   cas de figure (AngularJS chargé par `<script>`, pas par npm/webpack).
 
-## Module pilote migré : `home`
+## Modules migrés
+
+### `home`
 
 - `HomeComponent` (`src/app/home/home.component.ts` + `.html`) remplace
   `app/modules/home/home.controller.coffee` + `home.jade`.
@@ -71,8 +73,55 @@ AngularJS une fois que tout est passé côté Angular.
   transformer aurait élargi la portée de ce module pilote à trois modules à la fois. Il
   continue de vivre sur `taigaHome` sans changement.
 
-### Fichiers supprimés (remplacés, plus de raison d'être)
-`home.controller.coffee`, `home.jade`, `home-controller.spec.coffee`.
+Fichiers supprimés (remplacés, plus de raison d'être) : `home.controller.coffee`,
+`home.jade`, `home-controller.spec.coffee`.
+
+### `discover-home`
+
+Deuxième module migré, choisi pour la même raison que `home` (route + template simples) et
+pour exercer un cas que `home` ne couvrait pas : un vrai binding de données vers un enfant
+AngularJS (pas juste des enfants sans binding).
+
+- `DiscoverHomeComponent` (`src/app/discover-home/`) remplace
+  `discover-home.controller.coffee` + `discover-home.jade`, downgradé en `<tg-discover-home>`
+  sur le module `taigaDiscover` existant. Route `/discover`
+  (`app/coffee/app.coffee`) : `template: "<tg-discover-home></tg-discover-home>"`.
+- Quatre enfants encore-AngularJS wrappés en `UpgradeComponent`
+  (`src/app/upgraded/tg-discover-search-bar`, `tg-featured-projects`, `tg-most-liked`,
+  `tg-most-active`). Leurs propres enfants imbriqués (`tg-highlighted`,
+  `tg-discover-home-order-by`) n'ont pas besoin de wrapper séparé : une fois qu'Angular a
+  délégué le rendu d'un `UpgradeComponent` à AngularJS, tout ce qui est à l'intérieur de son
+  propre template reste compilé par AngularJS, Angular ne le voit jamais.
+- `tg-discover-search-bar` est le premier wrapper `UpgradeComponent` avec de vrais bindings :
+  `@Input() q`/`@Input() filter` (bindings AngularJS `=`, non utilisés ici, laissés non liés
+  exactement comme dans le template d'origine) et `@Output() onChange` (binding `&`,
+  invoqué côté AngularJS avec `onChange({filter, q})` -
+  `discover-search-bar.controller.coffee` - donc `$event` côté Angular vaut `{filter, q}` ;
+  `(onChange)="onSubmit($event.q)"` reproduit exactement `onSubmit(q)` du contrôleur
+  d'origine qui ignorait `filter`). `UpgradeComponent` lit les bindings réels de la
+  directive AngularJS déjà enregistrée : déclarer un `@Input`/`@Output` du même nom suffit,
+  pas besoin de reproduire le detail du binding.
+- Nouveau service partagé injecté : `tgAppMetaService` (déjà utilisé par 20+ autres
+  fichiers hors discover, comme `tgCurrentUserService`/`$tgNavUrls` pour `home`) et
+  `$tgLocation` - à ne pas confondre avec `$location` : `$tgLocation` est une factory
+  (`app/coffee/modules/base/location.coffee`) qui ajoute juste `noreload()` et
+  `isInCurrentRouteParams()` sur l'objet `$location` existant (même instance), mais le
+  contrôleur d'origine injectait bien `$tgLocation` par son nom - token Angular séparé
+  (`AJS_TG_LOCATION`) ajouté dans `ajs-tokens.ts` par exactitude, même si aujourd'hui les
+  deux tokens résolvent au même objet.
+- `tgDiscoverProjectsService` (utilisé par les 4 enfants AngularJS) est resté 100 %
+  isolé au module discover - vérifié par grep sur tout `app/` avant de commencer, comme
+  recommandé dans le patron ci-dessous.
+
+Fichiers supprimés : tout `app/modules/discover/discover-home/` (`discover-home.controller.coffee`,
+`discover-home.jade`, `discover-home.controller.spec.coffee`) - aucune autre référence
+trouvée ailleurs dans le code.
+
+Vérifié comme pour `home` : `ng build` (strictTemplates) propre, `gulp` (watch actif a
+recompilé automatiquement à la sauvegarde), suite karma **470/470** (472 - 2 tests du
+contrôleur supprimé, cohérent), rendu réel en navigateur headless sur `/discover`
+identique à avant (recherche, projets en vedette, most-liked/most-active), aucune erreur
+console.
 
 ### Écart connu par rapport au plan initial : tests
 Le plan prévoyait de migrer les tests du module vers "Jasmine/Karma via Angular CLI". En

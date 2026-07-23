@@ -9,7 +9,9 @@ import { InjectionToken, Provider } from "@angular/core";
 export const AJS_CURRENT_USER_SERVICE = new InjectionToken<any>("tgCurrentUserService");
 export const AJS_NAV_URLS = new InjectionToken<any>("$tgNavUrls");
 export const AJS_LOCATION = new InjectionToken<any>("$location");
+export const AJS_TG_LOCATION = new InjectionToken<any>("$tgLocation");
 export const AJS_TRANSLATE = new InjectionToken<any>("$translate");
+export const AJS_APP_META_SERVICE = new InjectionToken<any>("tgAppMetaService");
 
 export function upgradedService(token: InjectionToken<any>, ajsName: string): Provider {
     return {

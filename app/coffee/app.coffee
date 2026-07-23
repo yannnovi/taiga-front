@@ -82,11 +82,11 @@ configure = ($routeProvider, $locationProvider, $httpProvider, $provide, $tgEven
     )
 
     # Discover
+    # Migrated to an Angular component (src/app/discover-home/), downgraded as
+    # <tg-discover-home> - see MIGRATION.md.
     $routeProvider.when("/discover",
         {
-            templateUrl: "discover/discover-home/discover-home.html",
-            controller: "DiscoverHome",
-            controllerAs: "vm",
+            template: "<tg-discover-home></tg-discover-home>",
             title: "PROJECT.NAVIGATION.DISCOVER",
             loader: true
         }

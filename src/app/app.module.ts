@@ -4,9 +4,23 @@ import { UpgradeModule } from "@angular/upgrade/static";
 
 import { HomeComponent } from "./home/home.component";
 import "./home/register-legacy";
+import { DiscoverHomeComponent } from "./discover-home/discover-home.component";
+import "./discover-home/register-legacy";
 import { TgHomeProjectListUpgradedDirective } from "./upgraded/tg-home-project-list.upgraded-directive";
 import { TgWorkingOnUpgradedDirective } from "./upgraded/tg-working-on.upgraded-directive";
-import { AJS_CURRENT_USER_SERVICE, AJS_LOCATION, AJS_NAV_URLS, AJS_TRANSLATE, upgradedService } from "./shared/ajs-tokens";
+import { TgDiscoverSearchBarUpgradedDirective } from "./upgraded/tg-discover-search-bar.upgraded-directive";
+import { TgFeaturedProjectsUpgradedDirective } from "./upgraded/tg-featured-projects.upgraded-directive";
+import { TgMostLikedUpgradedDirective } from "./upgraded/tg-most-liked.upgraded-directive";
+import { TgMostActiveUpgradedDirective } from "./upgraded/tg-most-active.upgraded-directive";
+import {
+    AJS_APP_META_SERVICE,
+    AJS_CURRENT_USER_SERVICE,
+    AJS_LOCATION,
+    AJS_NAV_URLS,
+    AJS_TG_LOCATION,
+    AJS_TRANSLATE,
+    upgradedService,
+} from "./shared/ajs-tokens";
 import { TgTranslatePipe } from "./shared/translate.pipe";
 
 /**
@@ -18,15 +32,22 @@ import { TgTranslatePipe } from "./shared/translate.pipe";
     imports: [BrowserModule, UpgradeModule],
     declarations: [
         HomeComponent,
+        DiscoverHomeComponent,
         TgWorkingOnUpgradedDirective,
         TgHomeProjectListUpgradedDirective,
+        TgDiscoverSearchBarUpgradedDirective,
+        TgFeaturedProjectsUpgradedDirective,
+        TgMostLikedUpgradedDirective,
+        TgMostActiveUpgradedDirective,
         TgTranslatePipe,
     ],
     providers: [
         upgradedService(AJS_CURRENT_USER_SERVICE, "tgCurrentUserService"),
         upgradedService(AJS_NAV_URLS, "$tgNavUrls"),
         upgradedService(AJS_LOCATION, "$location"),
+        upgradedService(AJS_TG_LOCATION, "$tgLocation"),
         upgradedService(AJS_TRANSLATE, "$translate"),
+        upgradedService(AJS_APP_META_SERVICE, "tgAppMetaService"),
     ],
 })
 export class AppModule implements DoBootstrap {
