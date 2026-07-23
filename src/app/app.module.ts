@@ -6,12 +6,15 @@ import { HomeComponent } from "./home/home.component";
 import "./home/register-legacy";
 import { DiscoverHomeComponent } from "./discover-home/discover-home.component";
 import "./discover-home/register-legacy";
+import { DiscoverHomeOrderByComponent } from "./discover-home-order-by/discover-home-order-by.component";
+import "./discover-home-order-by/register-legacy";
 import { TgHomeProjectListUpgradedDirective } from "./upgraded/tg-home-project-list.upgraded-directive";
 import { TgWorkingOnUpgradedDirective } from "./upgraded/tg-working-on.upgraded-directive";
 import { TgDiscoverSearchBarUpgradedDirective } from "./upgraded/tg-discover-search-bar.upgraded-directive";
 import { TgFeaturedProjectsUpgradedDirective } from "./upgraded/tg-featured-projects.upgraded-directive";
 import { TgMostLikedUpgradedDirective } from "./upgraded/tg-most-liked.upgraded-directive";
 import { TgMostActiveUpgradedDirective } from "./upgraded/tg-most-active.upgraded-directive";
+import { TgSvgUpgradedDirective } from "./upgraded/tg-svg.upgraded-directive";
 import {
     AJS_APP_META_SERVICE,
     AJS_CURRENT_USER_SERVICE,
@@ -33,12 +36,14 @@ import { TgTranslatePipe } from "./shared/translate.pipe";
     declarations: [
         HomeComponent,
         DiscoverHomeComponent,
+        DiscoverHomeOrderByComponent,
         TgWorkingOnUpgradedDirective,
         TgHomeProjectListUpgradedDirective,
         TgDiscoverSearchBarUpgradedDirective,
         TgFeaturedProjectsUpgradedDirective,
         TgMostLikedUpgradedDirective,
         TgMostActiveUpgradedDirective,
+        TgSvgUpgradedDirective,
         TgTranslatePipe,
     ],
     providers: [

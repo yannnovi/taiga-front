@@ -10,7 +10,7 @@
         .title-wrapper
             tg-svg(svg-icon="icon-activity")
             h1.title {{ 'DISCOVER.MOST_ACTIVE' | translate }}
-        tg-discover-home-order-by(on-change="vm.orderBy(orderBy)", order-by="vm.currentOrderBy")
+        tg-discover-home-order-by(on-change="vm.orderBy($event.orderBy)", bind-order-by="vm.currentOrderBy")
     
     tg-highlighted(
         loading="vm.loading",

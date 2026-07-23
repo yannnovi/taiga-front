@@ -1,0 +1,13 @@
+<div class="filter-highlighted" (mouseleave)="close()">
+    <a class="current-filter" href="#" (click)="open(); $event.preventDefault()">
+        {{ currentText() }}
+        <tg-svg svg-icon="icon-arrow-down"></tg-svg>
+    </a>
+
+    <ul class="filter-list" *ngIf="isOpen">
+        <li (click)="setOrderBy('week')"><a class="status">{{ 'DISCOVER.FILTERS.WEEK' | tgTranslate }}</a></li>
+        <li (click)="setOrderBy('month')"><a class="status">{{ 'DISCOVER.FILTERS.MONTH' | tgTranslate }}</a></li>
+        <li (click)="setOrderBy('year')"><a class="status">{{ 'DISCOVER.FILTERS.YEAR' | tgTranslate }}</a></li>
+        <li (click)="setOrderBy('all')"><a class="status">{{ 'DISCOVER.FILTERS.ALL_TIME' | tgTranslate }}</a></li>
+    </ul>
+</div>

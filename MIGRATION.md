@@ -123,6 +123,53 @@ contrôleur supprimé, cohérent), rendu réel en navigateur headless sur `/disc
 identique à avant (recherche, projets en vedette, most-liked/most-active), aucune erreur
 console.
 
+### `discover-home-order-by` et `tg-svg` (migration "leaf en place")
+
+Contrairement à `home`/`discover-home` (une route entière remplacée), ceci est le premier
+exemple de **migration d'un composant enfant en place**, sans toucher à une route : la
+directive AngularJS `tgDiscoverHomeOrderBy` (utilisée par `most-liked.jade`/`most-active.jade`,
+encore 100 % AngularJS) est remplacée par `DiscoverHomeOrderByComponent`
+(`src/app/discover-home-order-by/`), downgradée **sous le même nom de directive** - donc en
+théorie aucun appelant n'a besoin de changer.
+
+**En théorie seulement.** Premier essai : le champ `orderBy` recevait la chaîne littérale
+`"vm.currentOrderBy"` au lieu de sa valeur (`"year"`), et cliquer sur une option du menu
+n'avait aucun effet observable. Cause : `downgradeComponent` reconnaît plusieurs
+conventions d'attributs bien précises pour ses `@Input`/`@Output`, et elles ne sont **pas**
+celles qu'un template AngularJS "classique" (isolate scope `=`/`&`) utilise :
+
+- **Input** : un attribut simple `order-by="vm.currentOrderBy"` est traité comme une chaîne
+  interpolée façon binding `@` (via `$observe`, qui ne fait qu'interpoler `{{ }}` -
+  une expression nue sans `{{ }}` reste donc du texte littéral). Pour obtenir la vraie
+  valeur évaluée, l'appelant doit utiliser `bind-order-by="vm.currentOrderBy"` (ou
+  `[order-by]="vm.currentOrderBy"`).
+- **Output** : `downgradeComponent` déduit le nom d'attribut "classique" en préfixant `on`
+  devant le nom de la propriété (`change` → `onChange` → attribut `on-change`). Si on
+  nomme la propriété `onChange` (par réflexe, pour garder le nom de l'ancien binding
+  AngularJS `&`), l'attribut attendu devient `onOnChange` - ça ne matche jamais
+  `on-change`. **Nommer la propriété `change` (sans le préfixe `on`)**, pas `onChange`.
+- Toujours pour l'output : l'expression appelée par l'appelant ne reçoit **qu'un seul**
+  local nommé `$event` (la valeur émise), pas les locals arbitraires qu'une AngularJS `&`
+  binding accepte normalement. `on-change="vm.orderBy(orderBy)"` (qui marchait avec
+  l'ancienne directive) devient `on-change="vm.orderBy($event.orderBy)"`.
+
+Conséquence concrète : `most-liked.jade`/`most-active.jade` (toujours 100 % AngularJS,
+donc a priori hors scope de cette migration) ont dû recevoir chacun une modification
+d'une ligne pour appeler correctement le nouveau composant downgradé. C'est le seul type
+de changement acceptable dans du code "non migré" pendant cette transition : adapter la
+syntaxe d'appel à un enfant qui vient d'être downgradé, rien d'autre.
+
+Vérifié bout en bout avec un vrai clic (via CDP, pas juste un dump statique du DOM) :
+cliquer sur "Last week" déclenche bien une requête réseau
+`GET /api/v1/projects?...&order_by=-total_fans_last_week`, confirmant que le cycle
+complet clic → `@Output` Angular → expression AngularJS → contrôleur AngularJS → requête
+HTTP fonctionne.
+
+`tg-svg` (`app/coffee/modules/common.coffee`) a aussi été wrappé en `UpgradeComponent`
+(`src/app/upgraded/tg-svg.upgraded-directive.ts`) à cette occasion - c'est la primitive
+d'icône utilisée dans quasiment tous les templates, donc un investissement rentabilisé
+dès le prochain module.
+
 ### Écart connu par rapport au plan initial : tests
 Le plan prévoyait de migrer les tests du module vers "Jasmine/Karma via Angular CLI". En
 pratique, le `karma.conf.js` existant est verrouillé sur **karma `^0.13.10`** (2015, pour
@@ -198,8 +245,14 @@ en navigateur réel (Chrome headless) : plus de récursion, page rendue normalem
    s'agit d'un service, soit l'envelopper avec `UpgradeComponent` (`src/app/upgraded/`)
    s'il s'agit d'une directive/composant.
 4. Downgrader le nouveau composant (`downgradeComponent`) et l'enregistrer comme directive
-   sur le module AngularJS existant (voir `register-legacy.ts`), pour que rien d'autre
-   dans l'app n'ait besoin de changer.
+   sur le module AngularJS existant (voir `register-legacy.ts`). **Si des templates
+   encore-AngularJS appellent directement ce composant** (migration "en place", pas une
+   route - cf. `discover-home-order-by` ci-dessus), leur syntaxe d'appel doit changer :
+   `bind-x="..."` (pas `x="..."`) pour chaque input, propriété `@Output()` nommée SANS
+   préfixe `on` (`change`, pas `onChange`) pour que l'attribut `on-x="..."` existant
+   matche, et `$event` (pas des locals arbitraires) dans l'expression appelée par cet
+   attribut. Vérifier avec un vrai clic/interaction (CDP), pas juste un dump statique du
+   DOM - un mauvais binding ne lève aucune erreur, il échoue silencieusement.
 5. Remplacer la route ngRoute (ou le `templateUrl` du parent) par le tag de l'élément
    downgradé.
 6. Déclarer le nouveau composant/directive/pipe dans `src/app/app.module.ts`.
