@@ -25,8 +25,8 @@ div(tg-discover-search)
 
         .discover-results-inner(ng-if="!vm.loadingGlobal")
             tg-discover-search-list-header(
-                on-change="vm.onChangeOrder(orderBy)",
-                order-by="vm.orderBy"
+                on-change="vm.onChangeOrder($event.orderBy)",
+                bind-order-by="vm.orderBy"
             )
 
             .spin(ng-show="vm.loadingList", tg-loading="vm.loadingList")

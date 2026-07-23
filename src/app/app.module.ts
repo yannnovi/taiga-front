@@ -8,6 +8,8 @@ import { DiscoverHomeComponent } from "./discover-home/discover-home.component";
 import "./discover-home/register-legacy";
 import { DiscoverHomeOrderByComponent } from "./discover-home-order-by/discover-home-order-by.component";
 import "./discover-home-order-by/register-legacy";
+import { DiscoverSearchListHeaderComponent } from "./discover-search-list-header/discover-search-list-header.component";
+import "./discover-search-list-header/register-legacy";
 import { TgHomeProjectListUpgradedDirective } from "./upgraded/tg-home-project-list.upgraded-directive";
 import { TgWorkingOnUpgradedDirective } from "./upgraded/tg-working-on.upgraded-directive";
 import { TgDiscoverSearchBarUpgradedDirective } from "./upgraded/tg-discover-search-bar.upgraded-directive";
@@ -37,6 +39,7 @@ import { TgTranslatePipe } from "./shared/translate.pipe";
         HomeComponent,
         DiscoverHomeComponent,
         DiscoverHomeOrderByComponent,
+        DiscoverSearchListHeaderComponent,
         TgWorkingOnUpgradedDirective,
         TgHomeProjectListUpgradedDirective,
         TgDiscoverSearchBarUpgradedDirective,

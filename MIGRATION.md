@@ -170,6 +170,22 @@ HTTP fonctionne.
 d'icône utilisée dans quasiment tous les templates, donc un investissement rentabilisé
 dès le prochain module.
 
+### `discover-search-list-header`
+
+Même patron "leaf en place" que `discover-home-order-by`, un cran plus riche : deux
+sous-panneaux de filtre (`ng-if` → `*ngIf`), classes actives (`ng-class` → `[class.active]`),
+et un détail amusant repéré en lisant le contrôleur d'origine : le template appelait
+`vm.toggleClose()` sur `ng-mouseleave`, mais cette méthode n'a jamais existé sur le
+contrôleur - un appel silencieusement no-op en AngularJS. Reproduit fidèlement en ne
+câblant rien du tout sur `(mouseleave)`, plutôt que d'inventer un comportement qui
+n'a jamais existé.
+
+Seul appelant encore-AngularJS à adapter : `discover-search.jade` (`bind-order-by`,
+`$event.orderBy`). Vérifié comme le précédent avec un clic réel via CDP : ouvrir le filtre
+"Most liked" puis choisir "Last week" déclenche la requête réseau attendue
+(`order_by=-total_fans_last_week&q=a`). karma **459/459** (466 - 7 tests du contrôleur
+supprimé).
+
 ### Écart connu par rapport au plan initial : tests
 Le plan prévoyait de migrer les tests du module vers "Jasmine/Karma via Angular CLI". En
 pratique, le `karma.conf.js` existant est verrouillé sur **karma `^0.13.10`** (2015, pour
