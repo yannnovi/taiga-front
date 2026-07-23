@@ -47,6 +47,9 @@ AngularJS une fois que tout est passé côté Angular.
   `import ... from "angular"` dans `src/` résout vers ce fichier plutôt que vers
   `node_modules/angular`. C'est la technique documentée officiellement par Angular pour ce
   cas de figure (AngularJS chargé par `<script>`, pas par npm/webpack).
+- **`@angular/forms`** (`FormsModule`) ajouté aux dépendances et importé dans
+  `AppModule` à l'occasion de `wip-limit-selector`, pour `[(ngModel)]` sur un champ de
+  formulaire simple plutôt que de câbler `(input)`/`[value]` à la main à chaque fois.
 
 ## Modules migrés
 
@@ -362,6 +365,83 @@ maintenant **en tout premier**, avant même `libs.js` - ils n'ont aucune dépend
 reste. Seul `main.js` (le vrai bootstrap Angular, qui a besoin de `window.angular` posé par
 `libs.js`/`app.js`) reste chargé en dernier, une fois les emojis prêts, comme avant. Vérifié
 en navigateur réel (Chrome headless) : plus de récursion, page rendue normalement.
+
+### `project-archived-warning`
+
+Leaf en place, le plus simple de tous jusqu'ici : aucun binding, un seul service
+(`tgProjectService`, déjà partagé partout), et déjà utilisé en syntaxe élément par ses
+deux appelants (`project.jade`, `epics-dashboard.jade`) - donc aucune retouche de leur
+côté, ni pour le binding ni pour élément/attribut. Vérifié : build propre, karma inchangé
+(pas de spec pour ce contrôleur).
+
+### `tribe-button`
+
+Leaf en place. Premier composant à référencer un asset statique versionné
+(`images/tribe-logo.png`) : le `#{v}` de Jade (interpolé par gulp à la compilation) n'existe
+pas côté Angular CLI - remplacé par `window._version` (la même valeur, exposée en global au
+runtime par `app-loader.coffee`, donc strictement équivalent). Appelant
+(`us-detail.jade`) mis à jour : `us-id`/`project-slug` → `bind-us-id`/`bind-project-slug`.
+
+### `live-announcement`
+
+Leaf en place, mais rendu au niveau du **shell applicatif** (`app/index.jade`, en dehors de
+`ng-view`) plutôt que dans une route ou un composant imbriqué - comme `tg-navigation-bar`/
+`tg-legacy` qui y vivent déjà. Ça fonctionne pareil : `UpgradeModule.bootstrap(document.body, ...)`
+compile tout `document.body` en une seule passe AngularJS au démarrage, qu'un élément soit
+dans `ng-view` ou non. Seul component dont l'état vient de getters lisant directement un
+service partagé mutable (`tgLiveAnnouncementService.open/title/desc`, pas un Observable) -
+ça reste à jour parce que zone.js patche assez d'API globales pour qu'Angular relance sa
+détection de changements à peu près à chaque tick. Appelant (`app/index.jade`) : attribut
+→ élément (`div(tg-live-announcement)` → `tg-live-announcement`).
+
+Vérifié en navigateur réel (pas seulement au build) : rendu sans erreur sur `/discover`
+(un `<tg-live-announcement ng-version="...">` avec son état par défaut), confirmant que le
+shell entier reste compilable après l'ajout.
+
+### `vote-button`
+
+Leaf en place. Premier exemple de binding `=` portant sur une **valeur de fonction** plutôt
+qu'une expression `&` : `onUpvote`/`onDownvote` sont des références de fonctions passées
+telles quelles par l'appelant (`ctrl.onUpvote`), pas des expressions à invoquer avec des
+locals - donc `@Input()` simples, appelées directement (`this.onUpvote()`), sans
+`@Output()`/`EventEmitter` ni convention `$event`. Appelant (`issues-detail.jade`) : attribut
+→ élément et `item`/`on-upvote`/`on-downvote` → `bind-item`/`bind-on-upvote`/`bind-on-downvote`.
+
+Simplification assumée et documentée : l'original enveloppait le compteur avec `tg-loading`
+(`app/coffee/modules/common/loading.coffee`), une directive sans template propre qui fait
+de la manipulation DOM jQuery pour afficher un spinner overlay pendant `vm.loading`. Comme
+`tg-avatar`, ce n'est pas un bon candidat `UpgradeComponent`. L'état `loading` est conservé
+et exposé à l'identique (le spec `vote-button.controller.spec.coffee`, supprimé, vérifiait
+exactement ce comportement), seul le spinner visuel n'est pas reproduit - jugé disproportionné
+pour un effet cosmétique bref, plutôt que de laisser un piège non documenté.
+
+### `wip-limit-selector` (et un bug corrigé au passage)
+
+Leaf en place, utilisé deux fois dans `project-kanban-swimlanes.jade`, chaque fois à
+l'intérieur d'un `ng-repeat` - fonctionne normalement, chaque itération AngularJS instancie
+sa propre copie du composant downgradé avec sa propre valeur `status`.
+
+**Bug pré-existant corrigé en portant le code** : le contrôleur original injectait
+`"$tgResources"`, un nom qui n'est enregistré nulle part dans le codebase (seul
+`tgResources`, sans `$`, existe - `app/modules/resources/resources.coffee`). Ça aurait dû
+lever "Unknown provider" à chaque instanciation. Reproduire fidèlement un nom cassé
+n'aurait eu aucun sens ici (le composant n'aurait jamais fonctionné, migré ou pas) - le vrai
+nom de service est utilisé à la place, documenté dans le code et ici.
+
+Autres écarts mineurs, tous des impasses de l'original (mêmes catégories que
+`toggleClose`/`ng-title` déjà rencontrées) :
+- `ng-value="statusWipLimit"` référence une variable qui n'a jamais existé - omis.
+- État partagé entre le `$scope` de la directive (`displayWipLimitSelector`) et un
+  contrôleur séparé (`status`, `new_wip_limit`) - unifié en une seule classe, aucune
+  différence fonctionnelle.
+- `tg-autofocus` (encore une directive sans template propre, même famille que `tg-avatar`/
+  `tg-loading`) : son seul effet utile ici (focus du champ après affichage) reproduit
+  directement via `ViewChild`/`setTimeout` plutôt que wrappé.
+
+Appelant : attributs `status="status"` (×2) → `bind-status="status"`.
+
+Nouvelle dépendance de workspace : `@angular/forms` (`FormsModule`) pour `[(ngModel)]` sur
+le champ de saisie du nouveau WIP limit.
 
 ## Patron à suivre pour migrer un module suivant
 

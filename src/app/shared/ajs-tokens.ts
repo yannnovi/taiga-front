@@ -20,6 +20,13 @@ export const AJS_EXTERNAL_APPS_SERVICE = new InjectionToken<any>("tgExternalApps
 export const AJS_XHR_ERROR_SERVICE = new InjectionToken<any>("tgXhrErrorService");
 export const AJS_LOADER = new InjectionToken<any>("tgLoader");
 export const AJS_AVATAR_SERVICE = new InjectionToken<any>("tgAvatarService");
+export const AJS_PROJECT_SERVICE = new InjectionToken<any>("tgProjectService");
+export const AJS_CONFIG = new InjectionToken<any>("$tgConfig");
+export const AJS_LIVE_ANNOUNCEMENT_SERVICE = new InjectionToken<any>("tgLiveAnnouncementService");
+// Note: the label below is "tgResources" (no `$`), not "$tgResources" - the original
+// wip-limit-selector controller injected the latter, a name that isn't actually
+// registered anywhere (see wip-limit-selector.component.ts for the full story).
+export const AJS_RESOURCES = new InjectionToken<any>("tgResources");
 
 export function upgradedService(token: InjectionToken<any>, ajsName: string): Provider {
     return {

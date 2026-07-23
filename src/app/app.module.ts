@@ -1,6 +1,7 @@
 import { DoBootstrap, NgModule } from "@angular/core";
 import { BrowserModule } from "@angular/platform-browser";
 import { UpgradeModule } from "@angular/upgrade/static";
+import { FormsModule } from "@angular/forms";
 
 import { HomeComponent } from "./home/home.component";
 import "./home/register-legacy";
@@ -16,6 +17,16 @@ import { ExternalAppComponent } from "./external-app/external-app.component";
 import "./external-app/register-legacy";
 import { ProfileHintsComponent } from "./profile-hints/profile-hints.component";
 import "./profile-hints/register-legacy";
+import { ProjectArchivedWarningComponent } from "./project-archived-warning/project-archived-warning.component";
+import "./project-archived-warning/register-legacy";
+import { TribeButtonComponent } from "./tribe-button/tribe-button.component";
+import "./tribe-button/register-legacy";
+import { LiveAnnouncementComponent } from "./live-announcement/live-announcement.component";
+import "./live-announcement/register-legacy";
+import { VoteButtonComponent } from "./vote-button/vote-button.component";
+import "./vote-button/register-legacy";
+import { WipLimitSelectorComponent } from "./wip-limit-selector/wip-limit-selector.component";
+import "./wip-limit-selector/register-legacy";
 import { TgHomeProjectListUpgradedDirective } from "./upgraded/tg-home-project-list.upgraded-directive";
 import { TgWorkingOnUpgradedDirective } from "./upgraded/tg-working-on.upgraded-directive";
 import { TgDiscoverSearchBarUpgradedDirective } from "./upgraded/tg-discover-search-bar.upgraded-directive";
@@ -27,12 +38,16 @@ import { TgNotificationsListUpgradedDirective } from "./upgraded/tg-notification
 import {
     AJS_APP_META_SERVICE,
     AJS_AVATAR_SERVICE,
+    AJS_CONFIG,
     AJS_CURRENT_USER_SERVICE,
     AJS_EXTERNAL_APPS_SERVICE,
+    AJS_LIVE_ANNOUNCEMENT_SERVICE,
     AJS_LOADER,
     AJS_LOCATION,
     AJS_NAV_URLS,
     AJS_NOTIFICATIONS_SERVICE,
+    AJS_PROJECT_SERVICE,
+    AJS_RESOURCES,
     AJS_ROOT_SCOPE,
     AJS_ROUTE_PARAMS,
     AJS_TG_LOCATION,
@@ -49,7 +64,7 @@ import { TgTranslatePipe } from "./shared/translate.pipe";
  * are added incrementally via upgrade/downgrade. Nothing here replaces AngularJS yet.
  */
 @NgModule({
-    imports: [BrowserModule, UpgradeModule],
+    imports: [BrowserModule, UpgradeModule, FormsModule],
     declarations: [
         HomeComponent,
         DiscoverHomeComponent,
@@ -58,6 +73,11 @@ import { TgTranslatePipe } from "./shared/translate.pipe";
         NotificationsComponent,
         ExternalAppComponent,
         ProfileHintsComponent,
+        ProjectArchivedWarningComponent,
+        TribeButtonComponent,
+        LiveAnnouncementComponent,
+        VoteButtonComponent,
+        WipLimitSelectorComponent,
         TgWorkingOnUpgradedDirective,
         TgHomeProjectListUpgradedDirective,
         TgDiscoverSearchBarUpgradedDirective,
@@ -83,6 +103,10 @@ import { TgTranslatePipe } from "./shared/translate.pipe";
         upgradedService(AJS_XHR_ERROR_SERVICE, "tgXhrErrorService"),
         upgradedService(AJS_LOADER, "tgLoader"),
         upgradedService(AJS_AVATAR_SERVICE, "tgAvatarService"),
+        upgradedService(AJS_PROJECT_SERVICE, "tgProjectService"),
+        upgradedService(AJS_CONFIG, "$tgConfig"),
+        upgradedService(AJS_LIVE_ANNOUNCEMENT_SERVICE, "tgLiveAnnouncementService"),
+        upgradedService(AJS_RESOURCES, "tgResources"),
     ],
 })
 export class AppModule implements DoBootstrap {

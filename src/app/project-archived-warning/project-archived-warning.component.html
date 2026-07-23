@@ -1,0 +1,8 @@
+<div class="project-archived-banner" *ngIf="isArchived">
+    <div class="archived-banner-content">
+        <div class="archived-banner-icon">
+            <tg-svg svg-icon="icon-blocked-project"></tg-svg>
+        </div>
+        <span class="archived-banner-message">{{ "COMMON.ARCHIVED_PROJECT_WARNING.MESSAGE" | tgTranslate }}</span>
+    </div>
+</div>
