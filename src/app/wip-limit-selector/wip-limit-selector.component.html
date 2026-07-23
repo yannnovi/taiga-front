@@ -1,0 +1,28 @@
+<div class="wip-limit-status">
+    <div class="wip-limit-status-name">{{ status.name }}</div>
+    <div class="wip-limit-status-data" *ngIf="!displayWipLimitSelector">
+        <span class="wip-number wip-placeholder-text" *ngIf="!status.wip_limit">{{ "ADMIN.PROJECT_KANBAN_OPTIONS.WIP_LIMIT_PLACEHOLDER" | tgTranslate }}</span>
+        <span class="wip-number" *ngIf="!!status.wip_limit">{{ status.wip_limit }}</span>
+        <button class="form-button" type="button" [attr.arial-label]="'COMMON.SAVE' | tgTranslate" (click)="toggleWipSelectorVisibility()">
+            <tg-svg svg-icon="icon-edit"></tg-svg>
+        </button>
+    </div>
+
+    <form class="wip-limit-status-form" *ngIf="displayWipLimitSelector">
+        <input
+            #wipLimitInput
+            class="wip-limit-status-form-input"
+            type="number"
+            maxlength="48"
+            [(ngModel)]="newWipLimit"
+            name="newWipLimit"
+            [placeholder]="'ADMIN.PROJECT_KANBAN_OPTIONS.WIP_LIMIT_INPUT' | tgTranslate"
+        />
+        <button class="form-button add-swimlane-single" type="button" [attr.arial-label]="'COMMON.SAVE' | tgTranslate" (click)="submitSwimlaneNewStatus()">
+            <tg-svg svg-icon="icon-check-empty"></tg-svg>
+        </button>
+        <button class="form-button cancel-swimlane-single" type="button" [attr.arial-label]="'COMMON.CANCEL' | tgTranslate" (click)="toggleWipSelectorVisibility()">
+            <tg-svg svg-icon="icon-close"></tg-svg>
+        </button>
+    </form>
+</div>

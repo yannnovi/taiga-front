@@ -62,7 +62,7 @@ section.admin-kanban-powerups
     .admin-wip-manager(ng-if="!values.length")
         tg-wip-limit-selector(
             ng-repeat="status in ctrl.filterArchivedProjectStatuses() track by status.id"
-            status="status"
+            bind-status="status"
         )
 
     .admin-wip-manager(
@@ -90,5 +90,5 @@ section.admin-kanban-powerups
             )
                 tg-wip-limit-selector(
                     ng-repeat="status in ctrl.filterArchivedSwimlaneStatus(value) track by status.id"
-                    status="status"
+                    bind-status="status"
                 )
