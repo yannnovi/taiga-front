@@ -12,6 +12,9 @@ export const AJS_LOCATION = new InjectionToken<any>("$location");
 export const AJS_TG_LOCATION = new InjectionToken<any>("$tgLocation");
 export const AJS_TRANSLATE = new InjectionToken<any>("$translate");
 export const AJS_APP_META_SERVICE = new InjectionToken<any>("tgAppMetaService");
+export const AJS_ROOT_SCOPE = new InjectionToken<any>("$rootScope");
+export const AJS_WINDOW = new InjectionToken<any>("$window");
+export const AJS_NOTIFICATIONS_SERVICE = new InjectionToken<any>("tgNotificationsService");
 
 export function upgradedService(token: InjectionToken<any>, ajsName: string): Provider {
     return {

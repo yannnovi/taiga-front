@@ -10,6 +10,8 @@ import { DiscoverHomeOrderByComponent } from "./discover-home-order-by/discover-
 import "./discover-home-order-by/register-legacy";
 import { DiscoverSearchListHeaderComponent } from "./discover-search-list-header/discover-search-list-header.component";
 import "./discover-search-list-header/register-legacy";
+import { NotificationsComponent } from "./notifications/notifications.component";
+import "./notifications/register-legacy";
 import { TgHomeProjectListUpgradedDirective } from "./upgraded/tg-home-project-list.upgraded-directive";
 import { TgWorkingOnUpgradedDirective } from "./upgraded/tg-working-on.upgraded-directive";
 import { TgDiscoverSearchBarUpgradedDirective } from "./upgraded/tg-discover-search-bar.upgraded-directive";
@@ -17,13 +19,17 @@ import { TgFeaturedProjectsUpgradedDirective } from "./upgraded/tg-featured-proj
 import { TgMostLikedUpgradedDirective } from "./upgraded/tg-most-liked.upgraded-directive";
 import { TgMostActiveUpgradedDirective } from "./upgraded/tg-most-active.upgraded-directive";
 import { TgSvgUpgradedDirective } from "./upgraded/tg-svg.upgraded-directive";
+import { TgNotificationsListUpgradedDirective } from "./upgraded/tg-notifications-list.upgraded-directive";
 import {
     AJS_APP_META_SERVICE,
     AJS_CURRENT_USER_SERVICE,
     AJS_LOCATION,
     AJS_NAV_URLS,
+    AJS_NOTIFICATIONS_SERVICE,
+    AJS_ROOT_SCOPE,
     AJS_TG_LOCATION,
     AJS_TRANSLATE,
+    AJS_WINDOW,
     upgradedService,
 } from "./shared/ajs-tokens";
 import { TgTranslatePipe } from "./shared/translate.pipe";
@@ -40,6 +46,7 @@ import { TgTranslatePipe } from "./shared/translate.pipe";
         DiscoverHomeComponent,
         DiscoverHomeOrderByComponent,
         DiscoverSearchListHeaderComponent,
+        NotificationsComponent,
         TgWorkingOnUpgradedDirective,
         TgHomeProjectListUpgradedDirective,
         TgDiscoverSearchBarUpgradedDirective,
@@ -47,6 +54,7 @@ import { TgTranslatePipe } from "./shared/translate.pipe";
         TgMostLikedUpgradedDirective,
         TgMostActiveUpgradedDirective,
         TgSvgUpgradedDirective,
+        TgNotificationsListUpgradedDirective,
         TgTranslatePipe,
     ],
     providers: [
@@ -56,6 +64,9 @@ import { TgTranslatePipe } from "./shared/translate.pipe";
         upgradedService(AJS_TG_LOCATION, "$tgLocation"),
         upgradedService(AJS_TRANSLATE, "$translate"),
         upgradedService(AJS_APP_META_SERVICE, "tgAppMetaService"),
+        upgradedService(AJS_ROOT_SCOPE, "$rootScope"),
+        upgradedService(AJS_WINDOW, "$window"),
+        upgradedService(AJS_NOTIFICATIONS_SERVICE, "tgNotificationsService"),
     ],
 })
 export class AppModule implements DoBootstrap {

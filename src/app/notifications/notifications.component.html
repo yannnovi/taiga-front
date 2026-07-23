@@ -1,0 +1,18 @@
+<div class="wrapper">
+    <div class="notifications-page centered">
+        <header class="header">
+            <h1 class="title">{{ "EVENTS.MY_EVENTS" | tgTranslate }}</h1>
+            <a
+                class="action"
+                href=""
+                *ngIf="notificationsList.size && !notificationsList.get(0).get('read')"
+                (click)="setAllAsRead()"
+            >{{ "EVENTS.DISMISS_ALL" | tgTranslate }}</a>
+            <span
+                class="action disabled"
+                *ngIf="!notificationsList.size || notificationsList.get(0).get('read')"
+            >{{ "EVENTS.DISMISS_ALL" | tgTranslate }}</span>
+        </header>
+        <tg-notifications-list></tg-notifications-list>
+    </div>
+</div>

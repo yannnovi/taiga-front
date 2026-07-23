@@ -186,6 +186,44 @@ Seul appelant encore-AngularJS à adapter : `discover-search.jade` (`bind-order-
 (`order_by=-total_fans_last_week&q=a`). karma **459/459** (466 - 7 tests du contrôleur
 supprimé).
 
+### `notifications`
+
+Premier module migré au niveau de la route depuis `discover-home`. Piège découvert en
+creusant les dépendances (règle n°1 du patron) : la directive enfant `tg-notifications-list`
+(`app/modules/notifications/notifications-list/`, laissée 100 % AngularJS) utilise
+`controller: "Notifications"` - **le même contrôleur AngularJS que la route**, dans sa
+propre instance isolée. Si `notifications.controller.coffee` avait été supprimé (ce que le
+patron habituel aurait fait), cet enfant se serait cassé au chargement (référence de
+contrôleur introuvable). **`notifications.controller.coffee` reste donc en place,
+intact** - seul `notifications.jade` (le template de la route) a été supprimé. Duplication
+temporaire assumée : la logique existe maintenant à la fois dans l'ancien contrôleur
+CoffeeScript (pour l'usage du enfant) et dans `NotificationsComponent` (pour la route) -
+même situation que `tgHomeService` pour le module `home`.
+
+`NotificationsController` héritait de `mixOf(taiga.Controller, taiga.PageMixin,
+taiga.FiltersMixin)`, mais son propre corps n'appelle aucune méthode de ces mixins
+(`fillUsersAndRoles`, `selectFilter`, etc.) - rien à répliquer, c'était du poids mort pour
+ce contrôleur précis (vérifié en lisant `app/coffee/modules/controllerMixins.coffee`
+en entier).
+
+Les événements `notifications:dismiss`/`notifications:new`/`notifications:dismiss-all`
+passent par `$rootScope` (nouveau token `AJS_ROOT_SCOPE`) plutôt que par un `$scope`
+d'instance (qui n'existe pas pour un composant Angular) : `$rootScope.$emit(...)` est
+l'équivalent le plus fidèle de l'original `@scope.$emit(...)` pour tout listener enregistré
+via `$rootScope.$on` (c'est le cas ici et dans `dropdown-notifications`). Un listener
+hypothétique sur un `$scope.$on` d'une branche ni ancêtre ni `$rootScope` ne recevrait pas
+plus l'événement qu'avant - non-régression, pas une garantie absolue d'équivalence totale.
+
+Vérification : sans backend, `/notifications` (route `access: {requiresLogin: true}`)
+redirige vers `/login` - comportement inchangé, guard indépendant de ce composant. Pour
+vérifier le rendu réel, un faux utilisateur a été injecté via
+`localStorage.setItem('userInfo', ...)` (c'est exactement ce que lit
+`tgCurrentUserService.getUser()`, `app/modules/services/current-user.service.coffee`)
+avant navigation : la page affiche bien "My events", "Dismiss all" désactivé (liste vide),
+et `tg-notifications-list` rend toujours son propre contenu AngularJS normalement. Aucune
+erreur console. karma **459/459** (aucun test supprimé, `notifications` n'avait pas de
+spec pour son contrôleur).
+
 ### Écart connu par rapport au plan initial : tests
 Le plan prévoyait de migrer les tests du module vers "Jasmine/Karma via Angular CLI". En
 pratique, le `karma.conf.js` existant est verrouillé sur **karma `^0.13.10`** (2015, pour

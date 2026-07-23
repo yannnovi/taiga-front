@@ -493,15 +493,18 @@ configure = ($routeProvider, $locationProvider, $httpProvider, $provide, $tgEven
     )
 
     # Notifications
+    # Migrated to an Angular component (src/app/notifications/), downgraded as
+    # <tg-notifications> - see MIGRATION.md. The AngularJS "Notifications" controller
+    # (app/modules/notifications/notifications.controller.coffee) stays registered: the
+    # still-AngularJS tg-notifications-list child directive instantiates its own separate
+    # instance of it internally.
     $routeProvider.when("/notifications",
         {
-            templateUrl: "notifications/notifications.html",
+            template: "<tg-notifications></tg-notifications>",
             loader: true,
             access: {
                 requiresLogin: true
-            },
-            controller: "Notifications",
-            controllerAs: "vm"
+            }
         }
     )
 
