@@ -560,13 +560,13 @@ configure = ($routeProvider, $locationProvider, $httpProvider, $provide, $tgEven
             disableHeader: true
         }
     )
+    # Migrated to an Angular component (src/app/external-app/), downgraded as
+    # <tg-external-app> - see MIGRATION.md.
     $routeProvider.when("/external-apps",
         {
-            templateUrl: "external-apps/external-app.html",
+            template: "<tg-external-app></tg-external-app>",
             title: "EXTERNAL_APP.PAGE_TITLE",
             description: "EXTERNAL_APP.PAGE_DESCRIPTION",
-            controller: "ExternalApp",
-            controllerAs: "vm",
             disableHeader: true,
             mobileViewport: true
         }

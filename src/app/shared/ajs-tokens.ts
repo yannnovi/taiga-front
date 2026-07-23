@@ -15,6 +15,11 @@ export const AJS_APP_META_SERVICE = new InjectionToken<any>("tgAppMetaService");
 export const AJS_ROOT_SCOPE = new InjectionToken<any>("$rootScope");
 export const AJS_WINDOW = new InjectionToken<any>("$window");
 export const AJS_NOTIFICATIONS_SERVICE = new InjectionToken<any>("tgNotificationsService");
+export const AJS_ROUTE_PARAMS = new InjectionToken<any>("$routeParams");
+export const AJS_EXTERNAL_APPS_SERVICE = new InjectionToken<any>("tgExternalAppsService");
+export const AJS_XHR_ERROR_SERVICE = new InjectionToken<any>("tgXhrErrorService");
+export const AJS_LOADER = new InjectionToken<any>("tgLoader");
+export const AJS_AVATAR_SERVICE = new InjectionToken<any>("tgAvatarService");
 
 export function upgradedService(token: InjectionToken<any>, ajsName: string): Provider {
     return {

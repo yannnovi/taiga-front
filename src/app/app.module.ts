@@ -12,6 +12,8 @@ import { DiscoverSearchListHeaderComponent } from "./discover-search-list-header
 import "./discover-search-list-header/register-legacy";
 import { NotificationsComponent } from "./notifications/notifications.component";
 import "./notifications/register-legacy";
+import { ExternalAppComponent } from "./external-app/external-app.component";
+import "./external-app/register-legacy";
 import { TgHomeProjectListUpgradedDirective } from "./upgraded/tg-home-project-list.upgraded-directive";
 import { TgWorkingOnUpgradedDirective } from "./upgraded/tg-working-on.upgraded-directive";
 import { TgDiscoverSearchBarUpgradedDirective } from "./upgraded/tg-discover-search-bar.upgraded-directive";
@@ -22,14 +24,19 @@ import { TgSvgUpgradedDirective } from "./upgraded/tg-svg.upgraded-directive";
 import { TgNotificationsListUpgradedDirective } from "./upgraded/tg-notifications-list.upgraded-directive";
 import {
     AJS_APP_META_SERVICE,
+    AJS_AVATAR_SERVICE,
     AJS_CURRENT_USER_SERVICE,
+    AJS_EXTERNAL_APPS_SERVICE,
+    AJS_LOADER,
     AJS_LOCATION,
     AJS_NAV_URLS,
     AJS_NOTIFICATIONS_SERVICE,
     AJS_ROOT_SCOPE,
+    AJS_ROUTE_PARAMS,
     AJS_TG_LOCATION,
     AJS_TRANSLATE,
     AJS_WINDOW,
+    AJS_XHR_ERROR_SERVICE,
     upgradedService,
 } from "./shared/ajs-tokens";
 import { TgTranslatePipe } from "./shared/translate.pipe";
@@ -47,6 +54,7 @@ import { TgTranslatePipe } from "./shared/translate.pipe";
         DiscoverHomeOrderByComponent,
         DiscoverSearchListHeaderComponent,
         NotificationsComponent,
+        ExternalAppComponent,
         TgWorkingOnUpgradedDirective,
         TgHomeProjectListUpgradedDirective,
         TgDiscoverSearchBarUpgradedDirective,
@@ -67,6 +75,11 @@ import { TgTranslatePipe } from "./shared/translate.pipe";
         upgradedService(AJS_ROOT_SCOPE, "$rootScope"),
         upgradedService(AJS_WINDOW, "$window"),
         upgradedService(AJS_NOTIFICATIONS_SERVICE, "tgNotificationsService"),
+        upgradedService(AJS_ROUTE_PARAMS, "$routeParams"),
+        upgradedService(AJS_EXTERNAL_APPS_SERVICE, "tgExternalAppsService"),
+        upgradedService(AJS_XHR_ERROR_SERVICE, "tgXhrErrorService"),
+        upgradedService(AJS_LOADER, "tgLoader"),
+        upgradedService(AJS_AVATAR_SERVICE, "tgAvatarService"),
     ],
 })
 export class AppModule implements DoBootstrap {

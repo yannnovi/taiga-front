@@ -224,6 +224,45 @@ et `tg-notifications-list` rend toujours son propre contenu AngularJS normalemen
 erreur console. karma **459/459** (aucun test supprimé, `notifications` n'avait pas de
 spec pour son contrôleur).
 
+### `external-app`
+
+Troisième module au niveau route. Contrairement à `home`/`discover-home`/`notifications`,
+aucune autre référence au contrôleur `"ExternalApp"` nulle part ailleurs dans le code
+(vérifié par grep) - donc, cette fois, `external-app.controller.coffee` et son spec ont pu
+être supprimés sans réserve, comme `discover-home.controller.coffee` avant lui.
+
+Le template original utilisait `tg-avatar` (`app/modules/components/avatar/avatar.directive.coffee`),
+une directive-attribut **sans template propre** : elle ne fait que muter les attributs
+`src`/`title`/`alt`/`background` de son élément hôte via une fonction `link`. `UpgradeComponent`
+est conçu pour des directives qui rendent leur propre contenu (`template`/`templateUrl`) -
+pas vraiment adapté ici. Plutôt que de forcer un wrapper, `tgAvatarService.getAvatar()`
+(nouveau token `AJS_AVATAR_SERVICE`) est appelé directement dans le composant et le
+résultat lié en binding Angular classique sur un `<img>` normal - plus simple, et une vraie
+migration plutôt qu'un enrobage pour une directive qui n'était que de la logique
+présentationnelle.
+
+Le template utilisait aussi `translate="CLE" translate-values="{...}"` (la **directive**
+angular-translate, pas le filtre `| translate`). `TgTranslatePipe`
+(`src/app/shared/translate.pipe.ts`) a été étendu pour accepter un second paramètre de
+valeurs d'interpolation (`{{ 'CLE' | tgTranslate:{app: application.get('name')} }}`),
+puisque `$translate.instant(key, values)` les accepte déjà nativement - un investissement
+réutilisable, comme `tg-svg` avant lui.
+
+Un `include ../../svg/logo-color.svg` (inclusion Jade, au moment de la compilation) a été
+remplacé par le contenu SVG copié directement dans le template Angular - même résultat
+(le SVG était déjà inlined en dur dans le HTML final avant), juste sans l'étape de
+compilation Jade.
+
+**Écart de vérification (limitation d'environnement, pas du composant) :** `/external-apps`
+tente une redirection vers `/login?unauthorized=true` avant même que le composant ne
+s'affiche, malgré le faux `userInfo` en `localStorage`. Testé et confirmé : **le même
+comportement se produit sur `/profile`, une route non touchée par cette migration** -
+preuve que ce n'est pas lié à `ExternalAppComponent` mais à un mécanisme d'authentification
+plus strict (probablement une vérification de token réelle contre le backend) qui ne peut
+pas être satisfait avec juste `localStorage` sans un vrai `taiga-back`. Vérification donc
+limitée à : build Angular propre (`strictTemplates`), relecture attentive de la fidélité du
+portage, et karma **455/455** (459 - 4 tests du contrôleur supprimé).
+
 ### Écart connu par rapport au plan initial : tests
 Le plan prévoyait de migrer les tests du module vers "Jasmine/Karma via Angular CLI". En
 pratique, le `karma.conf.js` existant est verrouillé sur **karma `^0.13.10`** (2015, pour

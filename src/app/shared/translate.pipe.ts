@@ -11,7 +11,7 @@ import { AJS_TRANSLATE } from "./ajs-tokens";
 export class TgTranslatePipe implements PipeTransform {
     constructor(@Inject(AJS_TRANSLATE) private translate: any) {}
 
-    transform(key: string): string {
-        return this.translate.instant(key);
+    transform(key: string, values?: Record<string, any>): string {
+        return this.translate.instant(key, values);
     }
 }
