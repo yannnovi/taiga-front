@@ -173,8 +173,8 @@ div.wrapper(
 
         section.ticket-section.ticket-to-tribe(ng-if="tribeEnabled && !us.tribe_gig")
             tg-tribe-button(
-                us-id="us.id"
-                project-slug="project.slug"
+                bind-us-id="us.id"
+                bind-project-slug="project.slug"
             )
             a.tribe-more-info(
                 href=""
