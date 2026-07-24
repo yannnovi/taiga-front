@@ -878,6 +878,40 @@ probablement cassé. Repéré aussi en passant : `tg-user-timeline-title` (utili
 même template) ne correspond à aucune directive enregistrée nulle part — mort, comme
 `tg-related-userstories-create-form` trouvé plus tôt.
 
+### Phase 1 (feuille de route post-63-modules) : bug critique dans `lightboxFactory`, puis `tgLbContactProject`
+
+Avant de commencer le premier candidat de la Phase 1 (`tgLbContactProject`), un vrai bug de
+production a été découvert et corrigé : `LightboxFactory.create()`
+(`app/modules/services/lightbox-factory.service.coffee`) construisait un
+`<div>` avec le nom de la directive posé comme **attribut** (`$("<div>").attr(name, true)`)
+pour ouvrir n'importe quel lightbox. Or `downgradeComponent` (`@angular/upgrade`) compile
+toujours avec `restrict: 'E'` — il ne matche que sur le nom de balise, jamais sur un
+attribut. Résultat : **tout lightbox déjà migré en composant Angular downgradé et ouvert via
+cette factory ne montait plus rien**, silencieusement (aucune exception, build et karma
+restaient verts). Trois modules déjà committés étaient concernés :
+`lightbox-move-to-sprint`, `newsletter-email-lightbox`, `lightbox-display-historic`.
+
+Corrigé en construisant l'élément comme `<name>` (la balise propre de la directive) plutôt
+qu'un `<div>` porteur de l'attribut. Les directives AngularJS classiques ont par défaut
+`restrict: 'EA'` (aucun des appelants de cette factory ne restreint à `'A'` seul), donc leur
+comportement est inchangé. Vérifié en navigateur headless (profil neuf) : un lightbox non
+migré (`tg-lb-feedback`) s'ouvre toujours normalement, et les trois lightboxes downgradés
+affectés rendent maintenant tout leur contenu ; les 367 specs karma restent vertes.
+**Leçon pour la suite** : toute nouvelle migration de lightbox ouvert via `lightboxFactory`
+doit être vérifiée en navigateur réel, pas seulement build+karma — ce bug n'aurait jamais
+été détecté autrement.
+
+`tgLbContactProject` → `LightboxContactProjectComponent` migré ensuite, downgradé sous le
+même sélecteur. La directive d'origine n'avait pas de `scope: {}` explicite à côté de
+`bindToController: {project: '='}` — combinaison inhabituelle mais qui fonctionne, confirmée
+via son seul appelant réel (`ContactProjectButtonComponent`, déjà Angular), dont les attrs de
+`lightboxFactory.create` passent de `project: "project"` à `"bind-project": "project"`.
+`tg-lightbox-close` et `tg-project-logo-big-src` (tous deux sans template) répliqués en
+ligne, même patron que les lightboxes/composants profile précédents. La première branche du
+template original (`ng-if="vm.project.logo_big_url"`, lecture directe d'une propriété plate
+sur une Map Immutable) était du code mort — seule la branche `tg-project-logo-big-src` a
+jamais été rendue, donc seul ce comportement est répliqué.
+
 ## Patron à suivre pour migrer un module suivant
 
 1. Repérer ses dépendances réelles (services/directives utilisés *et* utilisateurs) avant
