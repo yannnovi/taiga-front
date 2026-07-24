@@ -1,0 +1,29 @@
+<button type="button" (click)="displayOptions()">
+    <span class="swimlane-select-text" *ngIf="currentSwimlane?.id">
+        <span>{{ currentSwimlane.name }}</span>
+        <span class="swimlane-default" *ngIf="currentSwimlane.id === defaultSwimlaneId && swimlanes.size > 1">({{ "LIGHTBOX.CREATE_EDIT.DEFAULT" | tgTranslate }})</span>
+    </span>
+    <span class="swimlane-select-text unclassified" *ngIf="!currentSwimlane?.id">{{ "KANBAN.UNCLASSIFIED_USER_STORIES" | tgTranslate }}</span>
+    <tg-svg svg-icon="icon-arrow-down"></tg-svg>
+</button>
+<div class="options" [style.display]="displaySelector ? 'block' : 'none'" (mouseleave)="hideOptions()" (mouseenter)="displayOptions()">
+    <button
+        class="option unclassified"
+        type="button"
+        *ngIf="hasUnclassifiedStories === 'true'"
+        [class.selected]="selectedSwimlane === -1"
+        (click)="selectSwimlane('noSwimlane')"
+    >{{ "KANBAN.UNCLASSIFIED_USER_STORIES" | tgTranslate }}</button>
+
+    <button
+        class="option"
+        type="button"
+        *ngFor="let swimlane of swimlanes"
+        [class.selected]="swimlane.id === selectedSwimlane"
+        [class.unclassified]="swimlane.id === -1 || swimlane.id === null"
+        (click)="selectSwimlane(swimlane)"
+    >
+        <span>{{ swimlane.name }}</span>
+        <span class="swimlane-default" *ngIf="defaultSwimlaneId === swimlane.id && swimlanes.size > 1">({{ "LIGHTBOX.CREATE_EDIT.DEFAULT" | tgTranslate }})</span>
+    </button>
+</div>

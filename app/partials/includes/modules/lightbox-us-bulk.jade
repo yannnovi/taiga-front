@@ -57,11 +57,11 @@ form
     fieldset.swimlane-select(ng-if="project.is_kanban_activated && swimlanesList.size")
         .label {{ 'LIGHTBOX.CREATE_EDIT.SELECT_SWIMLANE' | translate }}
         tg-swimlane-selector(
-            ng-model="new.swimlane"
-            swimlanes="swimlanesList"
-            default-swimlane-id="project.default_swimlane"
-            user-story="new"
-            has-unclassified-stories="noSwimlaneUserStories"
+            bindon-value="new.swimlane"
+            bind-swimlanes="swimlanesList"
+            bind-default-swimlane-id="project.default_swimlane"
+            bind-user-story="new"
+            bind-has-unclassified-stories="noSwimlaneUserStories"
             ng-if="new"
         )
     fieldset
