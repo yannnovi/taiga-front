@@ -1,0 +1,10 @@
+<a class="close" href="" [title]="'COMMON.CLOSE' | tgTranslate">
+    <tg-svg svg-icon="icon-close"></tg-svg>
+</a>
+
+<div class="history-container">
+    <h2 class="title">{{ "COMMENTS.HISTORY.TITLE" | tgTranslate }}</h2>
+    <div class="history-wrapper">
+        <tg-history-entry class="entry" *ngFor="let entry of commentHistoryEntries" [entry]="entry"></tg-history-entry>
+    </div>
+</div>

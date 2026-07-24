@@ -83,6 +83,18 @@ import { LightboxAddMembersWarningMessageComponent } from "./lightbox-add-member
 import "./lightbox-add-members-warning-message/register-legacy";
 import { InviteMembersFormComponent } from "./invite-members-form/invite-members-form.component";
 import "./invite-members-form/register-legacy";
+import { LightboxAddMembersComponent } from "./lightbox-add-members/lightbox-add-members.component";
+import "./lightbox-add-members/register-legacy";
+import { LightboxDisplayHistoricComponent } from "./lightbox-display-historic/lightbox-display-historic.component";
+import "./lightbox-display-historic/register-legacy";
+import { SingleMemberComponent } from "./single-member/single-member.component";
+import "./single-member/register-legacy";
+import { InviteMembersComponent } from "./invite-members/invite-members.component";
+import "./invite-members/register-legacy";
+import { WikiHistoryDiffComponent } from "./wiki-history-diff/wiki-history-diff.component";
+import "./wiki-history-diff/register-legacy";
+import { WikiHistoryEntryComponent } from "./wiki-history-entry/wiki-history-entry.component";
+import "./wiki-history-entry/register-legacy";
 import { TgHomeProjectListUpgradedDirective } from "./upgraded/tg-home-project-list.upgraded-directive";
 import { TgWorkingOnUpgradedDirective } from "./upgraded/tg-working-on.upgraded-directive";
 import { TgDiscoverSearchBarUpgradedDirective } from "./upgraded/tg-discover-search-bar.upgraded-directive";
@@ -123,6 +135,7 @@ import {
     AJS_QUEUE_MODEL_TRANSFORMATION,
     AJS_ATTACHMENTS_PREVIEW_SERVICE,
     AJS_LIGHTBOX_SERVICE,
+    AJS_USER_SERVICE,
     upgradedService,
 } from "./shared/ajs-tokens";
 import { TgTranslatePipe } from "./shared/translate.pipe";
@@ -179,6 +192,12 @@ import { TgSizeFormatPipe } from "./shared/size-format.pipe";
         AttachmentGalleryComponent,
         LightboxAddMembersWarningMessageComponent,
         InviteMembersFormComponent,
+        LightboxAddMembersComponent,
+        LightboxDisplayHistoricComponent,
+        SingleMemberComponent,
+        InviteMembersComponent,
+        WikiHistoryDiffComponent,
+        WikiHistoryEntryComponent,
         TgWorkingOnUpgradedDirective,
         TgHomeProjectListUpgradedDirective,
         TgDiscoverSearchBarUpgradedDirective,
@@ -225,6 +244,7 @@ import { TgSizeFormatPipe } from "./shared/size-format.pipe";
         upgradedService(AJS_QUEUE_MODEL_TRANSFORMATION, "$tgQueueModelTransformation"),
         upgradedService(AJS_ATTACHMENTS_PREVIEW_SERVICE, "tgAttachmentsPreviewService"),
         upgradedService(AJS_LIGHTBOX_SERVICE, "lightboxService"),
+        upgradedService(AJS_USER_SERVICE, "tgUserService"),
     ],
 })
 export class AppModule implements DoBootstrap {

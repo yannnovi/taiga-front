@@ -1,0 +1,30 @@
+<div class="diff-status-wrapper" *ngIf="key === 'attachments'">
+    <div class="diff-attachments-new" *ngFor="let newAttachment of diff.new">
+        <span class="key">{{ "ACTIVITY.NEW_ATTACHMENT" | tgTranslate }}</span>
+        <span class="diff">{{ newAttachment.filename }}</span>
+    </div>
+
+    <div class="diff-attachments-update" *ngFor="let editAttachment of diff.changed">
+        <span class="key">{{ "ACTIVITY.UPDATED_ATTACHMENT" | tgTranslate:{filename: editAttachment.filename} }}</span>
+        <span class="diff" *ngIf="editAttachment.changes.is_deprecated">
+            <span *ngIf="editAttachment.changes.is_deprecated[1] === false">{{ "ACTIVITY.BECAME_UNDEPRECATED" | tgTranslate }}</span>
+            <span *ngIf="editAttachment.changes.is_deprecated[1] === true">{{ "ACTIVITY.BECAME_DEPRECATED" | tgTranslate }}</span>
+        </span>
+        <span class="diff" *ngIf="editAttachment.changes.description">
+            <span *ngIf="editAttachment.changes.description[0].length">{{ editAttachment.changes.description[0] }}</span>
+            <span *ngIf="!editAttachment.changes.description[0].length">...</span>
+            <tg-svg svg-icon="icon-arrow-right"></tg-svg>
+            <span>{{ editAttachment.changes.description[1] }}</span>
+        </span>
+    </div>
+
+    <div class="diff-attachments-deleted" *ngFor="let deletedAttachment of diff.deleted">
+        <span class="key">{{ "ACTIVITY.DELETED_ATTACHMENT" | tgTranslate }}</span>
+        <span class="diff">{{ deletedAttachment.filename }}</span>
+    </div>
+</div>
+
+<div class="diff-status-wrapper" *ngIf="key === 'content_diff'">
+    <p class="diff" *ngIf="diff[0]" [innerHTML]="diff[0]"></p>
+    <p class="diff" *ngIf="diff[1]" [innerHTML]="diff[1]"></p>
+</div>

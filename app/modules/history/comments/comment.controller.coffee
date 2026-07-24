@@ -39,9 +39,9 @@ class CommentController
     displayCommentHistory: () ->
         @lightboxFactory.create('tg-lb-display-historic', {
             "class": "lightbox lightbox-display-historic"
-            "comment": "comment"
-            "name": "name"
-            "object": "object"
+            "bind-comment": "comment"
+            "bind-name": "name"
+            "bind-object": "object"
         }, {
             "comment": @.comment
             "name": @.name

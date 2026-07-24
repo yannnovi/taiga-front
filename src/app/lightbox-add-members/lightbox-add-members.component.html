@@ -1,0 +1,20 @@
+<a class="close" href="" [title]="'COMMON.CLOSE' | tgTranslate">
+    <tg-svg svg-icon="icon-close"></tg-svg>
+</a>
+<div class="add-members-wrapper">
+    <h2 class="title">{{ "LIGHTBOX.ADD_MEMBER.TITLE" | tgTranslate }}</h2>
+    <tg-suggest-add-members
+        [style.display]="!displayContactList ? '' : 'none'"
+        [contacts]="contacts"
+        (inviteSuggested)="inviteSuggested($event.contact)"
+        (inviteEmail)="inviteEmail($event.email)"
+    ></tg-suggest-add-members>
+    <tg-invite-members-form
+        [style.display]="displayContactList ? '' : 'none'"
+        [contactsToInvite]="contactsToInvite"
+        [emailsToInvite]="emailsToInvite"
+        (displayContactList)="displayContactList = false"
+        (removeInvitedContact)="removeContact($event.contact)"
+        (removeInvitedEmail)="removeEmail($event.email)"
+    ></tg-invite-members-form>
+</div>

@@ -49,9 +49,9 @@
 
         tg-invite-members(
             ng-if="vm.members.size"
-            members="vm.members"
-            invited-members="vm.invitedMembers"
-            on-toggle-invited-member="vm.toggleInvitedMember(member)"
+            bind-members="vm.members"
+            bind-invited-members="vm.invitedMembers"
+            on-toggle-invited-member="vm.toggleInvitedMember($event.member)"
         )
 
         tg-create-project-members-restrictions(

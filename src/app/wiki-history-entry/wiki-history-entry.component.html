@@ -1,0 +1,13 @@
+<div class="activity">
+    <img class="activity-avatar" [src]="avatar.url" [title]="avatar.fullName" [alt]="avatar.fullName" [style.background]="avatar.bg" />
+    <div class="activity-main">
+        <div class="activity-data">
+            <span class="activity-creator">{{ singleHistoryEntry.user.name }}</span>
+            <span class="activity-date">{{ singleHistoryEntry.created_at | tgMomentFormat:'DD MMM YYYY HH:mm' }}</span>
+        </div>
+
+        <div class="activity-diff" *ngFor="let entry of valuesDiffEntries()">
+            <tg-wiki-history-diff [key]="entry[0]" [diff]="entry[1]"></tg-wiki-history-diff>
+        </div>
+    </div>
+</div>
