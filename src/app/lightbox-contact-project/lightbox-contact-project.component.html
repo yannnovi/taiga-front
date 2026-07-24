@@ -1,0 +1,30 @@
+<a class="close" href="" [title]="'COMMON.CLOSE' | tgTranslate">
+    <tg-svg svg-icon="icon-close"></tg-svg>
+</a>
+
+<form class="lightbox-contact-project-container">
+    <img
+        class="lightbox-contact-project-logo"
+        [alt]="project.get('name')"
+        [src]="getLogoUrl()"
+        [style.backgroundColor]="getLogoBg()"
+    />
+    <h2 class="lightbox-contact-project-title">{{ "LIGHTBOX.CONTACT_PROJECT.TITLE" | tgTranslate }}</h2>
+    <h3 class="lightbox-contact-project-name">{{ project.get('name') }}</h3>
+    <p>{{ "LIGHTBOX.CONTACT_PROJECT.WARNING" | tgTranslate }}</p>
+    <textarea
+        class="lightbox-contact-project-message e2e-lightbox-contact-project-message"
+        [(ngModel)]="contact.message"
+        [ngModelOptions]="{standalone: true}"
+        required
+        [placeholder]="'LIGHTBOX.CONTACT_PROJECT.PLACEHOLDER' | tgTranslate"
+    ></textarea>
+    <button
+        class="btn-big lightbox-contact-project-button e2e-lightbox-contact-project-button"
+        (click)="contactProject()"
+        [disabled]="!contact.message?.length"
+    >
+        <img *ngIf="sendingFeedback" class="loading-spinner" [src]="spinnerSrc" alt="loading..." />
+        <ng-container *ngIf="!sendingFeedback">{{ "LIGHTBOX.CONTACT_PROJECT.SEND" | tgTranslate }}</ng-container>
+    </button>
+</form>

@@ -99,6 +99,8 @@ import { NewsletterEmailLightboxComponent } from "./newsletter-email-lightbox/ne
 import "./newsletter-email-lightbox/register-legacy";
 import { LightboxMoveToSprintComponent } from "./lightbox-move-to-sprint/lightbox-move-to-sprint.component";
 import "./lightbox-move-to-sprint/register-legacy";
+import { LightboxContactProjectComponent } from "./lightbox-contact-project/lightbox-contact-project.component";
+import "./lightbox-contact-project/register-legacy";
 import { AttachmentsPreviewComponent } from "./attachments-preview/attachments-preview.component";
 import "./attachments-preview/register-legacy";
 import { NoMoreMembershipsExplanationComponent } from "./no-more-memberships-explanation/no-more-memberships-explanation.component";
@@ -238,6 +240,7 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         WikiHistoryEntryComponent,
         NewsletterEmailLightboxComponent,
         LightboxMoveToSprintComponent,
+        LightboxContactProjectComponent,
         AttachmentsPreviewComponent,
         NoMoreMembershipsExplanationComponent,
         DutyComponent,

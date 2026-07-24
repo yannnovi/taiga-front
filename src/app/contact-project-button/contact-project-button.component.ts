@@ -19,7 +19,7 @@ export class ContactProjectButtonComponent {
     launchContactForm(): void {
         this.lightboxFactory.create(
             "tg-lb-contact-project",
-            { class: "lightbox lightbox-contact-project e2e-lightbox-contact-project", project: "project" },
+            { class: "lightbox lightbox-contact-project e2e-lightbox-contact-project", "bind-project": "project" },
             { project: this.project },
         );
     }
