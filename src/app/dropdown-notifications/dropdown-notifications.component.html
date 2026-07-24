@@ -1,0 +1,34 @@
+<a
+    href=""
+    [title]="'EVENTS.TITLE' | tgTranslate"
+    [tgNav]="'notifications'"
+    (mouseover)="visible = true"
+    [class.active]="active"
+    [class.pending-notifications]="total"
+>
+    <tg-svg svg-icon="icon-bell"></tg-svg>
+    <div class="counter" *ngIf="total" [class.counter-active]="newEvent" [class.large]="total > 99" [class.small]="total < 10">{{ total }}</div>
+</a>
+<div class="navbar-dropdown-notifications" [style.display]="visible ? '' : 'none'" (mouseleave)="visible = false">
+    <div class="header">
+        <a class="action" href="" [class.disabled]="!total" (click)="!total || setAllAsRead()">{{ "EVENTS.DISMISS_ALL" | tgTranslate }}</a>
+    </div>
+
+    <div class="notifications-wrapper">
+        <div class="empty" *ngIf="!total && !loading">
+            <span>{{ "EVENTS.NO_NEW_EVENTS" | tgTranslate }}</span>
+        </div>
+
+        <tg-notifications-list
+            id="my-notifications"
+            class="dropdown-notifications-list"
+            [onlyUnread]="true"
+            infiniteScrollContainer="#my-notifications"
+            [infiniteScrollDisabled]="true"
+        ></tg-notifications-list>
+    </div>
+
+    <div class="notifications-bottom">
+        <a class="action" [tgNav]="'notifications'">{{ "EVENTS.VIEW_ALL" | tgTranslate }}</a>
+    </div>
+</div>
