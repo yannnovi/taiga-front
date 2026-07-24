@@ -1,0 +1,5 @@
+<p class="register-text" *ngIf="publicRegisterEnabled">
+    <span>{{ "AUTH.NOT_REGISTERED_YET" | tgTranslate }}</span>
+    &nbsp;
+    <a [href]="url" [title]="'AUTH.REGISTER' | tgTranslate">{{ "AUTH.CREATE_ACCOUNT" | tgTranslate }}</a>
+</p>

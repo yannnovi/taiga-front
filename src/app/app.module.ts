@@ -105,6 +105,8 @@ import { NoMoreMembershipsExplanationComponent } from "./no-more-memberships-exp
 import "./no-more-memberships-explanation/register-legacy";
 import { DutyComponent } from "./duty/duty.component";
 import "./duty/register-legacy";
+import { PublicRegisterMessageComponent } from "./public-register-message/public-register-message.component";
+import "./public-register-message/register-legacy";
 import { TgHomeProjectListUpgradedDirective } from "./upgraded/tg-home-project-list.upgraded-directive";
 import { TgWorkingOnUpgradedDirective } from "./upgraded/tg-working-on.upgraded-directive";
 import { TgDiscoverSearchBarUpgradedDirective } from "./upgraded/tg-discover-search-bar.upgraded-directive";
@@ -214,6 +216,7 @@ import { TgSizeFormatPipe } from "./shared/size-format.pipe";
         AttachmentsPreviewComponent,
         NoMoreMembershipsExplanationComponent,
         DutyComponent,
+        PublicRegisterMessageComponent,
         TgWorkingOnUpgradedDirective,
         TgHomeProjectListUpgradedDirective,
         TgDiscoverSearchBarUpgradedDirective,

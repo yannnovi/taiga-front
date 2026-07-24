@@ -248,35 +248,6 @@ module.service("$tgAuth", AuthService)
 ## Login Directive
 #############################################################################
 
-# Directive that manages the visualization of public register
-# message/link on login page.
-
-PublicRegisterMessageDirective = ($config, $navUrls, $routeParams, templates) ->
-    template = templates.get("auth/login-text.html", true)
-
-    templateFn = ->
-        publicRegisterEnabled = $config.get("publicRegisterEnabled")
-        if not publicRegisterEnabled
-            return ""
-
-        url = $navUrls.resolve("register")
-
-        if $routeParams['force_next']
-            nextUrl = encodeURIComponent($routeParams['force_next'])
-            url += "?next=#{nextUrl}"
-
-        return template({url:url})
-
-    return {
-        restrict: "AE"
-        scope: {}
-        template: templateFn
-    }
-
-module.directive("tgPublicRegisterMessage", ["$tgConfig", "$tgNavUrls", "$routeParams",
-                                             "$tgTemplate", PublicRegisterMessageDirective])
-
-
 LoginDirective = ($auth, $confirm, $location, $config, $routeParams, $navUrls, $events, $translate, $window, $analytics) ->
     link = ($scope, $el, $attrs) ->
         form = new checksley.Form($el.find("form.login-form"))
