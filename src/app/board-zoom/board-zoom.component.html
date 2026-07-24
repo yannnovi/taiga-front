@@ -1,0 +1,23 @@
+<div class="board-zoom">
+    <div class="board-zoom-title">{{ "ZOOM.TITLE" | tgTranslate }}</div>
+
+    <label class="zoom-radio" [attr.title]="'ZOOM.ZOOM-1' | tgTranslate">
+        <input type="radio" [checked]="value === 0" (change)="select(0)" />
+        <div class="checkmark"><span>{{ "ZOOM.ZOOM-1" | tgTranslate }}</span></div>
+    </label>
+
+    <label class="zoom-radio" [attr.title]="'ZOOM.ZOOM-2' | tgTranslate">
+        <input type="radio" [checked]="value === 1" (change)="select(1)" />
+        <div class="checkmark"><span>{{ "ZOOM.ZOOM-2" | tgTranslate }}</span></div>
+    </label>
+
+    <label class="zoom-radio" [attr.title]="'ZOOM.ZOOM-3' | tgTranslate">
+        <input type="radio" [checked]="value === 2" (change)="select(2)" />
+        <div class="checkmark"><span>{{ "ZOOM.ZOOM-3" | tgTranslate }}</span></div>
+    </label>
+
+    <label class="zoom-radio" [attr.title]="'ZOOM.ZOOM-4' | tgTranslate">
+        <input type="radio" [checked]="value === 3" (change)="select(3)" />
+        <div class="checkmark"><span>{{ "ZOOM.ZOOM-4" | tgTranslate }}</span></div>
+    </label>
+</div>
