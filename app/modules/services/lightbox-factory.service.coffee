@@ -15,8 +15,12 @@ class LightboxFactory
 
         scope = _.merge(scope, scopeAttrs)
 
-        elm = $("<div>")
-            .attr(name, true)
+        # Built as `<name>` (the directive's own tag), not a `<div>` carrying `name` as an
+        # attribute: downgraded Angular components (`@angular/upgrade`'s `downgradeComponent`)
+        # always compile with `restrict: 'E'`, so an attribute-only match silently mounts
+        # nothing. Plain AngularJS directives default to `restrict: 'EA'`, so they still match
+        # the same as before; none of this factory's callers restrict to `'A'` only.
+        elm = $("<#{name}>")
             .attr("tg-bind-scope", true)
 
         if attrs
