@@ -24,9 +24,8 @@ nav.navbar(ng-if="vm.isEnabledHeader")
 
         .topnav-dropdown-wrapper(
             ng-if="vm.isAuthenticated"
-            tg-dropdown-project-list
-            active="vm.active == 'projects' || vm.active == 'project'"
         )
+            tg-dropdown-project-list(bind-active="vm.active == 'projects' || vm.active == 'project'")
 
     .nav-right.center(ng-if="!vm.isAuthenticated")
         a.login(
@@ -94,4 +93,4 @@ nav.navbar(ng-if="vm.isEnabledHeader")
             active="vm.active == 'notifications'"
         )
 
-        div(tg-dropdown-user)
+        tg-dropdown-user

@@ -1,0 +1,43 @@
+<div class="dropdown-project-list" [class.active]="active">
+    <a href="" [title]="'PROJECT.NAVIGATION.PROJECTS' | tgTranslate" [tgNav]="'projects'" class="dropdown-project-list-projects">
+        <tg-svg class="icon-folder" svg-icon="icon-folder"></tg-svg>
+        <span>{{ "PROJECT.NAVIGATION.PROJECTS" | tgTranslate }}</span>
+        <div class="empty-projects" *ngIf="projects.size === 0"></div>
+    </a>
+    <div class="navbar-dropdown">
+        <div *ngIf="projects.size">
+            <ul class="dropdown-project-list-ul">
+                <li *ngFor="let project of projects">
+                    <a
+                        class="dropdown-project-list-link secondary"
+                        href="#"
+                        [tgNav]="'project'"
+                        [tgNavParams]="{project: project.get('slug'), section: project.get('my_homepage')}"
+                        [class.blocked-project]="project.get('blocked_code')"
+                        [class.active]="currentProject === project.get('id')"
+                    >
+                        <img [src]="getProjectLogoUrl(project)" [style.background]="getProjectLogoBg(project)" [alt]="project.get('name')" />
+                        <span>{{ project.get("name") }}</span>
+                        <tg-svg *ngIf="project.get('blocked_code')" svg-icon="icon-slash" svg-title="PROJECT.BLOCKED_PROJECT.BLOCKED"></tg-svg>
+                    </a>
+                </li>
+            </ul>
+            <a class="see-more-projects-btn" href="#" [tgNav]="'projects'" [title]="'PROJECT.NAVIGATION.VIEW_ALL_PROJECTS' | tgTranslate">{{ "PROJECT.NAVIGATION.VIEW_ALL_PROJECTS" | tgTranslate }}</a>
+            <div class="create-options">
+                <a class="create-project-btn button-primary" href="#" [tgNav]="'create-project'" [title]="'PROJECT.NAVIGATION.ACTION_CREATE_PROJECT' | tgTranslate">
+                    <tg-svg svg-icon="icon-plus-1"></tg-svg>
+                    <span>{{ "PROJECT.NAVIGATION.ACTION_CREATE_PROJECT" | tgTranslate }}</span>
+                </a>
+            </div>
+        </div>
+        <div *ngIf="!projects.size">
+            <h2>{{ "PROJECT.NAVIGATION.ACTION_CREATE_PROJECT_FIRST" | tgTranslate }}</h2>
+            <p class="dropdown-project-list-desc">{{ "PROJECT.NAVIGATION.ACTION_CREATE_PROJECT_FIRST_TEXT" | tgTranslate }}</p>
+            <div class="create-options">
+                <a class="create-project-btn button-primary" href="#" [tgNav]="'create-project'" [title]="'PROJECT.NAVIGATION.ACTION_CREATE_PROJECT' | tgTranslate">
+                    <span>{{ "PROJECT.NAVIGATION.ACTION_CREATE_PROJECT" | tgTranslate }}</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

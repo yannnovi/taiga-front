@@ -109,6 +109,10 @@ import { PublicRegisterMessageComponent } from "./public-register-message/public
 import "./public-register-message/register-legacy";
 import { ProfileBarComponent } from "./profile-bar/profile-bar.component";
 import "./profile-bar/register-legacy";
+import { DropdownProjectListComponent } from "./dropdown-project-list/dropdown-project-list.component";
+import "./dropdown-project-list/register-legacy";
+import { DropdownUserComponent } from "./dropdown-user/dropdown-user.component";
+import "./dropdown-user/register-legacy";
 import { TgHomeProjectListUpgradedDirective } from "./upgraded/tg-home-project-list.upgraded-directive";
 import { TgWorkingOnUpgradedDirective } from "./upgraded/tg-working-on.upgraded-directive";
 import { TgDiscoverSearchBarUpgradedDirective } from "./upgraded/tg-discover-search-bar.upgraded-directive";
@@ -153,6 +157,7 @@ import {
     AJS_PROJECT_LOGO_SERVICE,
     AJS_AUTH,
     AJS_SECTIONS,
+    AJS_PROJECTS_SERVICE,
     upgradedService,
 } from "./shared/ajs-tokens";
 import { TgTranslatePipe } from "./shared/translate.pipe";
@@ -223,6 +228,8 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         DutyComponent,
         PublicRegisterMessageComponent,
         ProfileBarComponent,
+        DropdownProjectListComponent,
+        DropdownUserComponent,
         TgWorkingOnUpgradedDirective,
         TgHomeProjectListUpgradedDirective,
         TgDiscoverSearchBarUpgradedDirective,
@@ -274,6 +281,7 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         upgradedService(AJS_PROJECT_LOGO_SERVICE, "tgProjectLogoService"),
         upgradedService(AJS_AUTH, "$tgAuth"),
         upgradedService(AJS_SECTIONS, "$tgSections"),
+        upgradedService(AJS_PROJECTS_SERVICE, "tgProjectsService"),
     ],
 })
 export class AppModule implements DoBootstrap {

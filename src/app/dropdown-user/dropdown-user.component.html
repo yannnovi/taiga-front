@@ -1,0 +1,64 @@
+<div class="dropdown-user-inner">
+    <div class="dropdown-user-navbar">
+        <a class="user-avatar" [tgNav]="'profile'" [title]="user.get('full_name_display')">
+            <img [src]="getAvatarUrl()" [alt]="user.get('full_name_display')" />
+        </a>
+
+        <button class="chevron">
+            <tg-svg svg-icon="icon-chevron-down"></tg-svg>
+        </button>
+    </div>
+
+    <div class="navbar-dropdown dropdown-user">
+        <div class="dropdown-user-profile">
+            <a class="profile-link avatar" [tgNav]="'profile'" href="#">
+                <img [src]="getAvatarUrl()" [alt]="user.get('full_name_display')" />
+            </a>
+            <div class="dropdown-user-data">
+                <a class="profile-link full-name" [tgNav]="'profile'" href="#">{{ user.get("full_name_display") }}</a>
+                <div class="profile-link email">{{ user.get("email") }}</div>
+                <p>
+                    <a
+                        class="edit-profile"
+                        href="#"
+                        [tgNav]="'user-settings-user-profile'"
+                        [title]="'PROJECT.NAVIGATION.EDIT_PROFILE' | tgTranslate"
+                    >{{ "PROJECT.NAVIGATION.EDIT_PROFILE" | tgTranslate }}</a>
+                </p>
+            </div>
+        </div>
+
+        <ul>
+            <li class="plugin" *ngFor="let plugin of userSettingsPlugins">
+                <a
+                    class="secondary"
+                    href=""
+                    [tgNav]="'user-settings-contrib'"
+                    [tgNavParams]="{plugin: plugin.slug}"
+                    [class.active]="plugin.slug === currentPlugin?.slug"
+                >
+                    <span class="title">{{ plugin.name }}</span>
+                </a>
+            </li>
+            <li class="user-profile-option">
+                <a
+                    class="secondary"
+                    href="#"
+                    [tgNav]="'user-settings-user-change-password'"
+                    [title]="'PROJECT.NAVIGATION.ACCOUNT_SETTINGS' | tgTranslate"
+                >{{ "PROJECT.NAVIGATION.ACCOUNT_SETTINGS" | tgTranslate }}</a>
+            </li>
+            <li class="user-profile-option">
+                <a
+                    class="secondary"
+                    href="#"
+                    [tgNav]="'user-settings-mail-notifications'"
+                    [title]="'PROJECT.NAVIGATION.NOTIFICATIONS_TITLE' | tgTranslate"
+                >{{ "PROJECT.NAVIGATION.NOTIFICATIONS" | tgTranslate }}</a>
+            </li>
+            <li class="user-profile-option">
+                <a href="#" (click)="logout()" [title]="'COMMON.LOGOUT' | tgTranslate">{{ "COMMON.LOGOUT" | tgTranslate }}</a>
+            </li>
+        </ul>
+    </div>
+</div>
