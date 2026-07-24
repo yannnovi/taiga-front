@@ -6,7 +6,7 @@
         title=""
         (click)="activeComments.emit()"
         [class.active]="activeTab"
-    >{{ "COMMENTS.COMMENTS_COUNT" | tgTranslate:{comments: commentsNum}:'messageformat' }}</a>
+    >{{ "COMMENTS.COMMENTS_COUNT" | tgTranslate:{comments: commentsNum} }}</a>
     <a
         class="history-tab e2e-activity-tab"
         *ngIf="showActivityTab"
@@ -14,7 +14,7 @@
         title="Activities"
         (click)="activeActivities.emit()"
         [class.active]="!activeTab"
-    >{{ "ACTIVITY.ACTIVITIES_COUNT" | tgTranslate:{activities: activitiesNum}:'messageformat' }}</a>
+    >{{ "ACTIVITY.ACTIVITIES_COUNT" | tgTranslate:{activities: activitiesNum} }}</a>
     <a
         class="order-comments"
         href=""
