@@ -807,6 +807,40 @@ environnement.
 `related-userstory-row`, `dropdown-notifications`, etc.) sont maintenant candidats à une
 migration en suivant ce même patron.
 
+### Deux pièges trouvés en vérifiant `dropdown-project-list`/`dropdown-user` en direct
+
+Ces deux modules (débloqués par `tg-nav`, voir section précédente) sont passés le build et
+karma sans problème, mais une vérification en navigateur réel (Chrome headless, profil
+neuf) a révélé deux soucis que les checks statiques ne pouvaient pas voir :
+
+1. **Attribut vs élément, encore** : `tg-dropdown-project-list` était utilisé comme
+   *attribut* sur `.topnav-dropdown-wrapper` (`.topnav-dropdown-wrapper(ng-if="..."
+   tg-dropdown-project-list active="...")` — en Jade, un identifiant nu à l'intérieur des
+   parenthèses `(...)` d'un élément est un attribut de *cet* élément, pas un nouvel élément)
+   et `tg-dropdown-user` comme attribut sur un `div` nu (`div(tg-dropdown-user)`).
+   `downgradeComponent` compile toujours en `restrict: 'E'` (élément uniquement) — les deux
+   composants ne rendaient donc **rien du tout**, silencieusement, sans erreur console.
+   Repéré uniquement en cherchant l'élément dans le DOM réel après connexion simulée. Même
+   catégorie d'erreur que `tg-duty` plus tôt — **toujours vérifier la forme d'appel
+   (élément vs attribut) en lisant le Jade avec attention, pas juste "ça a l'air d'un tag
+   sur sa propre ligne"**, et si possible confirmer par une vraie recherche DOM en
+   navigateur plutôt que par la seule lecture du Jade.
+
+2. **AngularJS tolère `undefined.taille`, Angular non** : `currentUserService.projects`
+   reste un `Immutable.Map()` vide tant qu'un vrai fetch de projets n'a pas eu lieu (par
+   exemple juste après connexion, avant qu'une resolve de route ne charge les projets).
+   `vm.projects.size` dans un template AngularJS ne lève jamais si `vm.projects` est
+   `undefined` (évaluation d'expression permissive par défaut) — mais dans un template
+   Angular strict, la même chaîne fait planter le rendu (`Cannot read properties of
+   undefined (reading 'size')`). Ce n'est pas un bug introduit par le portage : c'est un
+   vrai écart de permissivité entre les deux frameworks qu'il faut combler explicitement
+   (ici, `|| Immutable.List()` dans le getter) à chaque fois qu'une valeur peut être lue
+   avant qu'un service asynchrone ne l'ait remplie.
+
+**Leçon pour la suite** : pour tout module débloqué par `tg-nav`, une vérification en
+navigateur réel (pas seulement build + karma) est nécessaire avant de committer — ces deux
+classes de bugs ne remontent dans aucun des deux.
+
 ## Patron à suivre pour migrer un module suivant
 
 1. Repérer ses dépendances réelles (services/directives utilisés *et* utilisateurs) avant
