@@ -50,7 +50,7 @@ tg-lightbox-close
                 )
                     tg-svg(svg-icon="icon-trash")
 
-        tg-lightbox-add-members-warning-message(ng-if="vm.showWarningMessage", project="vm.project")
+        tg-lightbox-add-members-warning-message(ng-if="vm.showWarningMessage", bind-project="vm.project")
 
         fieldset.invitation-text
             textarea(

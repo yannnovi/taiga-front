@@ -13,21 +13,6 @@ normalizeString = @.taiga.normalizeString
 module = angular.module("taigaKanban")
 
 #############################################################################
-## Warning message directive
-#############################################################################
-
-LightboxAddMembersWarningMessageDirective = () ->
-    return {
-          templateUrl: "admin/memberships-warning-message.html"
-          scope: {
-              project: "="
-          }
-    }
-
-module.directive("tgLightboxAddMembersWarningMessage", [LightboxAddMembersWarningMessageDirective])
-
-
-#############################################################################
 ## Transfer project ownership
 #############################################################################
 

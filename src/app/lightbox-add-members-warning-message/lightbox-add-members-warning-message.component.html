@@ -1,0 +1,7 @@
+<p class="member-limit-warning" *ngIf="project.get('i_am_owner') === true">
+    {{ "LIGHTBOX.CREATE_MEMBER.LIMIT_USERS_WARNING_MESSAGE_FOR_OWNER" | tgTranslate:{maxMembers: project.get('max_memberships')} }}
+</p>
+
+<p class="member-limit-warning" *ngIf="project.get('i_am_owner') === false">
+    {{ "LIGHTBOX.CREATE_MEMBER.LIMIT_USERS_WARNING_MESSAGE" | tgTranslate:{maxMembers: project.get('max_memberships')} }}
+</p>

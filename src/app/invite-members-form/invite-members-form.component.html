@@ -1,0 +1,66 @@
+<form class="invite-members-form" (ngSubmit)="onSubmit()">
+    <ul class="invite-members-form-list">
+        <li class="invite-members-single e2e-invite-members-single" *ngFor="let contact of contactsToInvite">
+            <div class="invite-members-single-data">
+                <img class="invite-members-single-avatar" [src]="getAvatarUrl(contact)" [alt]="contact.full_name" />
+                <span class="invite-members-single-name">{{ contact.full_name }}</span>
+                <a
+                    class="invite-members-single-remove e2e-invite-members-single-remove"
+                    href=""
+                    (click)="removeInvitedContact.emit({contact: contact})"
+                >{{ "LIGHTBOX.ADD_MEMBER.REMOVE" | tgTranslate }}</a>
+            </div>
+            <select
+                class="invite-members-single-role e2e-invite-members-single-role"
+                [(ngModel)]="rolesValues[contact.username]"
+                [ngModelOptions]="{standalone: true}"
+                id="add-member-suggest-role-dropdown"
+                required
+            >
+                <option value="" selected="selected">{{ "LIGHTBOX.ADD_MEMBER.CHOOSE_ROLE" | tgTranslate }}</option>
+                <option *ngFor="let role of roles" [value]="role.get('id')">{{ role.get("name") }}</option>
+            </select>
+        </li>
+        <li class="invite-members-single e2e-invite-members-single" *ngFor="let userMail of emailsToInvite">
+            <div class="invite-members-single-data">
+                <span class="invite-members-single-email">{{ userMail.email }}</span>
+                <a
+                    class="invite-members-single-remove e2e-invite-members-single-remove"
+                    href=""
+                    (click)="removeInvitedEmail.emit({email: userMail})"
+                >{{ "LIGHTBOX.ADD_MEMBER.REMOVE" | tgTranslate }}</a>
+            </div>
+            <select
+                class="invite-members-single-role e2e-invite-members-single-role"
+                [(ngModel)]="rolesValues[userMail.email]"
+                [ngModelOptions]="{standalone: true}"
+                id="add-email-suggest-role-dropdown"
+                required
+            >
+                <option value="">{{ "LIGHTBOX.ADD_MEMBER.CHOOSE_ROLE" | tgTranslate }}</option>
+                <option *ngFor="let role of roles" [value]="role.get('id')">{{ role.get("name") }}</option>
+            </select>
+        </li>
+    </ul>
+    <div class="invite-members-single-new e2e-invite-members-single-new" *ngIf="contactsToInvite.size + emailsToInvite.size < membersLimit">
+        <tg-svg class="invite-members-single-new-btn" svg-icon="icon-add" (click)="displayContactList.emit()"></tg-svg>
+    </div>
+    <tg-lightbox-add-members-warning-message *ngIf="showWarningMessage" [project]="project"></tg-lightbox-add-members-warning-message>
+    <textarea
+        class="invite-members-single-msg"
+        [(ngModel)]="inviteContactsMessage"
+        [ngModelOptions]="{standalone: true}"
+        [placeholder]="'LIGHTBOX.ADD_MEMBER.PLACEHOLDER_INVITATION_TEXT' | tgTranslate"
+        maxlength="250"
+    ></textarea>
+    <button
+        class="btn-small invite-members-single-send e2e-invite-members-single-send"
+        variant="primary"
+        type="submit"
+        [disabled]="!areRolesValidated"
+    >
+        <ng-container *ngIf="!loading">{{ "LIGHTBOX.ADD_MEMBER.INVITE" | tgTranslate }}</ng-container>
+        <img *ngIf="loading" class="loading-spinner" [src]="spinnerSrc" alt="loading..." />
+    </button>
+    <p class="invite-members-single-help">{{ "LIGHTBOX.ADD_MEMBER.HELP_TEXT" | tgTranslate }}</p>
+</form>

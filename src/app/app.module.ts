@@ -79,6 +79,10 @@ import { AttachmentComponent } from "./attachment/attachment.component";
 import "./attachment/register-legacy";
 import { AttachmentGalleryComponent } from "./attachment-gallery/attachment-gallery.component";
 import "./attachment-gallery/register-legacy";
+import { LightboxAddMembersWarningMessageComponent } from "./lightbox-add-members-warning-message/lightbox-add-members-warning-message.component";
+import "./lightbox-add-members-warning-message/register-legacy";
+import { InviteMembersFormComponent } from "./invite-members-form/invite-members-form.component";
+import "./invite-members-form/register-legacy";
 import { TgHomeProjectListUpgradedDirective } from "./upgraded/tg-home-project-list.upgraded-directive";
 import { TgWorkingOnUpgradedDirective } from "./upgraded/tg-working-on.upgraded-directive";
 import { TgDiscoverSearchBarUpgradedDirective } from "./upgraded/tg-discover-search-bar.upgraded-directive";
@@ -173,6 +177,8 @@ import { TgSizeFormatPipe } from "./shared/size-format.pipe";
         TermsOfServiceAndPrivacyPolicyNoticeComponent,
         AttachmentComponent,
         AttachmentGalleryComponent,
+        LightboxAddMembersWarningMessageComponent,
+        InviteMembersFormComponent,
         TgWorkingOnUpgradedDirective,
         TgHomeProjectListUpgradedDirective,
         TgDiscoverSearchBarUpgradedDirective,
