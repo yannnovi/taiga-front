@@ -113,6 +113,10 @@ import { DropdownProjectListComponent } from "./dropdown-project-list/dropdown-p
 import "./dropdown-project-list/register-legacy";
 import { DropdownUserComponent } from "./dropdown-user/dropdown-user.component";
 import "./dropdown-user/register-legacy";
+import { ProfileContactsComponent } from "./profile-contacts/profile-contacts.component";
+import "./profile-contacts/register-legacy";
+import { ProfileProjectsComponent } from "./profile-projects/profile-projects.component";
+import "./profile-projects/register-legacy";
 import { TgHomeProjectListUpgradedDirective } from "./upgraded/tg-home-project-list.upgraded-directive";
 import { TgWorkingOnUpgradedDirective } from "./upgraded/tg-working-on.upgraded-directive";
 import { TgDiscoverSearchBarUpgradedDirective } from "./upgraded/tg-discover-search-bar.upgraded-directive";
@@ -230,6 +234,8 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         ProfileBarComponent,
         DropdownProjectListComponent,
         DropdownUserComponent,
+        ProfileContactsComponent,
+        ProfileProjectsComponent,
         TgWorkingOnUpgradedDirective,
         TgHomeProjectListUpgradedDirective,
         TgDiscoverSearchBarUpgradedDirective,

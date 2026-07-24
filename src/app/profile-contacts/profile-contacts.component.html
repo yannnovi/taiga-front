@@ -1,0 +1,34 @@
+<section class="profile-contacts">
+    <div *ngIf="contacts === undefined">
+        <div class="spin">
+            <img [src]="spinnerSrc" alt="Loading..." />
+        </div>
+    </div>
+
+    <div class="empty-small" *ngIf="contacts && !contacts.size">
+        <img [src]="emptyContactImageSrc" [alt]="'USER.PROFILE.CONTACTS_EMPTY' | tgTranslate" />
+
+        <div *ngIf="!isCurrentUser">
+            <p>{{ "USER.PROFILE.CONTACTS_EMPTY" | tgTranslate:{username: user.get('full_name_display')} }}</p>
+        </div>
+        <div *ngIf="isCurrentUser">
+            <p>{{ "USER.PROFILE.CURRENT_USER_CONTACTS_EMPTY" | tgTranslate }}</p>
+            <p>{{ "USER.PROFILE.CURRENT_USER_CONTACTS_EMPTY_EXPLAIN" | tgTranslate }}</p>
+        </div>
+    </div>
+
+    <div class="list-itemtype-user" *ngFor="let contact of contacts">
+        <a class="list-itemtype-avatar" [tgNav]="'user-profile'" [tgNavParams]="{username: contact.get('username')}" [title]="contact.get('name')">
+            <img [src]="getAvatarUrl(contact)" [alt]="contact.get('full_name')" />
+        </a>
+
+        <div class="list-itemtype-user-data">
+            <h2>
+                <a [tgNav]="'user-profile'" [tgNavParams]="{username: contact.get('username')}" [title]="contact.get('full_name_display')">{{ contact.get("full_name_display") }}</a>
+            </h2>
+
+            <p>{{ contact.get("roles").join(", ") }}</p>
+            <p class="extra-info" *ngIf="contact.get('bio')">{{ contact.get("bio") }}</p>
+        </div>
+    </div>
+</section>

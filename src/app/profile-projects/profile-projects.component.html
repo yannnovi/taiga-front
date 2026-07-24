@@ -1,0 +1,70 @@
+<section class="profile-projects">
+    <div *ngIf="projects === undefined">
+        <div class="spin">
+            <img [src]="spinnerSrc" alt="Loading..." />
+        </div>
+    </div>
+
+    <div class="empty-tab" *ngIf="projects && !projects.size">
+        <tg-svg svg-icon="icon-unwatch"></tg-svg>
+
+        <p>{{ "USER.PROFILE.PROJECTS_EMPTY" | tgTranslate:{username: user.get('full_name_display')} }}</p>
+    </div>
+    <div class="list-itemtype-project" *ngFor="let project of projects" [class.blocked-project]="project.get('blocked_code')">
+        <div class="list-itemtype-project-left">
+            <div class="project-list-single-title-wrapper">
+                <a
+                    class="list-itemtype-project-image"
+                    href="#"
+                    [tgNav]="'project'"
+                    [tgNavParams]="{project: project.get('slug'), section: project.get('my_homepage')}"
+                    [title]="project.get('name')"
+                >
+                    <img [src]="getProjectLogoUrl(project)" [style.background]="getProjectLogoBg(project)" [alt]="project.get('name')" />
+                </a>
+                <div class="project-list-single-title">
+                    <h2>
+                        <a
+                            class="project-title"
+                            href="#"
+                            [tgNav]="'project'"
+                            [tgNavParams]="{project: project.get('slug'), section: project.get('my_homepage')}"
+                            [title]="project.get('name')"
+                        >{{ project.get("name") }}</a>
+
+                        <tg-svg *ngIf="project.get('blocked_code')" svg-icon="icon-blocked-project" svg-title-translate="PROJECT.BLOCKED_PROJECT.BLOCKED"></tg-svg>
+                    </h2>
+                    <p class="project-description">{{ descriptionPreview(project) }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="list-itemtype-project-right">
+            <div class="list-itemtype-track">
+                <span
+                    class="list-itemtype-track-likers"
+                    [class.active]="project.get('is_fan')"
+                    [title]="'PROJECT.LIKE_BUTTON.COUNTER_TITLE' | tgTranslate:{total: project.get('total_fans') || 0}:'messageformat'"
+                >
+                    <tg-svg svg-icon="icon-like"></tg-svg>
+                    <span>{{ project.get("total_fans") }}</span>
+                </span>
+
+                <span
+                    class="list-itemtype-track-watchers"
+                    [class.active]="project.get('is_watcher')"
+                    [title]="'PROJECT.WATCH_BUTTON.COUNTER_TITLE' | tgTranslate:{total: project.get('total_watchers') || 0}:'messageformat'"
+                >
+                    <tg-svg svg-icon="icon-watch"></tg-svg>
+                    <span>{{ project.get("total_watchers") }}</span>
+                </span>
+            </div>
+
+            <div class="list-itemtype-project-members">
+                <a *ngFor="let contact of project.get('contacts')" [tgNav]="'user-profile'" [tgNavParams]="{username: contact.get('username')}" [title]="contact.get('full_name')">
+                    <img [src]="getAvatarUrl(contact)" [alt]="contact.get('full_name')" />
+                </a>
+            </div>
+        </div>
+    </div>
+</section>

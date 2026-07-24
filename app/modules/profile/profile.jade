@@ -26,7 +26,7 @@ div.profile.centered(ng-if="vm.user")
                 tab-icon="icon-project"
                 tab-disabled="{{vm.isCurrentUser}}"
             )
-                div(tg-profile-projects, user="vm.user")
+                tg-profile-projects(bind-user="vm.user")
 
             div(
                 tg-profile-tab="{{'USER.PROFILE.TABS.LIKES_TAB' | translate}}"
@@ -47,6 +47,6 @@ div.profile.centered(ng-if="vm.user")
                 tab-title="{{'USER.PROFILE.TABS.CONTACTS_TAB_TITLE' | translate}}"
                 tab-icon="icon-team"
             )
-                div(tg-profile-contacts, user="vm.user")
+                tg-profile-contacts(bind-user="vm.user")
 
         include includes/profile-sidebar
