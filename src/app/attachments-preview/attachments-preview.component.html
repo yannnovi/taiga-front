@@ -1,0 +1,26 @@
+<div class="attachment-preview" *ngIf="attachments.size && current">
+    <a class="close" href="" [title]="'COMMON.CLOSE' | tgTranslate">
+        <tg-svg svg-icon="icon-close"></tg-svg>
+    </a>
+
+    <div class="attachment-preview-container">
+        <a class="previous" href="#" (click)="previous()" *ngIf="hasPagination()">
+            <tg-svg svg-icon="icon-arrow-left"></tg-svg>
+        </a>
+
+        <a [href]="current.get('url')" [title]="current.get('description')" target="_blank" [attr.download]="current.get('name')">
+            <div>
+                <img *ngIf="loading" class="loading-spinner" [src]="spinnerSrc" alt="loading..." />
+                <img
+                    [style.display]="loading ? 'none' : ''"
+                    [src]="current.get('preview_url') || current.get('url')"
+                    (load)="onImageLoad()"
+                />
+            </div>
+        </a>
+
+        <a class="next" href="#" (click)="next()" *ngIf="hasPagination()">
+            <tg-svg svg-icon="icon-arrow-right"></tg-svg>
+        </a>
+    </div>
+</div>

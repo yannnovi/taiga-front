@@ -95,6 +95,12 @@ import { WikiHistoryDiffComponent } from "./wiki-history-diff/wiki-history-diff.
 import "./wiki-history-diff/register-legacy";
 import { WikiHistoryEntryComponent } from "./wiki-history-entry/wiki-history-entry.component";
 import "./wiki-history-entry/register-legacy";
+import { NewsletterEmailLightboxComponent } from "./newsletter-email-lightbox/newsletter-email-lightbox.component";
+import "./newsletter-email-lightbox/register-legacy";
+import { LightboxMoveToSprintComponent } from "./lightbox-move-to-sprint/lightbox-move-to-sprint.component";
+import "./lightbox-move-to-sprint/register-legacy";
+import { AttachmentsPreviewComponent } from "./attachments-preview/attachments-preview.component";
+import "./attachments-preview/register-legacy";
 import { TgHomeProjectListUpgradedDirective } from "./upgraded/tg-home-project-list.upgraded-directive";
 import { TgWorkingOnUpgradedDirective } from "./upgraded/tg-working-on.upgraded-directive";
 import { TgDiscoverSearchBarUpgradedDirective } from "./upgraded/tg-discover-search-bar.upgraded-directive";
@@ -198,6 +204,9 @@ import { TgSizeFormatPipe } from "./shared/size-format.pipe";
         InviteMembersComponent,
         WikiHistoryDiffComponent,
         WikiHistoryEntryComponent,
+        NewsletterEmailLightboxComponent,
+        LightboxMoveToSprintComponent,
+        AttachmentsPreviewComponent,
         TgWorkingOnUpgradedDirective,
         TgHomeProjectListUpgradedDirective,
         TgDiscoverSearchBarUpgradedDirective,

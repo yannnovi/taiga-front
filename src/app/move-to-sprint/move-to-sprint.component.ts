@@ -62,16 +62,13 @@ export class MoveToSprintComponent implements OnInit, OnChanges {
                 }
             });
 
-            // tgLightboxFactory.create(name, attrs, scopeAttrs) puts a new AngularJS scope
-            // together from `scopeAttrs` and sets `attrs` as literal HTML attributes on a
-            // freshly compiled element - `attrs.sprint = "sprint"` is the *expression*
-            // "sprint" (evaluated against that new scope, which has a `sprint` property
-            // from `scopeAttrs`), not a literal value. This call must mirror the original
-            // exactly since `tg-lb-move-to-sprint` itself (a lightbox, untouched, still
-            // AngularJS) expects these exact attribute/scope names.
+            // tg-lb-move-to-sprint is now a downgraded Angular component (see
+            // src/app/lightbox-move-to-sprint/) - its inputs need the `bind-x` attribute
+            // convention rather than the plain literal-attribute form the original
+            // (still-AngularJS) lightbox used.
             this.lightboxFactory.create(
                 "tg-lb-move-to-sprint",
-                { class: "lightbox lightbox-move-to-sprint", sprint: "sprint", "open-items": "openItems" },
+                { class: "lightbox lightbox-move-to-sprint", "bind-sprint": "sprint", "bind-open-items": "openItems" },
                 { sprint: this.sprint, openItems },
             );
         }

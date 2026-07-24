@@ -1,0 +1,82 @@
+<a class="close" href="" [title]="'COMMON.CLOSE' | tgTranslate">
+    <tg-svg svg-icon="icon-close"></tg-svg>
+</a>
+
+<div class="move-to-sprint-container">
+    <div class="move-to-sprint-header">
+        <h2 class="title">{{ "TASKBOARD.MOVE_TO_SPRINT.TITLE_ACTION_MOVE_UNFINISHED" | tgTranslate }}</h2>
+
+        <ul>
+            <li class="choice" *ngIf="ussCount">
+                <span [innerHTML]="'TASKBOARD.MOVE_TO_SPRINT.UNFINISHED_USER_STORIES_COUNT' | tgTranslate:{total: ussCount || 0}:'messageformat'"></span>
+                <div class="check js-check" *ngIf="hasManyItemTypes">
+                    <input
+                        type="checkbox"
+                        [checked]="typesSelected['uss']"
+                        [(ngModel)]="typesSelected['uss']"
+                        [ngModelOptions]="{standalone: true}"
+                        (ngModelChange)="updateSelected('uss', $event)"
+                        [disabled]="!sprints?.length"
+                    />
+                    <div></div>
+                    <span class="check-text check-yes">{{ "COMMON.YES" | tgTranslate }}</span>
+                    <span class="check-text check-no">{{ "COMMON.NO" | tgTranslate }}</span>
+                </div>
+            </li>
+
+            <li class="choice" *ngIf="tasksCount">
+                <span [innerHTML]="'TASKBOARD.MOVE_TO_SPRINT.UNFINISHED_STORYLESS_TASKS_COUNT' | tgTranslate:{total: tasksCount || 0}:'messageformat'"></span>
+                <div class="check js-check" *ngIf="hasManyItemTypes">
+                    <input
+                        type="checkbox"
+                        [checked]="typesSelected['tasks']"
+                        [(ngModel)]="typesSelected['tasks']"
+                        [ngModelOptions]="{standalone: true}"
+                        (ngModelChange)="updateSelected('tasks', $event)"
+                        [disabled]="!sprints?.length"
+                    />
+                    <div></div>
+                    <span class="check-text check-yes">{{ "COMMON.YES" | tgTranslate }}</span>
+                    <span class="check-text check-no">{{ "COMMON.NO" | tgTranslate }}</span>
+                </div>
+            </li>
+
+            <li class="choice" *ngIf="issuesCount">
+                <span [innerHTML]="'TASKBOARD.MOVE_TO_SPRINT.UNFINISHED_ISSUES_COUNT' | tgTranslate:{total: issuesCount || 0}:'messageformat'"></span>
+                <div class="check js-check" *ngIf="hasManyItemTypes">
+                    <input
+                        type="checkbox"
+                        [checked]="typesSelected['issues']"
+                        [(ngModel)]="typesSelected['issues']"
+                        [ngModelOptions]="{standalone: true}"
+                        (ngModelChange)="updateSelected('issues', $event)"
+                        [disabled]="!sprints?.length"
+                    />
+                    <div></div>
+                    <span class="check-text check-yes">{{ "COMMON.YES" | tgTranslate }}</span>
+                    <span class="check-text check-no">{{ "COMMON.NO" | tgTranslate }}</span>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <div class="move-to-sprint-controls">
+        <p *ngIf="!sprints?.length">{{ "TASKBOARD.MOVE_TO_SPRINT.NO_OPEN_SPRINTS" | tgTranslate }}</p>
+        <div *ngIf="sprints?.length > 0">
+            <fieldset>
+                <label>{{ "TASKBOARD.MOVE_TO_SPRINT.MOVE_TO_OPEN_SPRINT" | tgTranslate }}</label>
+                <select class="sprint-select" [(ngModel)]="selectedSprintId" [ngModelOptions]="{standalone: true}" id="sprint-selector-dropdown">
+                    <option value="" disabled selected>{{ "TASKBOARD.MOVE_TO_SPRINT.SELECT_DESTINATION_PLACEHOLDER" | tgTranslate }}</option>
+                    <option *ngFor="let s of sprints" [value]="s.id">{{ s.name }}</option>
+                </select>
+            </fieldset>
+            <button
+                class="btn-small move-button"
+                variant="primary"
+                href=""
+                (click)="submit()"
+                [disabled]="!(selectedSprintId && someSelected)"
+            >{{ "COMMON.SAVE" | tgTranslate }}</button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,40 @@
+<a class="close" href="" [title]="'COMMON.CLOSE' | tgTranslate">
+    <tg-svg svg-icon="icon-close"></tg-svg>
+</a>
+
+<form>
+    <h2 class="lightbox-title">{{ "PROJECT.NEWSLETTER_OPENING.LIGHTBOX_TITLE" | tgTranslate }}</h2>
+    <div class="newsletter-info">
+        <div class="custom-checkbox">
+            <input type="checkbox" name="confirm-email" id="confirm-email" [(ngModel)]="preference" [ngModelOptions]="{standalone: true}" />
+            <label for="confirm-email" tabindex="0"></label>
+        </div>
+        <div class="text-container">
+            <label class="confirm-label" for="confirm-email">{{ "PROJECT.NEWSLETTER_OPENING.CONFIRMATION" | tgTranslate }}</label>
+            <p class="text-info">
+                <span class="italic">{{ "PROJECT.NEWSLETTER_OPENING.NO_SHARE" | tgTranslate }}</span>
+                <br />
+                <span class="italic">{{ "PROJECT.NEWSLETTER_OPENING.OPT_OUT" | tgTranslate }}</span>
+            </p>
+        </div>
+    </div>
+
+    <div class="option-container">
+        <div class="ask">
+            <div class="custom-checkbox">
+                <input type="checkbox" name="ask" id="dont-ask" [(ngModel)]="dontAsk" [ngModelOptions]="{standalone: true}" />
+                <label for="dont-ask" tabindex="0"></label>
+            </div>
+            <label class="ask-label" for="dont-ask">{{ "PROJECT.NEWSLETTER_OPENING.DONT_ASK" | tgTranslate }}</label>
+        </div>
+        <div class="options">
+            <button class="btn-small btn-cancel js-cancel" variant="secondary" (click)="closeLightbox()">
+                <span>{{ "COMMON.CANCEL" | tgTranslate }}</span>
+            </button>
+
+            <button class="btn-small" variant="primary" (click)="setEmail()">
+                <span>{{ "PROJECT.NEWSLETTER_OPENING.SAVE_PREFERENCE" | tgTranslate }}</span>
+            </button>
+        </div>
+    </div>
+</form>
