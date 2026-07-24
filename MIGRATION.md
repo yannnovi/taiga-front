@@ -675,6 +675,78 @@ headless sans erreur console.
   de chargement dynamique de composant distinct, potentiellement un autre framework —
   jamais creusé en détail, juste repéré comme signal d'alarme suffisant pour reporter).
 
+### Cinquième lot (15 modules migrés sur 40 visés)
+
+Demande : 40 modules. Après les quatre lots précédents, le gisement de candidats "leaf"
+propres (scope isolé, sans `tg-nav`, sans lib tierce) s'épuise nettement — beaucoup du
+code restant est dans d'anciens fichiers "grab-bag" multi-directives
+(`common/components.coffee`, `admin/memberships.coffee`, etc.) écrits *avant* que la
+convention scope-isolé + bindToController ne se généralise, et qui lisent le scope ambiant
+du contrôleur parent directement (même famille de blocage que `ticket-watchers`/
+`assigned-*` déjà rencontrée). 15 modules ont quand même été migrés avec la même rigueur :
+
+- **`lb-add-members`** (`tgLbAddMembers`) : scope isolé *vide* — le `"project"` passé par
+  `lightboxFactory.create` n'était lu nulle part (ni controller ni template). Les deux
+  enfants (`tg-suggest-add-members`, `tg-invite-members-form`) sont déjà des composants
+  Angular — premier lightbox entièrement composé de composants déjà migrés.
+- **`lb-display-historic`** (`tgLbDisplayHistoric`) : appelant (`comment.controller.coffee`,
+  derrière `tgComment` non migré) mis à jour vers `bind-x`. Utilise `tg-history-entry`
+  nativement.
+- **`single-member` + `invite-members`** (`tgSingleMember`, `tgInviteMembers`) : la grille
+  d'avatars à l'écran de création de projet.
+- **`wiki-history-diff` + `wiki-history-entry`** (`tgWikiHistoryDiff`, `tgWikiHistoryEntry`) :
+  le parent `tgWikiHistory` reste AngularJS (dépend de `infinite-scroll`, lib tierce, même
+  blocage que `profile-favs`) mais ses deux enfants sont propres.
+- **`newsletter-email-lightbox`** (`tgNewsletterEmailLightbox`) : l'original déclarait 4
+  bindings (`visible`, `openNewsletter`, `onClose`, `onSelectUser`) dont *aucun* n'était
+  jamais renseigné par le seul appelant réel — y compris un `ctrl.start()` mort (la
+  directive n'avait même pas de `controller:`). Seul le comportement réellement vivant a
+  été repris.
+- **`lightbox-move-to-sprint`** (`tgLbMoveToSprint`) : la lightbox ouverte par
+  `MoveToSprintComponent` (déjà migré) — son appel `lightboxFactory.create` mis à jour vers
+  `bind-sprint`/`bind-open-items`.
+- **`attachments-preview`** (`tgAttachmentsPreview`) : la prévisualisation plein écran des
+  pièces jointes images. `tg-preload-image` (transclude, spinner-jusqu'à-chargement)
+  remplacé par un flag `loading` piloté par l'événement natif `(load)` de l'`<img>`.
+- **`no-more-memberships-explanation`** (`tgNoMoreMembershipsExplanation`) : même famille que
+  `blocked-project-explanation`.
+- **`duty`** (`tgDuty`) : ligne de ticket dans "working on"/"watching" sur la page d'accueil.
+  Utilisée comme *attribut* dans l'original (`tg-duty="duty"` sur le même `div` que
+  `is-hidden`/`type`) — `downgradeComponent` compile toujours en `restrict: 'E'`, donc les 4
+  usages dans `working-on.jade` (toujours AngularJS) ont dû être restructurés en forme
+  élément. `$scope.$emit` (remontée vers le parent) remplacé par
+  `$rootScope.$broadcast` (un composant Angular n'a pas de `$scope` AngularJS pour émettre
+  vers le haut ; `$on` ne distingue pas emit de broadcast).
+- **`public-register-message`** (`tgPublicRegisterMessage`) : l'original utilisait
+  `template: templateFn`, une fonction appelée une fois à la compilation retournant une
+  chaîne HTML via un template underscore/lo-dash (pas des bindings AngularJS classiques) —
+  simplifié en `*ngIf` + `url` calculé, plus simple que l'original.
+
+Vérifié : build Angular propre à chaque étape, karma **391/391**, page d'accueil rechargée
+en Chrome headless sans erreur console après le changement le plus risqué (`duty`, qui
+restructure le DOM de 4 sites d'appel).
+
+**Trouvé et confirmé mort : `tribe-linked`** (`tgTribeLinked`,
+app/modules/components/tribe-button/tribe-linked.*) — zéro appelant nulle part dans l'app.
+Pas migré, à nettoyer un jour.
+
+**Écartés après inspection :**
+
+- **`history` / `history-diff`** (`tgHistory`/`tgHistoryDiff`, le vrai "activity log" —
+  différent de `history-entry` déjà migré) : `history-diff.jade` fait `include` sur
+  **20 sous-templates séparés** (un par type de champ modifié : points, statut, tags,
+  assignation, etc.). Portage faisable mais disproportionné pour ce qui ne compterait que
+  pour 2 modules — reporté à une passe dédiée.
+- **`lb-feedback`** (`tgLbFeedback`) : utilise `checksley` (validation tierce), même
+  exclusion que `create-epic`.
+- **`create-project-form`, `duplicate-project`** (`tgCreateProjectForm`,
+  `tgDuplicateProject`) : dépendent de `tg-create-project-restrictions`/
+  `tg-create-project-members-restrictions`, non explorées en détail — seul leur usage de
+  `tg-invite-members` (migré) a été mis à jour dans `duplicate-project.jade`.
+- **`belong-to-epics`, `sprint` (backlog)** : identifiés comme candidats plausibles
+  (scope isolé, pas de dépendance connue à `tg-nav`) mais non explorés en détail faute de
+  temps dans cette passe — bons points de départ pour la suite.
+
 ## Patron à suivre pour migrer un module suivant
 
 1. Repérer ses dépendances réelles (services/directives utilisés *et* utilisateurs) avant
