@@ -1,0 +1,45 @@
+<a class="close" href="" [title]="'COMMON.CLOSE' | tgTranslate">
+    <tg-svg svg-icon="icon-close"></tg-svg>
+</a>
+
+<div class="content" [ngSwitch]="key">
+    <div class="private-space" *ngSwitchCase="'private-space'">
+        <img [src]="assetPath + '/svg/icons/project-limit.svg'" />
+        <h2 class="title">{{ "PROJECT.IMPORT.PROJECT_RESTRICTIONS.PRIVATE_PROJECTS_SPACE.TITLE" | tgTranslate:values }}</h2>
+        <p class="description">{{ "PROJECT.IMPORT.PROJECT_RESTRICTIONS.PRIVATE_PROJECTS_SPACE.DESC" | tgTranslate:values }}</p>
+    </div>
+
+    <div *ngSwitchCase="'private-members'">
+        <img [src]="assetPath + '/svg/icons/block-user.svg'" />
+        <h2 class="title">{{ "PROJECT.IMPORT.PROJECT_RESTRICTIONS.PRIVATE_PROJECTS_MEMBERS.TITLE" | tgTranslate:values }}</h2>
+        <p class="description">{{ "PROJECT.IMPORT.PROJECT_RESTRICTIONS.PROJECT_MEMBERS_DESC" | tgTranslate:values }}</p>
+    </div>
+
+    <div *ngSwitchCase="'private-space-members'">
+        <img [src]="assetPath + '/svg/icons/multi-block-project.svg'" />
+        <h2 class="title">{{ "PROJECT.IMPORT.PROJECT_RESTRICTIONS.PRIVATE_PROJECTS_SPACE_MEMBERS.TITLE" | tgTranslate:values }}</h2>
+        <p class="description">{{ "PROJECT.IMPORT.PROJECT_RESTRICTIONS.PRIVATE_PROJECTS_SPACE_MEMBERS.DESC" | tgTranslate:values }}</p>
+    </div>
+
+    <div *ngSwitchCase="'public-space'">
+        <img [src]="assetPath + '/svg/icons/project-limit.svg'" />
+        <h2 class="title">{{ "PROJECT.IMPORT.PROJECT_RESTRICTIONS.PUBLIC_PROJECTS_SPACE.TITLE" | tgTranslate:values }}</h2>
+        <p class="description">{{ "PROJECT.IMPORT.PROJECT_RESTRICTIONS.PUBLIC_PROJECTS_SPACE.DESC" | tgTranslate:values }}</p>
+    </div>
+
+    <div *ngSwitchCase="'public-members'">
+        <img [src]="assetPath + '/svg/icons/block-user.svg'" />
+        <h2 class="title">{{ "PROJECT.IMPORT.PROJECT_RESTRICTIONS.PUBLIC_PROJECTS_MEMBERS.TITLE" | tgTranslate:values }}</h2>
+        <p class="description">{{ "PROJECT.IMPORT.PROJECT_RESTRICTIONS.PROJECT_MEMBERS_DESC" | tgTranslate:values }}</p>
+    </div>
+
+    <div *ngSwitchCase="'public-space-members'">
+        <img [src]="assetPath + '/svg/icons/multi-block-project.svg'" />
+        <h2 class="title">{{ "PROJECT.IMPORT.PROJECT_RESTRICTIONS.PUBLIC_PROJECTS_SPACE_MEMBERS.TITLE" | tgTranslate:values }}</h2>
+        <p class="description">{{ "PROJECT.IMPORT.PROJECT_RESTRICTIONS.PUBLIC_PROJECTS_SPACE_MEMBERS.DESC" | tgTranslate:values }}</p>
+    </div>
+
+    <div class="options">
+        <a class="button-green" (click)="close()">{{ "COMMON.ACCEPT" | tgTranslate }}</a>
+    </div>
+</div>

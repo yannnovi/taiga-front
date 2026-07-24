@@ -101,6 +101,8 @@ import { LightboxMoveToSprintComponent } from "./lightbox-move-to-sprint/lightbo
 import "./lightbox-move-to-sprint/register-legacy";
 import { LightboxContactProjectComponent } from "./lightbox-contact-project/lightbox-contact-project.component";
 import "./lightbox-contact-project/register-legacy";
+import { LightboxImportErrorComponent } from "./lightbox-import-error/lightbox-import-error.component";
+import "./lightbox-import-error/register-legacy";
 import { AttachmentsPreviewComponent } from "./attachments-preview/attachments-preview.component";
 import "./attachments-preview/register-legacy";
 import { NoMoreMembershipsExplanationComponent } from "./no-more-memberships-explanation/no-more-memberships-explanation.component";
@@ -241,6 +243,7 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         NewsletterEmailLightboxComponent,
         LightboxMoveToSprintComponent,
         LightboxContactProjectComponent,
+        LightboxImportErrorComponent,
         AttachmentsPreviewComponent,
         NoMoreMembershipsExplanationComponent,
         DutyComponent,

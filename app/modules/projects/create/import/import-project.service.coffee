@@ -45,6 +45,8 @@ class ImportProjectService extends taiga.Service
             if restrictionError
                 @lightboxFactory.create('tg-lb-import-error', {
                     class: 'lightbox lightbox-import-error'
+                    'bind-key': 'key'
+                    'bind-values': 'values'
                 }, restrictionError)
 
             else
