@@ -73,6 +73,12 @@ import { TagLineCommonComponent } from "./tag-line-common/tag-line-common.compon
 import "./tag-line-common/register-legacy";
 import { TagLineDetailComponent } from "./tag-line-detail/tag-line-detail.component";
 import "./tag-line-detail/register-legacy";
+import { TermsOfServiceAndPrivacyPolicyNoticeComponent } from "./terms-of-service-and-privacy-policy-notice/terms-of-service-and-privacy-policy-notice.component";
+import "./terms-of-service-and-privacy-policy-notice/register-legacy";
+import { AttachmentComponent } from "./attachment/attachment.component";
+import "./attachment/register-legacy";
+import { AttachmentGalleryComponent } from "./attachment-gallery/attachment-gallery.component";
+import "./attachment-gallery/register-legacy";
 import { TgHomeProjectListUpgradedDirective } from "./upgraded/tg-home-project-list.upgraded-directive";
 import { TgWorkingOnUpgradedDirective } from "./upgraded/tg-working-on.upgraded-directive";
 import { TgDiscoverSearchBarUpgradedDirective } from "./upgraded/tg-discover-search-bar.upgraded-directive";
@@ -111,6 +117,8 @@ import {
     AJS_WATCH_PROJECT_BUTTON_SERVICE,
     AJS_TAG_LINE_SERVICE,
     AJS_QUEUE_MODEL_TRANSFORMATION,
+    AJS_ATTACHMENTS_PREVIEW_SERVICE,
+    AJS_LIGHTBOX_SERVICE,
     upgradedService,
 } from "./shared/ajs-tokens";
 import { TgTranslatePipe } from "./shared/translate.pipe";
@@ -162,6 +170,9 @@ import { TgSizeFormatPipe } from "./shared/size-format.pipe";
         TagDropdownComponent,
         TagLineCommonComponent,
         TagLineDetailComponent,
+        TermsOfServiceAndPrivacyPolicyNoticeComponent,
+        AttachmentComponent,
+        AttachmentGalleryComponent,
         TgWorkingOnUpgradedDirective,
         TgHomeProjectListUpgradedDirective,
         TgDiscoverSearchBarUpgradedDirective,
@@ -206,6 +217,8 @@ import { TgSizeFormatPipe } from "./shared/size-format.pipe";
         upgradedService(AJS_WATCH_PROJECT_BUTTON_SERVICE, "tgWatchProjectButtonService"),
         upgradedService(AJS_TAG_LINE_SERVICE, "tgTagLineService"),
         upgradedService(AJS_QUEUE_MODEL_TRANSFORMATION, "$tgQueueModelTransformation"),
+        upgradedService(AJS_ATTACHMENTS_PREVIEW_SERVICE, "tgAttachmentsPreviewService"),
+        upgradedService(AJS_LIGHTBOX_SERVICE, "lightboxService"),
     ],
 })
 export class AppModule implements DoBootstrap {

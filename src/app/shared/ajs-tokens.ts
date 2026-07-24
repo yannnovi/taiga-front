@@ -47,6 +47,8 @@ export const AJS_LIKE_PROJECT_BUTTON_SERVICE = new InjectionToken<any>("tgLikePr
 export const AJS_WATCH_PROJECT_BUTTON_SERVICE = new InjectionToken<any>("tgWatchProjectButtonService");
 export const AJS_TAG_LINE_SERVICE = new InjectionToken<any>("tgTagLineService");
 export const AJS_QUEUE_MODEL_TRANSFORMATION = new InjectionToken<any>("$tgQueueModelTransformation");
+export const AJS_ATTACHMENTS_PREVIEW_SERVICE = new InjectionToken<any>("tgAttachmentsPreviewService");
+export const AJS_LIGHTBOX_SERVICE = new InjectionToken<any>("lightboxService");
 
 export function upgradedService(token: InjectionToken<any>, ajsName: string): Provider {
     return {

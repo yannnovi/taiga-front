@@ -1,0 +1,80 @@
+<form
+    class="single-attachment"
+    [class.deprecated]="attachment.getIn(['file', 'is_deprecated'])"
+    *ngIf="attachment.getIn(['file', 'id'])"
+    (ngSubmit)="save()"
+>
+    <div class="attachment-name">
+        <a
+            class="e2e-attachment-link"
+            [href]="attachment.getIn(['file', 'url'])"
+            [title]="attachment.getIn(['file', 'name'])"
+            target="_blank"
+            [attr.download]="attachment.getIn(['file', 'name'])"
+            (click)="onAttachmentLinkClick($event)"
+        >
+            <tg-svg svg-icon="icon-attachment"></tg-svg>
+            <span>{{ attachment.getIn(["file", "name"]) }}</span>
+        </a>
+    </div>
+
+    <div class="attachment-comments" *ngIf="!attachment.get('editable') && attachment.getIn(['file', 'description'])">
+        <span class="deprecated-file" *ngIf="attachment.getIn(['file', 'is_deprecated'])">{{ "ATTACHMENT.DEPRECATED" | tgTranslate }}</span>
+        <span>{{ attachment.getIn(["file", "description"]) }}</span>
+    </div>
+
+    <div class="attachment-size">
+        <span>{{ attachment.getIn(["file", "size"]) | tgSizeFormat }}</span>
+    </div>
+
+    <div class="editable editable-attachment-comment" *ngIf="attachment.get('editable')">
+        <input
+            #autoSelectInput
+            type="text"
+            name="description"
+            maxlength="140"
+            [(ngModel)]="form.description"
+            [ngModelOptions]="{standalone: true}"
+            (keydown)="$event.which === 27 && editMode(false)"
+            [placeholder]="'ATTACHMENT.DESCRIPTION' | tgTranslate"
+        />
+    </div>
+
+    <div class="editable editable-attachment-deprecated" *ngIf="attachment.get('editable')">
+        <input
+            type="checkbox"
+            [(ngModel)]="form.is_deprecated"
+            [ngModelOptions]="{standalone: true}"
+            name="is-deprecated"
+            [id]="'attach-' + attachment.getIn(['file', 'id']) + '-is-deprecated'"
+        />
+        <label class="is_deprecated" [for]="'attach-' + attachment.getIn(['file', 'id']) + '-is-deprecated'">{{ "ATTACHMENT.DEPRECATED_FILE" | tgTranslate }}</label>
+    </div>
+
+    <div class="attachment-settings" *ngIf="attachment.get('editable')">
+        <div>
+            <a class="editable-settings e2e-save" href="" [title]="'COMMON.SAVE' | tgTranslate" (click)="save()">
+                <tg-svg *ngIf="!attachment.get('loading')" svg-icon="icon-save"></tg-svg>
+                <img *ngIf="attachment.get('loading')" class="loading-spinner" [src]="spinnerSrc" alt="loading..." />
+            </a>
+        </div>
+
+        <div>
+            <a class="editable-settings e2e-cancel" href="" [title]="'COMMON.CANCEL' | tgTranslate" (click)="editMode(false)">
+                <tg-svg svg-icon="icon-close"></tg-svg>
+            </a>
+        </div>
+    </div>
+
+    <div class="attachment-settings" *ngIf="!attachment.get('editable') && canEditAttachment()">
+        <a class="settings e2e-edit" href="" [title]="'COMMON.EDIT' | tgTranslate" (click)="editMode(true)">
+            <tg-svg class="drag" svg-icon="icon-edit"></tg-svg>
+        </a>
+        <a class="settings e2e-delete" href="" [title]="'COMMON.DELETE' | tgTranslate" (click)="deleteAttachment()">
+            <tg-svg class="drag" svg-icon="icon-trash"></tg-svg>
+        </a>
+        <a class="settings" href="" [title]="'COMMON.DRAG' | tgTranslate">
+            <tg-svg class="drag" svg-icon="icon-drag"></tg-svg>
+        </a>
+    </div>
+</form>

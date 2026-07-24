@@ -1,0 +1,43 @@
+<div
+    class="single-attachment"
+    [class.deprecated]="attachment.getIn(['file', 'is_deprecated'])"
+    *ngIf="attachment.getIn(['file', 'id'])"
+>
+    <a
+        class="attachment-image e2e-attachment-link"
+        [href]="attachment.getIn(['file', 'url'])"
+        [title]="attachment.getIn(['file', 'name'])"
+        target="_blank"
+        [attr.download]="attachment.getIn(['file', 'name'])"
+        (click)="onAttachmentLinkClick($event)"
+    >
+        <img
+            *ngIf="attachment.getIn(['file', 'thumbnail_card_url'])"
+            [alt]="attachment.getIn(['file', 'name'])"
+            [src]="attachment.getIn(['file', 'thumbnail_card_url'])"
+        />
+        <img *ngIf="!attachment.getIn(['file', 'thumbnail_card_url'])" [alt]="attachment.getIn(['file', 'name'])" [src]="fallbackImageSrc" />
+    </a>
+    <div class="attachment-data">
+        <a
+            class="attachment-name"
+            [href]="attachment.getIn(['file', 'url'])"
+            [title]="attachment.getIn(['file', 'name'])"
+            target="_blank"
+            [attr.download]="attachment.getIn(['file', 'name'])"
+            (click)="onAttachmentLinkClick($event)"
+        >
+            <span>{{ attachment.getIn(["file", "name"]) }}</span>
+        </a>
+
+        <a
+            class="icon-delete"
+            href=""
+            [title]="'COMMON.DELETE' | tgTranslate"
+            *ngIf="!attachment.get('editable') && canEditAttachment()"
+            (click)="deleteAttachment()"
+        >
+            <tg-svg svg-icon="icon-trash"></tg-svg>
+        </a>
+    </div>
+</div>

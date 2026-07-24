@@ -1,0 +1,14 @@
+<p class="register-terms" *ngIf="privacyPolicyUrl && termsOfServiceUrl">
+    <input
+        class="accepted_terms"
+        type="checkbox"
+        data-required="true"
+        name="accepted_terms"
+        [checked]="target"
+        (change)="onAcceptedTermsChange($event)"
+    />
+    <span
+        class="register-text"
+        [innerHTML]="'LEGAL.TERMS_OF_SERVICE_AND_PRIVACY_POLICY_AD' | tgTranslate:{termsOfServiceUrl: termsOfServiceUrl, privacyPolicyUrl: privacyPolicyUrl}"
+    ></span>
+</p>
