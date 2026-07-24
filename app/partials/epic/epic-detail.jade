@@ -16,7 +16,7 @@ div.wrapper(
 
     div.main.detail
         .detail-header-container(ng-class="{blocked: epic.is_blocked}")
-            tg-detail-nav(item="epic")
+            tg-detail-nav(bind-item="epic")
             .detail-header
                 tg-detail-header(
                     item="epic"
@@ -29,9 +29,9 @@ div.wrapper(
                 .epic-selector
                     span.epic-selector-text {{'EPIC.EPIC_COLOR' | translate}}
                     tg-color-selector.color-selector(
-                        is-color-required="true"
-                        init-color="epic.color"
-                        on-select-color="ctrl.onSelectColor(color)"
+                        bind-is-color-required="true"
+                        bind-init-color="epic.color"
+                        on-select-color="ctrl.onSelectColor($event.color)"
                         required-perm="modify_epic"
                     )
                 .subheader

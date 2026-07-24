@@ -1,0 +1,8 @@
+<div class="detail-nav">
+    <a *ngIf="previousUrl" [href]="previousUrl" [title]="'COMMON.PREVIOUS' | tgTranslate">
+        <tg-svg svg-icon="icon-arrow-left"></tg-svg>
+    </a>
+    <a *ngIf="nextUrl" [href]="nextUrl" [title]="'COMMON.NEXT' | tgTranslate">
+        <tg-svg svg-icon="icon-arrow-right"></tg-svg>
+    </a>
+</div>

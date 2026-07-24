@@ -16,7 +16,7 @@ div.wrapper(
 
     div.main.detail
         .detail-header-container(ng-class="{blocked: issue.is_blocked}")
-            tg-detail-nav(item="issue")
+            tg-detail-nav(bind-item="issue")
             .detail-header
                 tg-detail-header(
                     item="issue"
@@ -157,8 +157,7 @@ div.wrapper(
                 tg-check-permission="modify_issue"
             )
             tg-promote-to-us-button(
-                tg-check-permission="add_us",
-                ng-model="issue"
+                bind-item="issue"
             )
             tg-assign-sprint-to-issue-button(
                 tg-check-permission="view_milestones"

@@ -15,7 +15,7 @@ div.wrapper(
     tg-project-menu
     .main.detail
         .detail-header-container(ng-class="{blocked: us.is_blocked}")
-            tg-detail-nav(item="us")
+            tg-detail-nav(bind-item="us")
             .detail-header
                 tg-detail-header(
                     item="us"
