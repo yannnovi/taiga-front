@@ -590,6 +590,91 @@ invitation de membres, pièces jointes d'epic/ticket) qui nécessitent une sessi
 authentifiée réelle contre un `taiga-back` pour être exercées au-delà de la compilation -
 non vérifiables interactivement dans cet environnement, comme les lots précédents.
 
+### Quatrième lot (14 modules migrés sur 30 visés — voir plus bas pourquoi)
+
+Demande initiale : 30 modules. Quatorze ont été migrés avec le même niveau de rigueur que
+les lots précédents ; les autres candidats explorés ont été écartés après inspection
+détaillée (pas juste "trop dur", une vraie raison technique à chaque fois) — détaillé en
+fin de section, pour que la prochaine session ne re-découvre pas les mêmes impasses.
+
+**Migrés :**
+
+- **`contact-project-button` / `like-project-button` / `watch-project-button`** : trois
+  boutons d'action du header projet, migrés ensemble (même appelant, `project.jade`).
+  Nouveaux tokens `AJS_LIKE_PROJECT_BUTTON_SERVICE`/`AJS_WATCH_PROJECT_BUTTON_SERVICE`.
+  `tg-loading` (compteur de likes/watchers) remplacé par un simple `*ngIf`/`else` sur le
+  compteur plutôt que la substitution de contenu jQuery d'origine.
+- **`blocked-project-explanation`** : la directive d'origine n'avait *aucun* scope isolé
+  (lisait `vm.project` directement sur le scope parent) — rendu explicite via
+  `@Input() project`, l'appelant passe maintenant `bind-project`.
+- **`cant-own-project-explanation`** : un seul paragraphe statique traduit, aucun binding.
+- **`history-tabs`** : directive sans controller. `ng-class="{'new-first': top, ...}"`
+  référençait un `top` qui n'a jamais fait partie du scope — reproduit tel quel (toujours
+  faux) plutôt que "corrigé".
+- **Famille `tag-dropdown` / `tag-line-common` / `tag-line-detail`** : migrée d'un bloc
+  puisque chacune dépend de la précédente. `tag-line-common` inline les deux `include` Jade
+  de l'original (`add-tag-button`, `add-tag-input` — les includes Jade sont une composition
+  *compile-time*, sans équivalent Angular). Utilise nativement `tg-tag` et
+  `tg-color-selector` (déjà migrés) — premier cas de composants Angular s'appelant
+  directement entre eux sans passer par le pont downgrade. `tag-dropdown` : `strict` dans
+  `filter:tag.name:strict` n'était jamais déclaré sur le scope (toujours `undefined`/faux) —
+  le filtre AngularJS n'a donc jamais tourné en mode strict, reproduit en filtrage
+  substring insensible à la casse.
+- **`terms-of-service-and-privacy-policy-notice`** : `target` était un vrai binding
+  bidirectionnel (`"="`) — gardé en binding Angular bidirectionnel réel
+  (`bindon-target`).
+- **`attachment` / `attachment-gallery`** : deux directives distinctes partageant un seul
+  controller AngularJS — gardées comme une seule classe de base `AttachmentBaseComponent`
+  (nécessite son propre `@Directive()` pour que l'injection de dépendances fonctionne à
+  travers l'héritage) plutôt que de dupliquer la logique. `tg-attachment-link` et
+  `tg-auto-select` répliqués en ligne (même famille que tg-avatar/tg-loading) ;
+  `auto-select.directive.coffee` lui-même **n'a pas été supprimé** — encore utilisé
+  directement par 3 autres templates AngularJS.
+- **`invite-members-form` + `lightbox-add-members-warning-message`** : le `onSendInvites`
+  (`&`) déclaré dans le binding d'origine n'était **jamais invoqué** nulle part — code mort
+  préexistant, reproduit tel quel (output déclaré mais jamais émis) plutôt que corrigé ou
+  supprimé silencieusement. Deux appelants distincts trouvés pour le warning-message
+  (`app/modules/invite-members/` et `app/partials/admin/`), tous deux mis à jour.
+
+Vérifié : build Angular propre, karma **408/408**, page d'accueil rechargée en Chrome
+headless sans erreur console.
+
+**Écartés après inspection (pas de simple "trop dur" — la raison technique précise, pour
+éviter de re-perdre du temps dessus plus tard) :**
+
+- **`dropdown-project-list`, `dropdown-user`** : templates saturés de `tg-nav` (5 à 8
+  usages chacun) — la directive de navigation jQuery à fort rayon d'impact, déjà exclue du
+  périmètre de cette migration (voir plus haut, "trop complexe/fondamental").
+- **`profile-bar`, `profile-contacts`, `profile-projects`, `user-timeline`/
+  `user-timeline-item`** : même dépendance à `tg-nav` dans leur propre template.
+- **`profile-favs`** (liked/voted/watched) : dépend de `infinite-scroll` (lib tierce
+  ngInfiniteScroll) et de `tg-fav-item` (directive enfant non migrée) — les deux
+  nécessiteraient un wrapper `UpgradeComponent` dédié, hors périmètre d'un simple leaf.
+- **`epic-row`, `story-row`, `related-userstory-row`** : chacune utilise `tg-nav` pour son
+  propre lien de clic vers la page de détail — pas juste une dépendance annexe, le
+  comportement central de la ligne.
+- **`ticket-watchers`** : la directive utilise `scope: true` (scope enfant *non* isolé, pas
+  isolate scope) et ses 4 appelants l'invoquent comme balise nue sans aucun attribut —
+  elle lit `project`/`usersById` directement sur le scope ambiant hérité du contrôleur
+  parent. Fondamentalement incompatible avec le modèle d'entrées explicites de
+  `downgradeComponent` sans toucher aux contrôleurs des 4 pages de détail.
+- **`assigned-to-inline`, `assigned-users-inline`, `assigned-to`, `assigned-users`** :
+  exactement le même problème que `ticket-watchers` — `require: "ngModel"` sans scope
+  isolé, lisant `$scope.project`/`$scope.usersById` ambiants.
+- **`lb-select-user`** : `scope: true`, instanciée uniquement via
+  `lightboxFactory.create(...)` par les 4 directives ci-dessus (elles-mêmes écartées) —
+  la migrer exigerait de modifier leurs appels `lightboxFactory.create` sans pouvoir
+  vérifier les 4 flux assign/watch de bout en bout dans cet environnement (pas de
+  `taiga-back` réel).
+- **`filter`** : sa directive sœur `tg-filter-slide-down` fait un `$('tg-filter')` — un
+  sélecteur jQuery *global*, par nom de balise, sur tout le document — plus fragile encore
+  que `tg-nav`. Contrôleur de 104 lignes + logique `ResizeObserver` de mise en page liée à
+  une page taskboard spécifique.
+- **`detail-header`, `project-menu`** : dépendent respectivement de `tg-due-date` (enfant
+  non migré, demanderait un wrapper) et `tg-legacy-loader`/`tg-load-element` (un mécanisme
+  de chargement dynamique de composant distinct, potentiellement un autre framework —
+  jamais creusé en détail, juste repéré comme signal d'alarme suffisant pour reporter).
+
 ## Patron à suivre pour migrer un module suivant
 
 1. Repérer ses dépendances réelles (services/directives utilisés *et* utilisateurs) avant
