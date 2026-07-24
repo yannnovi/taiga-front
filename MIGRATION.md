@@ -912,6 +912,25 @@ template original (`ng-if="vm.project.logo_big_url"`, lecture directe d'une prop
 sur une Map Immutable) était du code mort — seule la branche `tg-project-logo-big-src` a
 jamais été rendue, donc seul ce comportement est répliqué.
 
+Un second bug du même genre a été découvert juste après, en vérifiant `tgLbContactProject`
+en navigateur réel : `LightboxMoveToSprintComponent`, `LightboxDisplayHistoricComponent`,
+`LightboxAddMembersComponent` et `LightboxContactProjectComponent` (donc quatre modules,
+dont trois déjà committés dans des lots précédents) omettaient tous un appel que leur
+directive AngularJS d'origine faisait directement dans son `link` :
+`lightboxService.open(el)`. C'est cet appel qui rend le lightbox visible (ajoute la classe
+`.open`, passe `display` à `flex` — la classe `.lightbox` est `display: none` par défaut) ;
+sans lui, ces quatre lightboxes rendaient bien leur contenu (build/karma verts, contenu
+visible en inspection DOM) mais restaient invisibles à l'écran en usage réel. Seul
+`NewsletterEmailLightboxComponent` (migré dans le même lot que deux des quatre) faisait ça
+correctement. Corrigé en ajoutant `this.lightboxService.open($(this.elementRef.nativeElement))`
+dans le constructeur des quatre — vérifié en audit systématique (recherche dans l'historique
+git de chaque directive supprimée qui appelait `lightboxService.open`) qu'aucun autre module
+n'a le même trou ; `tg-attachment-link` utilise ce même appel mais dans un pattern différent
+et non affecté (ouvre un élément statique séparé depuis un click handler, pas lui-même).
+**Leçon** : pour du code de lightbox, une vérification de rendu ne suffit pas — il faut
+aussi vérifier que l'élément devient réellement visible (`.open` + `display`), pas
+seulement qu'il a du contenu.
+
 ## Patron à suivre pour migrer un module suivant
 
 1. Repérer ses dépendances réelles (services/directives utilisés *et* utilisateurs) avant
