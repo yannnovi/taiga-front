@@ -68,8 +68,8 @@ section.project-us-status
                         div.row.table-main.edition.hidden
                             .color-column
                                 tg-color-selector(
-                                    init-color="value.color"
-                                    on-select-color="value.color = color"
+                                    bind-init-color="value.color"
+                                    on-select-color="value.color = $event.color"
                                 )
 
 
@@ -109,8 +109,8 @@ section.project-us-status
                 div.row.table-main.new-value.hidden
                     div.color-column
                         tg-color-selector(
-                            init-color="newValue.color"
-                            on-select-color="newValue.color = color"
+                            bind-init-color="newValue.color"
+                            on-select-color="newValue.color = $event.color"
                         )
 
                     div.status-name

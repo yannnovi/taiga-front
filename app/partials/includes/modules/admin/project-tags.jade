@@ -14,8 +14,8 @@ section
     .admin-tags-section-wrapper
         form.add-tag-container.new-value.hidden
             tg-color-selector.color-column(
-                init-color="newValue.color"
-                on-select-color="newValue.color = color"
+                bind-init-color="newValue.color"
+                on-select-color="newValue.color = $event.color"
             )
 
             .tag-name
@@ -119,8 +119,8 @@ section
                         .row.tag-row.table-main.edition.hidden
                             tg-color-selector.color-column(
                                 ng-model="tag"
-                                init-color="tag.color"
-                                on-select-color="tag.color = color"
+                                bind-init-color="tag.color"
+                                on-select-color="tag.color = $event.color"
                             )
 
                             .status-name

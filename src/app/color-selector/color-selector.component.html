@@ -1,0 +1,28 @@
+<div class="color-selector" *ngIf="!userCanChangeColor()">
+    <div class="tag-color disabled e2e-open-color-selector" [class.empty-color]="!color" [style.background]="color"></div>
+</div>
+
+<div class="color-selector" *ngIf="userCanChangeColor()" (mouseenter)="cancelClose()" (mouseleave)="scheduleClose()">
+    <div class="tag-color e2e-open-color-selector" (click)="toggleColorList()" [class.empty-color]="!color" [style.background]="color"></div>
+    <div class="color-selector-dropdown" *ngIf="displayColorList">
+        <ul class="color-selector-dropdown-list e2e-color-dropdown">
+            <li class="color-selector-option" *ngFor="let color of colorList" [style.background]="color" (click)="onSelectDropdownColor(color)"></li>
+            <li class="empty-color" *ngIf="!isColorRequired" (click)="onSelectDropdownColor(null)"></li>
+        </ul>
+        <div class="custom-color-selector">
+            <div class="display-custom-color empty-color" *ngIf="!customColor"></div>
+            <div class="display-custom-color-wrapper">
+                <div class="display-custom-color" *ngIf="customColor" [style.background]="customColor" (click)="onSelectDropdownColor(customColor)"></div>
+            </div>
+            <input
+                class="custom-color-input"
+                type="text"
+                maxlength="7"
+                placeholder="Type hex code"
+                [(ngModel)]="customColor"
+                name="customColor"
+                (keydown)="onKeyDown($event)"
+            />
+        </div>
+    </div>
+</div>

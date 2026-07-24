@@ -28,9 +28,9 @@
 
     tg-color-selector(
         ng-if="!vm.disableColorSelection"
-        on-select-color="vm.selectColor(color)"
-        init-color="vm.newTag.color"
-        is-color-required="false"
+        on-select-color="vm.selectColor($event.color)"
+        bind-init-color="vm.newTag.color"
+        bind-is-color-required="false"
     )
 
     tg-svg.save(
