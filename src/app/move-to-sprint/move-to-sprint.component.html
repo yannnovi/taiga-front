@@ -1,0 +1,8 @@
+<a
+    class="move-to-sprint-button is-editable"
+    [title]="'TASKBOARD.MOVE_TO_SPRINT.TITLE_ACTION_MOVE_UNFINISHED' | tgTranslate"
+    [class.disabled]="!hasOpenItems || disabled"
+    (click)="openLightbox()"
+>
+    <tg-svg svg-icon="icon-move"></tg-svg>
+</a>

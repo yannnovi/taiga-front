@@ -31,12 +31,12 @@ div.summary.large-summary
 
                 div.summary-stats.summary-move-unfinished
                     tg-move-to-sprint(
-                        sprint="sprint"
-                        uss="userstories"
-                        unnasigned-tasks="usTasks.get('null')"
-                        task-map="taskMap"
-                        issues="milestoneIssues"
-                        disabled="movingTask"
+                        bind-sprint="sprint"
+                        bind-uss="userstories"
+                        bind-unnasigned-tasks="usTasks.get('null')"
+                        bind-task-map="taskMap"
+                        bind-issues="milestoneIssues"
+                        bind-disabled="movingTask"
                     )
                     span.taskBoardLoading
 
