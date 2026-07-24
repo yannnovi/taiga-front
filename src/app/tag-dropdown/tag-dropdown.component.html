@@ -1,0 +1,12 @@
+<ul class="tags-dropdown" *ngIf="filteredColorArray.length > 0">
+    <li
+        *ngFor="let pair of filteredColorArray; let i = index"
+        [class.selected]="i === selectedIndex"
+        (click)="onSelectTag(pair)"
+    >
+        <div class="tags-dropdown-option">
+            <span class="tags-dropdown-name">{{ pair[0] }}</span>
+            <span class="tags-dropdown-color" *ngIf="pair[1]" [style.background]="pair[1]" [title]="pair[1]"></span>
+        </div>
+    </li>
+</ul>

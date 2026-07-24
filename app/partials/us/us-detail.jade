@@ -99,8 +99,8 @@ div.wrapper(
 
                     tg-tag-line.tags-block(
                         ng-if="us && project"
-                        project="project"
-                        item="us"
+                        bind-project="project"
+                        bind-item="us"
                         permissions="modify_us"
                     )
                     tg-created-by-display.ticket-created-by(ng-model="us")

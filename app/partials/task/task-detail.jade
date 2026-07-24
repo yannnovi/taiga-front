@@ -68,8 +68,8 @@ div.wrapper(
                 .subheader
                     tg-tag-line.tags-block(
                         ng-if="task && project"
-                        project="project"
-                        item="task"
+                        bind-project="project"
+                        bind-item="task"
                         permissions="modify_task"
                     )
                     tg-created-by-display.ticket-created-by(ng-model="task")

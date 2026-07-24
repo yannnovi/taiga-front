@@ -1,0 +1,10 @@
+<tg-tag-line-common
+    class="tags-block"
+    [project]="project"
+    [tags]="item.tags"
+    [permissions]="permissions"
+    [loadingRemoveTag]="loadingRemoveTag"
+    [loadingAddTag]="loadingAddTag"
+    (addTag)="onAddTag($event.name, $event.color)"
+    (deleteTag)="onDeleteTag($event.tag)"
+></tg-tag-line-common>

@@ -37,8 +37,8 @@ div.wrapper(
                 .subheader
                     tg-tag-line.tags-block(
                         ng-if="epic && project"
-                        project="project"
-                        item="epic"
+                        bind-project="project"
+                        bind-item="epic"
                         permissions="modify_epic"
                     )
                     tg-created-by-display.ticket-created-by(ng-model="epic")

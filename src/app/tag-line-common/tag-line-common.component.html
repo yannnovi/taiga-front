@@ -1,0 +1,56 @@
+<div class="tags-container">
+    <div class="tag-wrapper" *ngFor="let tag of tags">
+        <tg-tag
+            [tag]="tag"
+            [loadingRemoveTag]="loadingRemoveTag"
+            [hasPermissions]="checkPermissions()"
+            [isArchived]="isArchived()"
+            (deleteTag)="deleteTag.emit($event)"
+        ></tg-tag>
+    </div>
+
+    <button
+        class="btn-filter ng-animate-disabled e2e-show-tag-input"
+        variant="secondary"
+        *ngIf="!isAddingTag && checkPermissions() && !isArchived()"
+        [title]="'COMMON.TAGS.ADD' | tgTranslate"
+        (click)="displayTagInput()"
+    >
+        <span class="add-tag-text">{{ "COMMON.TAGS.ADD" | tgTranslate }}</span>
+        <tg-svg svg-icon="icon-add"></tg-svg>
+    </button>
+
+    <div class="add-tag-input" novalidate *ngIf="isAddingTag && checkPermissions()" [class.loading]="loadingAddTag">
+        <input
+            #tagInput
+            class="tag-input e2e-add-tag-input"
+            type="text"
+            [placeholder]="'COMMON.TAGS.PLACEHOLDER' | tgTranslate"
+            [(ngModel)]="newTag.name"
+            (keydown)="onTagInputKeydown($event)"
+        />
+
+        <tg-tags-dropdown
+            *ngIf="!disableColorSelection"
+            [style.display]="newTag.name.length ? '' : 'none'"
+            [colorArray]="colorArray"
+            [tag]="newTag"
+            (selectTag)="addNewTag($event.name, $event.color)"
+        ></tg-tags-dropdown>
+
+        <tg-color-selector
+            *ngIf="!disableColorSelection"
+            (selectColor)="selectColor($event.color)"
+            [initColor]="newTag.color"
+            [isColorRequired]="false"
+        ></tg-color-selector>
+
+        <tg-svg
+            class="save"
+            *ngIf="newTag.name.length"
+            svg-icon="icon-save"
+            svg-title-translate="COMMON.TAGS.ADD"
+            (click)="addNewTag(newTag.name, newTag.color)"
+        ></tg-svg>
+    </div>
+</div>

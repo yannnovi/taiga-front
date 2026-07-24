@@ -65,6 +65,14 @@ import { BlockedProjectExplanationComponent } from "./blocked-project-explanatio
 import "./blocked-project-explanation/register-legacy";
 import { CantOwnProjectExplanationComponent } from "./cant-own-project-explanation/cant-own-project-explanation.component";
 import "./cant-own-project-explanation/register-legacy";
+import { HistoryTabsComponent } from "./history-tabs/history-tabs.component";
+import "./history-tabs/register-legacy";
+import { TagDropdownComponent } from "./tag-dropdown/tag-dropdown.component";
+import "./tag-dropdown/register-legacy";
+import { TagLineCommonComponent } from "./tag-line-common/tag-line-common.component";
+import "./tag-line-common/register-legacy";
+import { TagLineDetailComponent } from "./tag-line-detail/tag-line-detail.component";
+import "./tag-line-detail/register-legacy";
 import { TgHomeProjectListUpgradedDirective } from "./upgraded/tg-home-project-list.upgraded-directive";
 import { TgWorkingOnUpgradedDirective } from "./upgraded/tg-working-on.upgraded-directive";
 import { TgDiscoverSearchBarUpgradedDirective } from "./upgraded/tg-discover-search-bar.upgraded-directive";
@@ -101,6 +109,8 @@ import {
     AJS_ATTACHMENTS_SERVICE,
     AJS_LIKE_PROJECT_BUTTON_SERVICE,
     AJS_WATCH_PROJECT_BUTTON_SERVICE,
+    AJS_TAG_LINE_SERVICE,
+    AJS_QUEUE_MODEL_TRANSFORMATION,
     upgradedService,
 } from "./shared/ajs-tokens";
 import { TgTranslatePipe } from "./shared/translate.pipe";
@@ -148,6 +158,10 @@ import { TgSizeFormatPipe } from "./shared/size-format.pipe";
         WatchProjectButtonComponent,
         BlockedProjectExplanationComponent,
         CantOwnProjectExplanationComponent,
+        HistoryTabsComponent,
+        TagDropdownComponent,
+        TagLineCommonComponent,
+        TagLineDetailComponent,
         TgWorkingOnUpgradedDirective,
         TgHomeProjectListUpgradedDirective,
         TgDiscoverSearchBarUpgradedDirective,
@@ -190,6 +204,8 @@ import { TgSizeFormatPipe } from "./shared/size-format.pipe";
         upgradedService(AJS_ATTACHMENTS_SERVICE, "tgAttachmentsService"),
         upgradedService(AJS_LIKE_PROJECT_BUTTON_SERVICE, "tgLikeProjectButtonService"),
         upgradedService(AJS_WATCH_PROJECT_BUTTON_SERVICE, "tgWatchProjectButtonService"),
+        upgradedService(AJS_TAG_LINE_SERVICE, "tgTagLineService"),
+        upgradedService(AJS_QUEUE_MODEL_TRANSFORMATION, "$tgQueueModelTransformation"),
     ],
 })
 export class AppModule implements DoBootstrap {

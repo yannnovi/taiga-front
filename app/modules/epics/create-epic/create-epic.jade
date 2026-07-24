@@ -40,11 +40,11 @@ tg-lightbox-close
             )
         fieldset.tags-block
             tg-tag-line-common(
-                 project="vm.project"
-                 tags="vm.newEpic.tags"
+                 bind-project="vm.project"
+                 bind-tags="vm.newEpic.tags"
                  permissions="add_epic"
-                 on-add-tag="vm.addTag(name, color)"
-                 on-delete-tag="vm.deleteTag(tag)"
+                 on-add-tag="vm.addTag($event.name, $event.color)"
+                 on-delete-tag="vm.deleteTag($event.tag)"
             )
         fieldset
             textarea.e2e-create-epic-description(

@@ -1,0 +1,32 @@
+<nav class="history-tabs">
+    <a
+        class="history-tab e2e-comments-tab"
+        *ngIf="showCommentTab"
+        href=""
+        title=""
+        (click)="activeComments.emit()"
+        [class.active]="activeTab"
+    >{{ "COMMENTS.COMMENTS_COUNT" | tgTranslate:{comments: commentsNum}:'messageformat' }}</a>
+    <a
+        class="history-tab e2e-activity-tab"
+        *ngIf="showActivityTab"
+        href=""
+        title="Activities"
+        (click)="activeActivities.emit()"
+        [class.active]="!activeTab"
+    >{{ "ACTIVITY.ACTIVITIES_COUNT" | tgTranslate:{activities: activitiesNum}:'messageformat' }}</a>
+    <a
+        class="order-comments"
+        href=""
+        title="Order Comments"
+        (click)="orderComments.emit()"
+        [class.new-first]="top"
+        [class.old-first]="!top"
+        *ngIf="commentsNum > 1 && activeTab"
+    >
+        <span *ngIf="!onReverse">{{ "COMMENTS.OLDER_FIRST" | tgTranslate }}</span>
+        <tg-svg *ngIf="!onReverse" svg-icon="icon-arrow-up"></tg-svg>
+        <span *ngIf="onReverse">{{ "COMMENTS.RECENT_FIRST" | tgTranslate }}</span>
+        <tg-svg *ngIf="onReverse" svg-icon="icon-arrow-up"></tg-svg>
+    </a>
+</nav>
