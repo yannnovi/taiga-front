@@ -942,6 +942,45 @@ dans `locale-en.json` (les vraies clés sont suffixées `_PRIVATE`/`_PUBLIC`) �
 sans lien avec la migration, confirmé pour dégrader de la même façon (clé brute affichée)
 avant et après.
 
+**Les quatre candidats Phase 1 restants se sont tous révélés bloqués à la lecture du code**
+— la feuille de route les avait listés comme "quick wins probables" sans avoir vérifié leur
+implémentation en détail (comme elle le prévenait elle-même de ne pas faire) :
+
+- `tgSprint` (`app/coffee/modules/backlog/sprints.coffee`) : sa propre déclaration a bien un
+  scope isolé (`scope: {sprint: '=', project: '='}`), mais son template
+  (`partials/backlog/sprint.jade`) utilise `tg-backlog-sprint-header` — une directive soeur
+  du même fichier grab-bag, scope ambiant, qui fait son propre `$compile` manuel + insertion
+  jQuery (`$el.html(compiledTemplate)`) et lit `$scope.project`/`$scope.sprint` directement.
+  Mélanger un composant Angular avec un enfant AngularJS non-migré de ce genre demanderait soit
+  de migrer `tg-backlog-sprint-header` (bloqué, même famille ambiante), soit un pont
+  `UpgradeComponent` jamais utilisé ailleurs dans cette migration (jusqu'ici toujours
+  AngularJS → Angular via `downgradeComponent`, jamais l'inverse) — hors périmètre d'un quick
+  win.
+- Famille `tgRelatedTask*` (`app/coffee/modules/related-tasks.coffee`) : **aucune** des cinq
+  directives du fichier (`tgRelatedTaskRow`, `tgRelatedTaskCreateForm` avec `scope: true`,
+  `tgRelatedTaskCreateButton`, `tgRelatedTasks`, `tgRelatedTaskAssignedToInlineEdition`) n'a de
+  scope isolé — toutes lisent `$scope.project`/`$scope.us` ambiants et font leur propre
+  `$compile` + manipulation jQuery. L'hypothèse de la feuille de route ("probablement analogue
+  à `related-userstory-row`") était fausse : `related-userstory-row` vit dans un module
+  totalement différent (`app/modules/epics/related-userstories/`), structuré proprement dès le
+  départ — la ressemblance de nom a induit en erreur.
+- `tgWikiNav` (`app/coffee/modules/wiki/nav.coffee`) : utilise `dragula` directement pour le
+  réordonnancement des liens wiki — c'est le blocage Phase 2 (dragula), pas un quick win Phase 1.
+- `tgWikiSummary` (`app/coffee/modules/wiki/main.coffee`) : même famille que `tgWikiNav` et
+  `tgRelatedTask*` — scope ambiant (`$scope.usersById` lu directement), `$compile` manuel,
+  `require: "ngModel"`.
+- Famille `tgCsv*` (Epic/Issue/Task/Us, `admin/project-profile.coffee`) : les quatre
+  directives utilisent `scope: true` (scope enfant, pas isolé) et leurs contrôleurs
+  (`CsvExporter*Controller`) lisent `@scope.project`/`@scope.projectId` ambiants hérités du
+  contrôleur parent de la page profil de projet — même blocage de fond.
+
+Ces cinq candidats rejoignent donc la catégorie "scope ambiant" de la Phase 3 plutôt que la
+Phase 1 — **la feuille de route doit être corrigée en conséquence** : après les deux
+lightboxes de ce lot, il ne reste plus de candidat Phase 1 "quick win" identifié à ce jour. La
+suite logique est soit un vrai sous-projet de Phase 2 (dragula recommandé), soit démarrer la
+Phase 3 (refactor de scope ambiant) une fois un filet de tests en place, selon la priorité
+produit de l'utilisateur.
+
 ## Patron à suivre pour migrer un module suivant
 
 1. Repérer ses dépendances réelles (services/directives utilisés *et* utilisateurs) avant
