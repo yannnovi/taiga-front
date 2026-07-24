@@ -90,9 +90,9 @@ form(ng-if="lightboxOpen")
                 fieldset
                     section
                     tg-attachments-simple(
-                        attachments="attachments",
-                        on-add="addAttachment(attachment)"
-                        on-delete="deleteAttachment(attachment)"
+                        bind-attachments="attachments",
+                        on-add="addAttachment($event.attachment)"
+                        on-delete="deleteAttachment($event.attachment)"
                     )
 
             sidebar.sidebar.ticket-data

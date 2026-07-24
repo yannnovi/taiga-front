@@ -53,8 +53,8 @@ tg-lightbox-close
             )
         fieldset
             tg-attachments-simple(
-                attachments="vm.attachments"
-                on-add="vm.addAttachment(attachment)"
+                bind-attachments="vm.attachments"
+                on-add="vm.addAttachment($event.attachment)"
             )
         .settings
             fieldset.team-requirement

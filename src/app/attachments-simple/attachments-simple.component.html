@@ -1,0 +1,42 @@
+<section
+    class="attachments attachment-simple"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave($event)"
+    (drop)="onDrop($event)"
+>
+    <div class="attachments-header">
+        <h3 class="attachments-title"><span class="attachments-num">{{ attachments.size }}</span> <span class="attachments-text">{{ "ATTACHMENT.SECTION_NAME" | tgTranslate }}</span></h3>
+        <div class="add-attach" id="a11y-add-attach" [title]="'ATTACHMENT.ADD' | tgTranslate">
+            <button class="btn-icon add-attachment-button" type="button" variant="primary" (click)="displayAttachmentInput()">
+                <tg-svg svg-icon="icon-add"></tg-svg>
+            </button>
+            <input
+                [attr.aria-label]="'ATTACHMENT.ADD' | tgTranslate"
+                id="add-attach"
+                type="file"
+                multiple="multiple"
+                (change)="onFileInputChange($event)"
+            />
+        </div>
+    </div>
+    <div class="attachments-empty" *ngIf="!attachments.size">
+        <div>{{ "ATTACHMENT.DROP" | tgTranslate }}</div>
+    </div>
+    <div class="attachment-body attachment-list">
+        <div class="single-attachment" *ngFor="let attachment of attachments">
+            <div class="attachment-name">
+                <tg-svg svg-icon="icon-attachment"></tg-svg>
+                <span>{{ attachment.get("name") }}</span>
+            </div>
+            <div class="attachment-size">
+                <span>{{ attachment.get("size") | tgSizeFormat }}</span>
+            </div>
+
+            <div class="attachment-settings">
+                <a class="settings attachment-delete" href="#" [title]="'COMMON.DELETE' | tgTranslate" (click)="deleteAttachment(attachment)">
+                    <tg-svg svg-icon="icon-trash"></tg-svg>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>

@@ -10,9 +10,9 @@ tg-lightbox-close
     h2.title(translate="LIGHTBOX.ADD_MEMBER.TITLE")
     tg-suggest-add-members(
         ng-show="!vm.displayContactList"
-        contacts="vm.contacts"
-        on-invite-suggested="vm.inviteSuggested(contact)"
-        on-invite-email="vm.inviteEmail(email)"
+        bind-contacts="vm.contacts"
+        on-invite-suggested="vm.inviteSuggested($event.contact)"
+        on-invite-email="vm.inviteEmail($event.email)"
     )
     tg-invite-members-form(
         ng-show="vm.displayContactList"

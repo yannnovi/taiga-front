@@ -1,0 +1,36 @@
+<div class="add-member-suggest">
+    <form class="add-member-suggest-filter">
+        <input
+            type="text"
+            [(ngModel)]="contactQuery"
+            name="contactQuery"
+            [placeholder]="'LIGHTBOX.ADD_MEMBER.PLACEHOLDER' | tgTranslate"
+            (keyup)="filterContacts()"
+        />
+
+        <span
+            class="add-member-suggest-filter-hint"
+            *ngIf="!filteredContacts?.size"
+            [class.to-send]="isEmail()"
+        >{{ "LIGHTBOX.ADD_MEMBER.ADD_EMAIL" | tgTranslate }}</span>
+
+        <button
+            class="add-member-suggest-filter-addmail e2e-add-member-suggest-filter-addmail"
+            *ngIf="isEmail()"
+            (click)="sendEmailInvite()"
+        >
+            <tg-svg svg-icon="icon-add-user"></tg-svg>
+        </button>
+    </form>
+
+    <ul class="add-member-suggest-list">
+        <li
+            class="add-member-suggest-single e2e-add-member-suggest-single"
+            *ngFor="let contact of filteredContacts"
+            (click)="setInvited(contact)"
+        >
+            <img class="add-member-suggest-avatar" [src]="getAvatarUrl(contact)" [alt]="contact.get('full_name_display')" />
+            <span class="add-member-suggest-name">{{ contact.get("full_name_display") }}</span>
+        </li>
+    </ul>
+</div>
