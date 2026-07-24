@@ -107,6 +107,8 @@ import { DutyComponent } from "./duty/duty.component";
 import "./duty/register-legacy";
 import { PublicRegisterMessageComponent } from "./public-register-message/public-register-message.component";
 import "./public-register-message/register-legacy";
+import { ProfileBarComponent } from "./profile-bar/profile-bar.component";
+import "./profile-bar/register-legacy";
 import { TgHomeProjectListUpgradedDirective } from "./upgraded/tg-home-project-list.upgraded-directive";
 import { TgWorkingOnUpgradedDirective } from "./upgraded/tg-working-on.upgraded-directive";
 import { TgDiscoverSearchBarUpgradedDirective } from "./upgraded/tg-discover-search-bar.upgraded-directive";
@@ -149,6 +151,8 @@ import {
     AJS_LIGHTBOX_SERVICE,
     AJS_USER_SERVICE,
     AJS_PROJECT_LOGO_SERVICE,
+    AJS_AUTH,
+    AJS_SECTIONS,
     upgradedService,
 } from "./shared/ajs-tokens";
 import { TgTranslatePipe } from "./shared/translate.pipe";
@@ -156,6 +160,7 @@ import { TgEmojifyPipe } from "./shared/emojify.pipe";
 import { TgMomentFormatPipe } from "./shared/moment-format.pipe";
 import { TgMarkdownToHtmlPipe } from "./shared/markdown-to-html.pipe";
 import { TgSizeFormatPipe } from "./shared/size-format.pipe";
+import { TgNavDirective } from "./shared/tg-nav.directive";
 
 /**
  * Hybrid shell for the AngularJS -> Angular migration: AngularJS keeps owning the app
@@ -217,6 +222,7 @@ import { TgSizeFormatPipe } from "./shared/size-format.pipe";
         NoMoreMembershipsExplanationComponent,
         DutyComponent,
         PublicRegisterMessageComponent,
+        ProfileBarComponent,
         TgWorkingOnUpgradedDirective,
         TgHomeProjectListUpgradedDirective,
         TgDiscoverSearchBarUpgradedDirective,
@@ -230,6 +236,7 @@ import { TgSizeFormatPipe } from "./shared/size-format.pipe";
         TgMomentFormatPipe,
         TgMarkdownToHtmlPipe,
         TgSizeFormatPipe,
+        TgNavDirective,
     ],
     providers: [
         upgradedService(AJS_CURRENT_USER_SERVICE, "tgCurrentUserService"),
@@ -265,6 +272,8 @@ import { TgSizeFormatPipe } from "./shared/size-format.pipe";
         upgradedService(AJS_LIGHTBOX_SERVICE, "lightboxService"),
         upgradedService(AJS_USER_SERVICE, "tgUserService"),
         upgradedService(AJS_PROJECT_LOGO_SERVICE, "tgProjectLogoService"),
+        upgradedService(AJS_AUTH, "$tgAuth"),
+        upgradedService(AJS_SECTIONS, "$tgSections"),
     ],
 })
 export class AppModule implements DoBootstrap {

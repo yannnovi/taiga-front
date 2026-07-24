@@ -7,8 +7,8 @@
 
 div.profile.centered(ng-if="vm.user")
     tg-profile-bar(
-        user="vm.user"
-        isCurrentUser="vm.isCurrentUser"
+        bind-user="vm.user"
+        bind-is-current-user="vm.isCurrentUser"
     )
     div.main
         tg-profile-tabs.timeline-wrapper

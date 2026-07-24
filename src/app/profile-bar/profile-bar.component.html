@@ -1,0 +1,33 @@
+<section class="profile-bar">
+    <div class="profile-image-wrapper" [class.is-current-user]="isCurrentUser">
+        <img class="profile-img" [src]="getAvatarUrl()" [alt]="user.get('full_name')" />
+        <a
+            class="profile-edition"
+            [title]="'USER.PROFILE.USER_SETTINGS' | tgTranslate"
+            [tgNav]="'user-settings-user-profile'"
+        >{{ "USER.PROFILE.USER_SETTINGS" | tgTranslate }}</a>
+    </div>
+    <div class="profile-data">
+        <h1 [class.not-full-name]="!user.get('full_name')">{{ user.get("full_name_display") }}</h1>
+        <div class="username">&#64;{{ user.get("username") }}</div>
+        <h2>{{ stats?.get("roles")?.join(", ") }}</h2>
+    </div>
+    <div class="profile-stats">
+        <div class="stat">
+            <span class="stat-number">{{ stats?.get("total_num_projects") }}</span>
+            <span class="stat-name">{{ "USER.PROFILE.PROJECTS" | tgTranslate }}</span>
+        </div>
+        <div class="stat">
+            <span class="stat-number">{{ stats?.get("total_num_closed_userstories") }}</span>
+            <span class="stat-name">{{ "USER.PROFILE.CLOSED_US" | tgTranslate }}</span>
+        </div>
+        <div class="stat">
+            <span class="stat-number">{{ stats?.get("total_num_contacts") }}</span>
+            <span class="stat-name">{{ "USER.PROFILE.CONTACTS" | tgTranslate }}</span>
+        </div>
+    </div>
+
+    <div class="profile-quote" *ngIf="user.get('bio')">
+        <span>{{ bioPreview() }}</span>
+    </div>
+</section>
