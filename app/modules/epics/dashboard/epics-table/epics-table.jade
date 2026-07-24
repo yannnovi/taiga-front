@@ -108,8 +108,8 @@ mixin epicSwitch(name, model)
             tg-bind-scope
         )
             tg-epic-row.e2e-epic(
-                epic="epic"
-                options="vm.options"
+                bind-epic="epic"
+                bind-options="vm.options"
             )
 
         div(tg-loading="vm.loadingEpics")

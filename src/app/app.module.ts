@@ -119,6 +119,14 @@ import { ProfileProjectsComponent } from "./profile-projects/profile-projects.co
 import "./profile-projects/register-legacy";
 import { DropdownNotificationsComponent } from "./dropdown-notifications/dropdown-notifications.component";
 import "./dropdown-notifications/register-legacy";
+import { BelongToEpicsComponent } from "./belong-to-epics/belong-to-epics.component";
+import "./belong-to-epics/register-legacy";
+import { StoryRowComponent } from "./story-row/story-row.component";
+import "./story-row/register-legacy";
+import { EpicRowComponent } from "./epic-row/epic-row.component";
+import "./epic-row/register-legacy";
+import { RelatedUserstoryRowComponent } from "./related-userstory-row/related-userstory-row.component";
+import "./related-userstory-row/register-legacy";
 import { TgHomeProjectListUpgradedDirective } from "./upgraded/tg-home-project-list.upgraded-directive";
 import { TgWorkingOnUpgradedDirective } from "./upgraded/tg-working-on.upgraded-directive";
 import { TgDiscoverSearchBarUpgradedDirective } from "./upgraded/tg-discover-search-bar.upgraded-directive";
@@ -164,6 +172,7 @@ import {
     AJS_AUTH,
     AJS_SECTIONS,
     AJS_PROJECTS_SERVICE,
+    AJS_EPICS_SERVICE,
     upgradedService,
 } from "./shared/ajs-tokens";
 import { TgTranslatePipe } from "./shared/translate.pipe";
@@ -239,6 +248,10 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         ProfileContactsComponent,
         ProfileProjectsComponent,
         DropdownNotificationsComponent,
+        BelongToEpicsComponent,
+        StoryRowComponent,
+        EpicRowComponent,
+        RelatedUserstoryRowComponent,
         TgWorkingOnUpgradedDirective,
         TgHomeProjectListUpgradedDirective,
         TgDiscoverSearchBarUpgradedDirective,
@@ -291,6 +304,7 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         upgradedService(AJS_AUTH, "$tgAuth"),
         upgradedService(AJS_SECTIONS, "$tgSections"),
         upgradedService(AJS_PROJECTS_SERVICE, "tgProjectsService"),
+        upgradedService(AJS_EPICS_SERVICE, "tgEpicsService"),
     ],
 })
 export class AppModule implements DoBootstrap {

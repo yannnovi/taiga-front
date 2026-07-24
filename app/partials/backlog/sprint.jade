@@ -38,7 +38,7 @@ div.sprint-table(tg-bind-scope, ng-class="{'sprint-empty-wrapper': !sprint.user_
                     class="us-epic-container"
                     format="pill"
                     ng-if="us.epics"
-                    epics="us.epics"
+                    bind-epics="us.epics"
                 )
                 tg-due-date.due-date(
                     due-date="us.due_date"

@@ -1,0 +1,33 @@
+<tg-svg class="icon-drag" svg-icon="icon-drag" *ngIf="canEditEpics()"></tg-svg>
+
+<div class="userstory-name">
+    <a [tgNav]="'project-userstories-detail'" [tgNavParams]="{project: userstory.getIn(['project_extra_info', 'slug']), ref: userstory.get('ref')}">
+        <span class="related-text" [title]="userstory.get('subject')">
+            <span class="related-ref">{{ "#" + userstory.get("ref") }}</span>
+            <span class="related-subject" [innerHTML]="userstory.get('subject') | tgEmojify"></span>
+        </span>
+        <tg-belong-to-epics *ngIf="userstory.get('epics')" format="pill" [epics]="userstory.get('epics')"></tg-belong-to-epics>
+    </a>
+</div>
+
+<div class="userstory-settings">
+    <a class="delete-userstory e2e-delete-userstory" *ngIf="canEditEpics()" [title]="'US.REMOVE_RELATIONSHIP_WITH_EPIC' | tgTranslate" href="" (click)="onDeleteRelatedUserstory()">
+        <tg-svg svg-icon="icon-broken-link"></tg-svg>
+    </a>
+</div>
+
+<div class="project" [tgNav]="'project'" [tgNavParams]="{project: userstory.getIn(['project_extra_info', 'slug'])}">
+    <img [src]="getProjectLogoUrl()" [style.background]="getProjectLogoBg()" [alt]="userstory.getIn(['project_extra_info', 'name'])" />
+</div>
+
+<div class="status">
+    <span class="userstory-status" [style.color]="userstory.getIn(['status_extra_info', 'color'])">{{ userstory.getIn(["status_extra_info", "name"]) }}</span>
+</div>
+
+<div class="assigned-to-column">
+    <figure class="avatar">
+        <img [style.background-color]="avatar.bg" [src]="avatar.url" [alt]="avatar.full_name_display" />
+
+        <figcaption>{{ getAssignedToFullNameDisplay() }}</figcaption>
+    </figure>
+</div>

@@ -92,7 +92,7 @@ div.taskboard-table(
                             tg-belong-to-epics(
                                 format="pill"
                                 ng-if="us.epics"
-                                epics="us.epics"
+                                bind-epics="us.epics"
                             )
                             div.us-data
                                 p.points-value(data-id="{{us.id}}")

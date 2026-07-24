@@ -1,0 +1,36 @@
+<ng-container *ngIf="format !== 'text'">
+    <span class="belong-to-epic-pill-wrapper" *ngFor="let epic of immutableEpics">
+        <div
+            class="belong-to-epic-pill"
+            [style.background]="epic.get('color')"
+            [style.border-color]="darker(epic.get('color'), -0.2)"
+            [title]="'#' + epic.get('ref') + ' ' + epic.get('subject')"
+        ></div>
+    </span>
+</ng-container>
+
+<ng-container *ngIf="format === 'text'">
+    <span class="belong-to-epic-title" *ngIf="immutableEpics.length > 0">{{ "US.OWNER_US" | tgTranslate }}</span>
+    <span class="belong-to-epic-title" *ngIf="immutableEpics.length > 1">:</span>
+    <ul class="belong-to-epics-list" [class.unique]="immutableEpics.length === 1">
+        <li class="belong-to-epic-text-wrapper" *ngFor="let epic of immutableEpics">
+            <a
+                class="belong-to-epic-text"
+                href=""
+                [tgNav]="'project-epics-detail'"
+                [tgNavParams]="{project: epic.getIn(['project', 'slug']), ref: epic.get('ref')}"
+                [innerHTML]="('#' + epic.get('ref') + ' ' + epic.get('subject')) | tgEmojify"
+            ></a>
+            <span class="belong-to-epic-label" [style.background-color]="epic.get('color')">{{ "EPICS.EPIC" | tgTranslate }}</span>
+            <a
+                class="remove-epic-relationship"
+                [title]="'US.REMOVE_RELATIONSHIP_WITH_EPIC' | tgTranslate"
+                href=""
+                *ngIf="canEditUs()"
+                (click)="removeEpicRelationship(epic)"
+            >
+                <tg-svg svg-icon="icon-close"></tg-svg>
+            </a>
+        </li>
+    </ul>
+</ng-container>

@@ -54,6 +54,7 @@ export const AJS_PROJECT_LOGO_SERVICE = new InjectionToken<any>("tgProjectLogoSe
 export const AJS_AUTH = new InjectionToken<any>("$tgAuth");
 export const AJS_SECTIONS = new InjectionToken<any>("$tgSections");
 export const AJS_PROJECTS_SERVICE = new InjectionToken<any>("tgProjectsService");
+export const AJS_EPICS_SERVICE = new InjectionToken<any>("tgEpicsService");
 
 export function upgradedService(token: InjectionToken<any>, ajsName: string): Provider {
     return {

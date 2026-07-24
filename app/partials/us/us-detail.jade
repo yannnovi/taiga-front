@@ -30,8 +30,8 @@ div.wrapper(
                 .detail-header-line.belong-to-epics-wrapper(ng-if="!!project.is_epics_activated")
                     .related-to-epics
                         tg-belong-to-epics(
-                            epics="::us.epics"
-                            item="::us"
+                            bind-epics="::us.epics"
+                            bind-item="::us"
                             format="text"
                         )
 

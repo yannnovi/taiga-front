@@ -1,0 +1,26 @@
+<div class="story-row" [class.is-blocked]="story.get('is_blocked')" [class.is-closed]="story.get('is_closed')" [style.display]="!options.closed_us && story.get('is_closed') ? 'none' : ''">
+    <div class="name" *ngIf="options.name">
+        <div class="name-container">
+            <a [tgNav]="'project-userstories-detail'" [tgNavParams]="{project: story.getIn(['project_extra_info', 'slug']), ref: story.get('ref')}" [title]="story.get('subject')">
+                <span class="ref" [innerHTML]="'#' + story.get('ref')"></span>
+                <span class="subject" [innerHTML]="story.get('subject') | tgEmojify"></span>
+            </a>
+            <tg-belong-to-epics *ngIf="story.get('epics')" format="pill" [epics]="story.get('epics')"></tg-belong-to-epics>
+        </div>
+    </div>
+    <div class="project" *ngIf="options.project" [tgNav]="'project'" [tgNavParams]="{project: story.getIn(['project_extra_info', 'slug'])}">
+        <img [src]="getProjectLogoUrl()" [style.background]="getProjectLogoBg()" [alt]="story.getIn(['project_extra_info', 'name'])" [title]="story.getIn(['project_extra_info', 'name'])" />
+    </div>
+    <div class="sprint" *ngIf="options.sprint">{{ story.get("milestone_name") }}</div>
+    <div class="assigned" *ngIf="options.assigned && story.get('assigned_to')">
+        <img [src]="getAvatarUrl()" [alt]="story.getIn(['assigned_to_extra_info', 'full_name_display'])" />
+    </div>
+    <div class="assigned" *ngIf="options.assigned && !story.get('assigned_to')">
+        <img [src]="unassignedImageSrc" [alt]="'EPICS.DASHBOARD.UNASSIGNED' | tgTranslate" />
+    </div>
+    <div class="status-holder" *ngIf="options.status">{{ story.getIn(["status_extra_info", "name"]) }}</div>
+    <div class="progress" *ngIf="options.progress">
+        <div class="progress-bar"></div>
+        <div class="progress-status" *ngIf="percentage" [style.width]="percentage"></div>
+    </div>
+</div>

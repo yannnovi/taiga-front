@@ -1,0 +1,62 @@
+<div
+    class="epic-row e2e-epic-row"
+    [class.is-blocked]="epic.get('is_blocked')"
+    [class.is-closed]="epic.get('is_closed')"
+    [class.unfold]="displayUserStories"
+    [class.not-empty]="epic.getIn(['user_stories_counts', 'opened']) || epic.getIn(['user_stories_counts', 'closed'])"
+    (click)="toggleUserStoryList()"
+    [style.display]="!options.closed && epic.get('is_closed') ? 'none' : ''"
+>
+    <tg-svg class="icon-drag" svg-icon="icon-draggable" *ngIf="canEditEpics()"></tg-svg>
+
+    <div class="name" *ngIf="options.name">
+        <div class="fold-us">
+            <tg-svg svg-icon="icon-chevron-down" *ngIf="epic.getIn(['user_stories_counts', 'total'])"></tg-svg>
+        </div>
+        <span class="epic-pill" [style.background-color]="epic.get('color')"></span>
+        <a [tgNav]="'project-epics-detail'" [tgNavParams]="{project: project?.slug, ref: epic.get('ref')}" [title]="epic.get('subject')">
+            <span class="ref" [innerHTML]="'#' + epic.get('ref')"></span>
+            <span class="subject" [innerHTML]="epic.get('subject') | tgEmojify"></span>
+        </a>
+    </div>
+
+    <div class="project" *ngIf="options.project"></div>
+
+    <div class="sprint" *ngIf="options.sprint"></div>
+
+    <div class="assigned e2e-assigned-to" *ngIf="options.assigned && epic.get('assigned_to')">
+        <img [src]="getAvatarUrl()" />
+    </div>
+    <div class="assigned" *ngIf="options.assigned && !epic.get('assigned_to')">
+        <img [src]="unassignedImageSrc" [alt]="'EPICS.DASHBOARD.UNASSIGNED' | tgTranslate" />
+    </div>
+    <div class="status-holder" *ngIf="options.status && !canEditEpics()">
+        <span>{{ epic.getIn(["status_extra_info", "name"]) }}</span>
+    </div>
+    <div class="status-holder" *ngIf="options.status && canEditEpics()" (mouseleave)="displayStatusList = false" (click)="$event.stopPropagation()">
+        <button (click)="displayStatusList = true" [style.color]="epic.getIn(['status_extra_info', 'color'])">
+            <ng-container *ngIf="!loadingStatus">
+                <span class="e2e-epic-status">{{ epic.getIn(["status_extra_info", "name"]) }}</span>
+                <tg-svg svg-icon="icon-arrow-down"></tg-svg>
+            </ng-container>
+            <img *ngIf="loadingStatus" class="loading-spinner" [src]="spinnerSrc" alt="loading..." />
+        </button>
+
+        <ul class="epic-statuses" *ngIf="displayStatusList">
+            <li class="status e2e-edit-epic-status" *ngFor="let status of orderedEpicStatuses" (click)="updateStatus(status.id)">
+                <span class="item-text">{{ status.name }}</span>
+            </li>
+        </ul>
+    </div>
+
+    <div class="progress" *ngIf="options.progress">
+        <div class="progress-bar"></div>
+        <div class="progress-status" *ngIf="percentage" [style.width]="percentage"></div>
+    </div>
+</div>
+
+<div class="epic-stories-wrapper" *ngIf="displayUserStories && epicStories">
+    <div class="epic-story" *ngFor="let story of epicStories">
+        <tg-story-row class="e2e-story" [story]="story" [options]="options"></tg-story-row>
+    </div>
+</div>
