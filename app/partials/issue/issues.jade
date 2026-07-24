@@ -39,8 +39,8 @@ div.wrapper.issues.lightbox-generic-form(
                             span.selected-filters(ng-if="ctrl.selectedFilters.length") {{ctrl.selectedFilters.length}}
 
                         tg-input-search(
-                            q="ctrl.filterQ"
-                            change="ctrl.changeQ(q)"
+                            bind-q="ctrl.filterQ"
+                            on-change="ctrl.changeQ($event.q)"
                         )
 
                         .display-tags-button#show-tags
@@ -82,7 +82,7 @@ div.wrapper.issues.lightbox-generic-form(
                 ng-if="ctrl.openFilter"
             )
                 tg-filter(
-                    q="ctrl.filterQ"
+                    bind-q="ctrl.filterQ"
                     filters="ctrl.filters"
                     custom-filters="ctrl.customFilters"
                     selected-filters="ctrl.selectedFilters"

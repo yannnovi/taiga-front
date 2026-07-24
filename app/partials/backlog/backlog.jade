@@ -67,8 +67,8 @@ div.wrapper(tg-backlog, ng-controller="BacklogController as ctrl",
                                     span.selected-filters(ng-if="ctrl.selectedFilters.length") {{ctrl.selectedFilters.length}}
 
                                 tg-input-search(
-                                    q="ctrl.filterQ"
-                                    change="ctrl.changeQ(q)"
+                                    bind-q="ctrl.filterQ"
+                                    on-change="ctrl.changeQ($event.q)"
                                 )
 
                                 .display-tags-button#show-tags(ng-if="userstories.length")

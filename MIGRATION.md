@@ -443,6 +443,62 @@ Appelant : attributs `status="status"` (×2) → `bind-status="status"`.
 Nouvelle dépendance de workspace : `@angular/forms` (`FormsModule`) pour `[(ngModel)]` sur
 le champ de saisie du nouveau WIP limit.
 
+### Deuxième lot de leafs en place (9 modules)
+
+Neuf composants de plus, tous "leaf en place", résumés ensemble pour éviter de répéter le
+même patron neuf fois. Détail complet dans les messages de commit respectifs.
+
+- **`input-search`** : le seul fichier de tout le codebase déjà écrit avec l'API
+  `.component()` (bindings `{q: '<', change: '&'}`) plutôt que `.directive()` - portage le
+  plus direct de tous. 4 appelants (`backlog`/`taskboard`/`issues`/`kanban.jade`).
+- **`board-zoom` / `taskboard-zoom` / `kanban-board-zoom`** : une famille de 3, migrée
+  ensemble puisque les deux derniers ne sont que des wrappers d'état (clé de stockage +
+  liste de "niveaux de zoom") autour du premier (le radio-group présentationnel). Premier
+  exemple de **binding bidirectionnel réel** : `value`/`levels` sur `tg-board-zoom` utilisent
+  `@Input() value` + `@Output() valueChange`, qu'un appelant encore-AngularJS adresse via
+  `bindon-value="..."` (pas `bind-value` + un output séparé) - `downgradeComponent` reconnaît
+  cette convention "banana box" nativement. `tg-bind-scope` (pur outil de debug jQuery) omis.
+- **`detail-nav`** : le plus simple des trois "detail" - un seul `@Input() item`. **Bug
+  pré-existant corrigé** (même famille que `wip-limit-selector`) : `"$tgResources"`
+  injecté, jamais enregistré, remplacé par le vrai `tgResources`. C'est la **troisième**
+  occurrence de cette faute de frappe trouvée dans le codebase (avec `wip-limit-selector`
+  et maintenant `promote-to-us`) - visiblement un copier-coller répété, pas un cas isolé.
+- **`swimlane-selector`** : utilisait `require: "ngModel"` pour son binding de sortie (le
+  swimlane choisi) - `downgradeComponent` n'a pas d'équivalent direct pour l'intégration
+  formulaire `ngModel` d'AngularJS. Simplifié en paire `value`/`valueChange` classique
+  (banana box), l'appelant passe de `ng-model="..."` à `bindon-value="..."`. Contient un
+  `tg-repeat` sur une petite liste (`*ngFor` sur un `Immutable.List`, qui fonctionne
+  nativement puisqu'il implémente `Symbol.iterator`).
+- **`color-selector`** : mouseenter/mouseleave jQuery posés séparément sur deux éléments
+  dans l'original (le déclencheur et le panneau du dropdown) fusionnés en une seule paire
+  de handlers sur le conteneur commun (`mouseenter`/`mouseleave` ne bubblent pas, mais les
+  deux éléments étant frères dans un même wrapper, un seul binding sur le wrapper couvre
+  les deux). 8 fichiers appelants mis à jour (mécanique, même patron `bind-x` à chaque
+  fois). Encore une fois piège output : propriété renommée `selectColor` (pas
+  `onSelectColor`) pour matcher l'attribut existant `on-select-color`.
+- **`promote-to-us`** : `require: "ngModel"` simplifié en `@Input() item`. `tg-check-permission`
+  (encore une directive sans template, même famille que `tg-avatar`/`tg-loading`/`tg-autofocus`)
+  répliqué en ligne via `tgProjectService` plutôt que wrappé - seule valeur de permission
+  utilisée par les deux appelants (`"add_us"`), donc codée en dur plutôt qu'exposée comme
+  nouvel input pour une flexibilité que rien n'utilise aujourd'hui.
+- **`tag`** : nouveau pipe partagé `tgEmojify` (`src/app/shared/emojify.pipe.ts`) pour le
+  filtre AngularJS `emojify` (remplace les codes emoji par des `<img>`, via `$tgEmojis`) -
+  réutilisable pour tout futur module affichant du texte utilisateur. Un seul fichier
+  appelant réel (`tag-line-common.jade`, à l'intérieur d'un `ng-repeat` - fonctionne
+  normalement, chaque itération instancie son propre composant downgradé). Les bindings
+  `&` sans argument (`isArchived()`, `hasPermissions()` côté appelant) sont simplifiés en
+  `@Input()` booléens plutôt qu'en callbacks : `bind-is-archived="vm.isArchived()"` continue
+  de réévaluer l'expression à chaque digest AngularJS via le `$watch` sous-jacent, donc
+  reste tout aussi "vivant" que l'appel de fonction original.
+
+Vérifié : build Angular propre (`strictTemplates`, première tentative - un bon signal vu le
+nombre de références croisées entre ces composants), karma **448/448** (452 - 4 tests du
+contrôleur `color-selector` supprimé), et absence de régression sur les pages déjà
+vérifiées (`/`, `/discover`, `/discover/search`). Les neuf nouveaux composants vivent
+principalement dans des pages projet (détail de ticket, admin, tableaux) qui nécessitent
+une session authentifiée réelle contre un `taiga-back` - non vérifiables interactivement
+dans cet environnement, comme `external-app`/`profile` précédemment.
+
 ## Patron à suivre pour migrer un module suivant
 
 1. Repérer ses dépendances réelles (services/directives utilisés *et* utilisateurs) avant

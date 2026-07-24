@@ -52,13 +52,13 @@ div.wrapper(
                         span.selected-filters(ng-if="ctrl.selectedFilters.length") {{ctrl.selectedFilters.length}}
 
                     tg-input-search(
-                        q="ctrl.filterQ"
-                        change="ctrl.changeQ(q)"
+                        bind-q="ctrl.filterQ"
+                        on-change="ctrl.changeQ($event.q)"
                     )
 
                 .taskboard-table-options-end
                     tg-taskboard-zoom(
-                        on-zoom-change="ctrl.setZoom(zoomLevel, zoom)"
+                        on-zoom-change="ctrl.setZoom($event.zoomLevel, $event.zoom)"
                     )
 
             .taskboard-manager.js-taskboard-manager(ng-class="{'expanded': !ctrl.openFilter}")

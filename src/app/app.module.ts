@@ -27,6 +27,24 @@ import { VoteButtonComponent } from "./vote-button/vote-button.component";
 import "./vote-button/register-legacy";
 import { WipLimitSelectorComponent } from "./wip-limit-selector/wip-limit-selector.component";
 import "./wip-limit-selector/register-legacy";
+import { InputSearchComponent } from "./input-search/input-search.component";
+import "./input-search/register-legacy";
+import { BoardZoomComponent } from "./board-zoom/board-zoom.component";
+import "./board-zoom/register-legacy";
+import { TaskboardZoomComponent } from "./taskboard-zoom/taskboard-zoom.component";
+import "./taskboard-zoom/register-legacy";
+import { KanbanBoardZoomComponent } from "./kanban-board-zoom/kanban-board-zoom.component";
+import "./kanban-board-zoom/register-legacy";
+import { DetailNavComponent } from "./detail-nav/detail-nav.component";
+import "./detail-nav/register-legacy";
+import { SwimlaneSelectorComponent } from "./swimlane-selector/swimlane-selector.component";
+import "./swimlane-selector/register-legacy";
+import { ColorSelectorComponent } from "./color-selector/color-selector.component";
+import "./color-selector/register-legacy";
+import { PromoteToUsButtonComponent } from "./promote-to-us/promote-to-us.component";
+import "./promote-to-us/register-legacy";
+import { TagComponent } from "./tag/tag.component";
+import "./tag/register-legacy";
 import { TgHomeProjectListUpgradedDirective } from "./upgraded/tg-home-project-list.upgraded-directive";
 import { TgWorkingOnUpgradedDirective } from "./upgraded/tg-working-on.upgraded-directive";
 import { TgDiscoverSearchBarUpgradedDirective } from "./upgraded/tg-discover-search-bar.upgraded-directive";
@@ -39,7 +57,9 @@ import {
     AJS_APP_META_SERVICE,
     AJS_AVATAR_SERVICE,
     AJS_CONFIG,
+    AJS_CONFIRM,
     AJS_CURRENT_USER_SERVICE,
+    AJS_EMOJIS,
     AJS_EXTERNAL_APPS_SERVICE,
     AJS_LIVE_ANNOUNCEMENT_SERVICE,
     AJS_LOADER,
@@ -50,6 +70,7 @@ import {
     AJS_RESOURCES,
     AJS_ROOT_SCOPE,
     AJS_ROUTE_PARAMS,
+    AJS_STORAGE,
     AJS_TG_LOCATION,
     AJS_TRANSLATE,
     AJS_WINDOW,
@@ -57,6 +78,7 @@ import {
     upgradedService,
 } from "./shared/ajs-tokens";
 import { TgTranslatePipe } from "./shared/translate.pipe";
+import { TgEmojifyPipe } from "./shared/emojify.pipe";
 
 /**
  * Hybrid shell for the AngularJS -> Angular migration: AngularJS keeps owning the app
@@ -78,6 +100,15 @@ import { TgTranslatePipe } from "./shared/translate.pipe";
         LiveAnnouncementComponent,
         VoteButtonComponent,
         WipLimitSelectorComponent,
+        InputSearchComponent,
+        BoardZoomComponent,
+        TaskboardZoomComponent,
+        KanbanBoardZoomComponent,
+        DetailNavComponent,
+        SwimlaneSelectorComponent,
+        ColorSelectorComponent,
+        PromoteToUsButtonComponent,
+        TagComponent,
         TgWorkingOnUpgradedDirective,
         TgHomeProjectListUpgradedDirective,
         TgDiscoverSearchBarUpgradedDirective,
@@ -87,6 +118,7 @@ import { TgTranslatePipe } from "./shared/translate.pipe";
         TgSvgUpgradedDirective,
         TgNotificationsListUpgradedDirective,
         TgTranslatePipe,
+        TgEmojifyPipe,
     ],
     providers: [
         upgradedService(AJS_CURRENT_USER_SERVICE, "tgCurrentUserService"),
@@ -107,6 +139,9 @@ import { TgTranslatePipe } from "./shared/translate.pipe";
         upgradedService(AJS_CONFIG, "$tgConfig"),
         upgradedService(AJS_LIVE_ANNOUNCEMENT_SERVICE, "tgLiveAnnouncementService"),
         upgradedService(AJS_RESOURCES, "tgResources"),
+        upgradedService(AJS_STORAGE, "$tgStorage"),
+        upgradedService(AJS_CONFIRM, "$tgConfirm"),
+        upgradedService(AJS_EMOJIS, "$tgEmojis"),
     ],
 })
 export class AppModule implements DoBootstrap {

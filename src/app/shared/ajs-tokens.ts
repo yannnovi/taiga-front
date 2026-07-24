@@ -27,6 +27,9 @@ export const AJS_LIVE_ANNOUNCEMENT_SERVICE = new InjectionToken<any>("tgLiveAnno
 // wip-limit-selector controller injected the latter, a name that isn't actually
 // registered anywhere (see wip-limit-selector.component.ts for the full story).
 export const AJS_RESOURCES = new InjectionToken<any>("tgResources");
+export const AJS_STORAGE = new InjectionToken<any>("$tgStorage");
+export const AJS_CONFIRM = new InjectionToken<any>("$tgConfirm");
+export const AJS_EMOJIS = new InjectionToken<any>("$tgEmojis");
 
 export function upgradedService(token: InjectionToken<any>, ajsName: string): Provider {
     return {
