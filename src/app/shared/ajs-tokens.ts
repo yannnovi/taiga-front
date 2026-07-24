@@ -23,10 +23,19 @@ export const AJS_AVATAR_SERVICE = new InjectionToken<any>("tgAvatarService");
 export const AJS_PROJECT_SERVICE = new InjectionToken<any>("tgProjectService");
 export const AJS_CONFIG = new InjectionToken<any>("$tgConfig");
 export const AJS_LIVE_ANNOUNCEMENT_SERVICE = new InjectionToken<any>("tgLiveAnnouncementService");
-// Note: the label below is "tgResources" (no `$`), not "$tgResources" - the original
-// wip-limit-selector controller injected the latter, a name that isn't actually
-// registered anywhere (see wip-limit-selector.component.ts for the full story).
+// There are genuinely two different resources services in this codebase:
+// - "tgResources" (no `$`, app/modules/resources/resources.coffee): a newer, smaller
+//   aggregator - only wraps a handful of *-resource.service.coffee files.
+// - "$tgResources" (with `$`, app/coffee/modules/resources.coffee): the original, fully
+//   populated one - assembled at app startup from every $tgXxxResourcesProvider in
+//   app/coffee/modules/resources/*.coffee (getQueryParams, promoteToUserStory,
+//   wipLimitUpdate, editStatus, etc. all live only here).
+// Earlier commits (wip-limit-selector, detail-nav, promote-to-us) wrongly treated
+// "$tgResources" as a typo for "tgResources" based on an incomplete grep - it isn't, and
+// that "fix" broke all three. AJS_RESOURCES is the limited one; use AJS_TG_RESOURCES for
+// anything that needs the full API.
 export const AJS_RESOURCES = new InjectionToken<any>("tgResources");
+export const AJS_TG_RESOURCES = new InjectionToken<any>("$tgResources");
 export const AJS_STORAGE = new InjectionToken<any>("$tgStorage");
 export const AJS_CONFIRM = new InjectionToken<any>("$tgConfirm");
 export const AJS_EMOJIS = new InjectionToken<any>("$tgEmojis");

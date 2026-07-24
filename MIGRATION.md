@@ -421,12 +421,12 @@ Leaf en place, utilisé deux fois dans `project-kanban-swimlanes.jade`, chaque f
 l'intérieur d'un `ng-repeat` - fonctionne normalement, chaque itération AngularJS instancie
 sa propre copie du composant downgradé avec sa propre valeur `status`.
 
-**Bug pré-existant corrigé en portant le code** : le contrôleur original injectait
-`"$tgResources"`, un nom qui n'est enregistré nulle part dans le codebase (seul
-`tgResources`, sans `$`, existe - `app/modules/resources/resources.coffee`). Ça aurait dû
-lever "Unknown provider" à chaque instanciation. Reproduire fidèlement un nom cassé
-n'aurait eu aucun sens ici (le composant n'aurait jamais fonctionné, migré ou pas) - le vrai
-nom de service est utilisé à la place, documenté dans le code et ici.
+**Correction (⚠️ ancienne entrée ci-dessous invalidée, voir plus bas)** : ce paragraphe
+affirmait que `"$tgResources"` (avec `$`) était un nom cassé/jamais enregistré, et que le
+contrôleur original injectait donc un service inexistant. **C'était faux** - erreur de ma
+part, pas un bug de l'app. Détail complet dans la section "Correction : `$tgResources` vs
+`tgResources`" plus bas. Le composant utilise maintenant `AJS_TG_RESOURCES` (le vrai
+`$tgResources`), pas `AJS_RESOURCES`.
 
 Autres écarts mineurs, tous des impasses de l'original (mêmes catégories que
 `toggleClose`/`ng-title` déjà rencontrées) :
@@ -458,11 +458,10 @@ même patron neuf fois. Détail complet dans les messages de commit respectifs.
   `@Input() value` + `@Output() valueChange`, qu'un appelant encore-AngularJS adresse via
   `bindon-value="..."` (pas `bind-value` + un output séparé) - `downgradeComponent` reconnaît
   cette convention "banana box" nativement. `tg-bind-scope` (pur outil de debug jQuery) omis.
-- **`detail-nav`** : le plus simple des trois "detail" - un seul `@Input() item`. **Bug
-  pré-existant corrigé** (même famille que `wip-limit-selector`) : `"$tgResources"`
-  injecté, jamais enregistré, remplacé par le vrai `tgResources`. C'est la **troisième**
-  occurrence de cette faute de frappe trouvée dans le codebase (avec `wip-limit-selector`
-  et maintenant `promote-to-us`) - visiblement un copier-coller répété, pas un cas isolé.
+- **`detail-nav`** : le plus simple des trois "detail" - un seul `@Input() item`. **⚠️
+  Utilisait `AJS_RESOURCES`, corrigé depuis vers `AJS_TG_RESOURCES` - voir la section
+  "Correction : `$tgResources` vs `tgResources`" plus bas, l'affirmation d'origine ici
+  était fausse.**
 - **`swimlane-selector`** : utilisait `require: "ngModel"` pour son binding de sortie (le
   swimlane choisi) - `downgradeComponent` n'a pas d'équivalent direct pour l'intégration
   formulaire `ngModel` d'AngularJS. Simplifié en paire `value`/`valueChange` classique
@@ -480,7 +479,8 @@ même patron neuf fois. Détail complet dans les messages de commit respectifs.
   (encore une directive sans template, même famille que `tg-avatar`/`tg-loading`/`tg-autofocus`)
   répliqué en ligne via `tgProjectService` plutôt que wrappé - seule valeur de permission
   utilisée par les deux appelants (`"add_us"`), donc codée en dur plutôt qu'exposée comme
-  nouvel input pour une flexibilité que rien n'utilise aujourd'hui.
+  nouvel input pour une flexibilité que rien n'utilise aujourd'hui. **⚠️ Utilisait
+  `AJS_RESOURCES`, corrigé vers `AJS_TG_RESOURCES`** - voir ci-dessous.
 - **`tag`** : nouveau pipe partagé `tgEmojify` (`src/app/shared/emojify.pipe.ts`) pour le
   filtre AngularJS `emojify` (remplace les codes emoji par des `<img>`, via `$tgEmojis`) -
   réutilisable pour tout futur module affichant du texte utilisateur. Un seul fichier
@@ -498,6 +498,48 @@ vérifiées (`/`, `/discover`, `/discover/search`). Les neuf nouveaux composants
 principalement dans des pages projet (détail de ticket, admin, tableaux) qui nécessitent
 une session authentifiée réelle contre un `taiga-back` - non vérifiables interactivement
 dans cet environnement, comme `external-app`/`profile` précédemment.
+
+### Correction : `$tgResources` vs `tgResources` (les paragraphes ci-dessus étaient faux)
+
+En utilisant l'app pour de vrai (retour direct de l'utilisateur, pas un test synthétique),
+`detail-nav` a levé une vraie erreur : `this.rs.userstories.getQueryParams is not a
+function`. En creusant, la cause n'était pas un bug de l'app d'origine mais **une erreur
+de ma part sur trois modules** (`wip-limit-selector`, `detail-nav`, `promote-to-us`).
+
+Il existe **deux services de ressources distincts et sans rapport l'un avec l'autre** :
+
+- **`tgResources`** (sans `$`, `app/modules/resources/resources.coffee`) : un agrégateur
+  plus récent et volontairement limité - seulement `listInAllProjects`/`listAllInProject`/
+  `listInEpic` pour `userstories`, par exemple. C'est le service derrière le token
+  `AJS_RESOURCES`.
+- **`$tgResources`** (avec `$`, `app/coffee/modules/resources.coffee`) : le service
+  d'origine, complet, assemblé au démarrage de l'app (`module.run([...])`) à partir de
+  **tous** les `$tgXxxResourcesProvider` de `app/coffee/modules/resources/*.coffee`. C'est
+  lui qui porte `getQueryParams`/`getBacklog` (`userstories.coffee`),
+  `promoteToUserStory` (`tasks.coffee`/`issues.coffee`), `wipLimitUpdate`/`editStatus`
+  (`swimlanes.coffee`/`userstories.coffee`).
+
+Mon grep initial pour vérifier si `"$tgResources"` était enregistré n'a pas cherché dans
+`app/coffee/modules/resources.coffee` (probablement parce que le nom du fichier, sans
+`s` final dans "resources" au bon endroit, ne correspondait pas au motif que j'utilisais) -
+j'ai donc conclu à tort que `$tgResources` était un nom cassé/une faute de frappe
+répétée, alors qu'il s'agissait du **bon** service depuis le début, différent de celui que
+j'ai injecté à la place.
+
+**Corrigé** : nouveau token `AJS_TG_RESOURCES` (`src/app/shared/ajs-tokens.ts`, mappé sur
+`"$tgResources"`), et les trois composants (`wip-limit-selector`, `detail-nav`,
+`promote-to-us`) utilisent maintenant celui-là au lieu de `AJS_RESOURCES`. `AJS_RESOURCES`
+reste défini et enregistré (`tgResources` est un vrai service, juste pas celui dont ces
+trois-là avaient besoin) - potentiellement utile pour un futur module qui voudrait
+spécifiquement la version allégée.
+
+**Leçon pour la suite** : un grep qui revient bredouille prouve seulement qu'*un* motif de
+recherche n'a rien trouvé, pas que le nom n'existe nulle part - en particulier avec deux
+arborescences `resources.coffee` / `resources/*.coffee` qui se ressemblent. Avant de
+conclure à un bug de l'app et de "corriger" un nom de service, vérifier avec plusieurs
+formulations de grep (`$` échappé, avec/sans le dossier `resources/`) et, si possible,
+avec un vrai clic dans un navigateur plutôt qu'une simple compilation propre - c'est
+exactement ce qui a permis de détecter celui-ci.
 
 ## Patron à suivre pour migrer un module suivant
 

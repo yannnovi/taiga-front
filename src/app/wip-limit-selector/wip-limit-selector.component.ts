@@ -1,5 +1,5 @@
 import { Component, ElementRef, Inject, Input, OnInit, ViewChild } from "@angular/core";
-import { AJS_RESOURCES, AJS_ROOT_SCOPE } from "../shared/ajs-tokens";
+import { AJS_ROOT_SCOPE, AJS_TG_RESOURCES } from "../shared/ajs-tokens";
 
 /**
  * Angular replacement for the AngularJS `tgWipLimitSelector` directive
@@ -10,12 +10,12 @@ import { AJS_RESOURCES, AJS_ROOT_SCOPE } from "../shared/ajs-tokens";
  * `submitSwimlaneNewStatus`) - both are just plain component state/methods here, no
  * functional difference from unifying them into one class.
  *
- * Bug fixed while porting: the original controller injected `"$tgResources"`, which is
- * not a registered AngularJS service anywhere in this codebase (only the unprefixed
- * `tgResources` is, in app/modules/resources/resources.coffee) - injecting it would have
- * thrown "Unknown provider" the moment this controller was instantiated. Used the real
- * `tgResources` service name here instead; replicating the broken name faithfully would
- * just mean this component never works at all.
+ * Correction: an earlier version "fixed" the original's `"$tgResources"` injection to the
+ * unprefixed `tgResources`, believing it was a typo. It isn't - `$tgResources` (with the
+ * `$`) is a real, separate, fully populated resources service
+ * (app/coffee/modules/resources.coffee) with `wipLimitUpdate`/`editStatus`, distinct from
+ * the smaller `tgResources` aggregator that doesn't have them. See ajs-tokens.ts. Fixed to
+ * use AJS_TG_RESOURCES.
  *
  * `tg-autofocus` (app/coffee/modules/common.coffee) is a plain attribute directive with no
  * template - like tg-avatar, not an UpgradeComponent fit - so its one relevant behavior
@@ -37,7 +37,7 @@ export class WipLimitSelectorComponent implements OnInit {
 
     constructor(
         @Inject(AJS_ROOT_SCOPE) private rootScope: any,
-        @Inject(AJS_RESOURCES) private rs: any,
+        @Inject(AJS_TG_RESOURCES) private rs: any,
     ) {}
 
     ngOnInit(): void {

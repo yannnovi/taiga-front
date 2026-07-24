@@ -1,13 +1,16 @@
 import { Component, Inject, Input, OnChanges } from "@angular/core";
-import { AJS_NAV_URLS, AJS_RESOURCES } from "../shared/ajs-tokens";
+import { AJS_NAV_URLS, AJS_TG_RESOURCES } from "../shared/ajs-tokens";
 
 /**
  * Angular replacement for the AngularJS `tgDetailNav` directive
  * (app/modules/components/detail/nav/), downgraded in place under the same name.
  *
- * Bug fixed while porting, same as wip-limit-selector: the original controller injected
- * `"$tgResources"`, which isn't registered anywhere (only the unprefixed `tgResources`
- * is) - used the real service name instead.
+ * Correction: an earlier version of this file "fixed" the original's `"$tgResources"`
+ * injection to the unprefixed `tgResources`, believing it was a typo for a service that
+ * doesn't exist. It isn't - `$tgResources` (with the `$`) is a real, separate, fully
+ * populated resources service (app/coffee/modules/resources.coffee), distinct from the
+ * smaller `tgResources` aggregator - and it's the one with `getQueryParams`/`getBacklog`.
+ * See ajs-tokens.ts for the full explanation. Fixed to use AJS_TG_RESOURCES.
  */
 @Component({
     selector: "tg-detail-nav",
@@ -21,7 +24,7 @@ export class DetailNavComponent implements OnChanges {
 
     constructor(
         @Inject(AJS_NAV_URLS) private navUrls: any,
-        @Inject(AJS_RESOURCES) private rs: any,
+        @Inject(AJS_TG_RESOURCES) private rs: any,
     ) {}
 
     ngOnChanges(): void {

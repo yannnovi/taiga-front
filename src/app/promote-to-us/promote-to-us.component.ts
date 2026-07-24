@@ -1,5 +1,5 @@
 import { Component, Inject, Input } from "@angular/core";
-import { AJS_CONFIRM, AJS_PROJECT_SERVICE, AJS_RESOURCES, AJS_ROOT_SCOPE, AJS_TRANSLATE } from "../shared/ajs-tokens";
+import { AJS_CONFIRM, AJS_PROJECT_SERVICE, AJS_ROOT_SCOPE, AJS_TG_RESOURCES, AJS_TRANSLATE } from "../shared/ajs-tokens";
 
 declare const _: any;
 
@@ -7,10 +7,11 @@ declare const _: any;
  * Angular replacement for the AngularJS `tgPromoteToUsButton` directive
  * (app/modules/components/promote-to-us/), downgraded in place under the same name.
  *
- * Bug fixed while porting, same story as wip-limit-selector/detail-nav: the original
- * injected `"$tgResources"`, which isn't registered anywhere - a systemic copy-paste typo
- * across at least three components in this codebase, not a one-off. Uses the real
- * `tgResources` service.
+ * Correction: an earlier version "fixed" the original's `"$tgResources"` injection to the
+ * unprefixed `tgResources`, believing it was a typo - it isn't, `$tgResources` (with the
+ * `$`) is a real, separate, fully populated resources service with `.tasks`/`.issues`
+ * sub-objects exposing `promoteToUserStory`, distinct from the smaller `tgResources`
+ * aggregator that doesn't have it. See ajs-tokens.ts. Fixed to use AJS_TG_RESOURCES.
  *
  * `require: "ngModel"` (the item to promote) is a plain `@Input() item` here instead -
  * caller switched from `ng-model="issue"` to `bind-item="issue"`.
@@ -30,7 +31,7 @@ export class PromoteToUsButtonComponent {
 
     constructor(
         @Inject(AJS_ROOT_SCOPE) private rootScope: any,
-        @Inject(AJS_RESOURCES) private rs: any,
+        @Inject(AJS_TG_RESOURCES) private rs: any,
         @Inject(AJS_CONFIRM) private confirm: any,
         @Inject(AJS_TRANSLATE) private translate: any,
         @Inject(AJS_PROJECT_SERVICE) private projectService: any,
