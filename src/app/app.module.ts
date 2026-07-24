@@ -101,6 +101,10 @@ import { LightboxMoveToSprintComponent } from "./lightbox-move-to-sprint/lightbo
 import "./lightbox-move-to-sprint/register-legacy";
 import { AttachmentsPreviewComponent } from "./attachments-preview/attachments-preview.component";
 import "./attachments-preview/register-legacy";
+import { NoMoreMembershipsExplanationComponent } from "./no-more-memberships-explanation/no-more-memberships-explanation.component";
+import "./no-more-memberships-explanation/register-legacy";
+import { DutyComponent } from "./duty/duty.component";
+import "./duty/register-legacy";
 import { TgHomeProjectListUpgradedDirective } from "./upgraded/tg-home-project-list.upgraded-directive";
 import { TgWorkingOnUpgradedDirective } from "./upgraded/tg-working-on.upgraded-directive";
 import { TgDiscoverSearchBarUpgradedDirective } from "./upgraded/tg-discover-search-bar.upgraded-directive";
@@ -142,6 +146,7 @@ import {
     AJS_ATTACHMENTS_PREVIEW_SERVICE,
     AJS_LIGHTBOX_SERVICE,
     AJS_USER_SERVICE,
+    AJS_PROJECT_LOGO_SERVICE,
     upgradedService,
 } from "./shared/ajs-tokens";
 import { TgTranslatePipe } from "./shared/translate.pipe";
@@ -207,6 +212,8 @@ import { TgSizeFormatPipe } from "./shared/size-format.pipe";
         NewsletterEmailLightboxComponent,
         LightboxMoveToSprintComponent,
         AttachmentsPreviewComponent,
+        NoMoreMembershipsExplanationComponent,
+        DutyComponent,
         TgWorkingOnUpgradedDirective,
         TgHomeProjectListUpgradedDirective,
         TgDiscoverSearchBarUpgradedDirective,
@@ -254,6 +261,7 @@ import { TgSizeFormatPipe } from "./shared/size-format.pipe";
         upgradedService(AJS_ATTACHMENTS_PREVIEW_SERVICE, "tgAttachmentsPreviewService"),
         upgradedService(AJS_LIGHTBOX_SERVICE, "lightboxService"),
         upgradedService(AJS_USER_SERVICE, "tgUserService"),
+        upgradedService(AJS_PROJECT_LOGO_SERVICE, "tgProjectLogoService"),
     ],
 })
 export class AppModule implements DoBootstrap {

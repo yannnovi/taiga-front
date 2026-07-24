@@ -23,7 +23,7 @@ div.wrapper.memberships(
             header
                 include ../includes/components/mainTitle
                 .header-message(ng-if="canAddUsers == false")
-                    tg-no-more-memberships-explanation(project="project", owner-email="projectOwnerEmail")
+                    tg-no-more-memberships-explanation(bind-project="project", bind-owner-email="projectOwnerEmail")
 
             .action-buttons(
                     ng-if="canAddUsers == true"

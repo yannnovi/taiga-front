@@ -1,0 +1,46 @@
+<a
+    class="list-itemtype-ticket"
+    [href]="duty.get('url')"
+    [title]="duty.get('subject')"
+    [class.blocked]="duty.get('is_blocked')"
+    [class.blocked-project]="duty.getIn(['project', 'blocked_code'])"
+>
+    <div class="list-itemtype-avatar" *ngIf="type === 'working-on'">
+        <img [src]="getProjectLogoUrl()" [style.background]="getProjectLogoBg()" [title]="duty.getIn(['project', 'name'])" />
+    </div>
+    <div class="list-itemtype-avatar" *ngIf="type === 'watching'">
+        <img
+            *ngIf="duty.get('assigned_to_extra_info')"
+            [title]="duty.get('assigned_to_extra_info').get('full_name_display')"
+            [src]="getAvatarUrl()"
+        />
+        <img *ngIf="!duty.get('assigned_to_extra_info')" [src]="unassignedImageSrc" [title]="'ACTIVITY.VALUES.UNASSIGNED' | tgTranslate" />
+    </div>
+    <div class="list-itemtype-ticket-data">
+        <div class="list-itemtype-data-meta">
+            <span class="ticket-project">{{ duty.getIn(["project", "name"]) }}</span>
+
+            <span class="ticket-type">{{ getDutyType() }}</span>
+            <span class="ticket-status" [style.color]="duty.get('status_extra_info').get('color')">{{ duty.get("status_extra_info").get("name") }}</span>
+            <span class="ticket-blocked">
+                <tg-svg *ngIf="duty.getIn(['project', 'blocked_code'])" svg-icon="icon-blocked-project" svg-title-translate="PROJECT.BLOCKED_PROJECT.BLOCKED"></tg-svg>
+            </span>
+        </div>
+
+        <div class="list-itemtype-data-title">
+            <span class="ticket-id">{{ "#" + duty.get("ref") }}</span>
+            <span class="ticket-title">
+                <span class="ticket-blocked" *ngIf="duty.get('is_blocked')" [title]="duty.get('blocked_note')">{{ "COMMON.BLOCKED" | tgTranslate }}</span>
+                <span [innerHTML]="duty.get('subject') | tgEmojify"></span>
+            </span>
+        </div>
+    </div>
+    <div>
+        <button class="btn-link button-hide" variant="icon" *ngIf="isHidden === false" [title]="'HOME.SET_HIDDEN' | tgTranslate" (click)="toggleHidden()">
+            <tg-svg svg-icon="icon-unwatch"></tg-svg>
+        </button>
+        <button class="btn-link button-hide" variant="icon" *ngIf="isHidden === true" [title]="'HOME.SET_VISIBLE' | tgTranslate" (click)="toggleHidden()">
+            <tg-svg svg-icon="icon-watch"></tg-svg>
+        </button>
+    </div>
+</a>

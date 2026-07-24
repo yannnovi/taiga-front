@@ -488,17 +488,3 @@ module.directive("tgMembershipsRowActions", ["$log", "$tgRepo", "$tgResources", 
                                              "tgProjectService", MembershipsRowActionsDirective])
 
 
-#############################################################################
-## No more memberships explanation directive
-#############################################################################
-
-NoMoreMembershipsExplanationDirective = () ->
-    return {
-          templateUrl: "admin/no-more-memberships-explanation.html"
-          scope: {
-              project: "=",
-              ownerEmail: "="
-          }
-    }
-
-module.directive("tgNoMoreMembershipsExplanation", [NoMoreMembershipsExplanationDirective])

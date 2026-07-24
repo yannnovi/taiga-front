@@ -50,6 +50,7 @@ export const AJS_QUEUE_MODEL_TRANSFORMATION = new InjectionToken<any>("$tgQueueM
 export const AJS_ATTACHMENTS_PREVIEW_SERVICE = new InjectionToken<any>("tgAttachmentsPreviewService");
 export const AJS_LIGHTBOX_SERVICE = new InjectionToken<any>("lightboxService");
 export const AJS_USER_SERVICE = new InjectionToken<any>("tgUserService");
+export const AJS_PROJECT_LOGO_SERVICE = new InjectionToken<any>("tgProjectLogoService");
 
 export function upgradedService(token: InjectionToken<any>, ajsName: string): Provider {
     return {

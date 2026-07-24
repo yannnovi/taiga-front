@@ -1,0 +1,7 @@
+<p class="admin-subtitle" *ngIf="project.i_am_owner === true">
+    {{ "ADMIN.MEMBERSHIPS.LIMIT_USERS_WARNING_MESSAGE_FOR_OWNER" | tgTranslate:{members: project.total_memberships} }}
+</p>
+
+<p class="admin-subtitle" *ngIf="project.i_am_owner === false">
+    {{ "ADMIN.MEMBERSHIPS.LIMIT_USERS_WARNING_MESSAGE_FOR_ADMIN" | tgTranslate:{owner_email: project.owner.username} }}
+</p>
