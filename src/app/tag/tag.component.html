@@ -1,0 +1,10 @@
+<div class="tag" [style.background-color]="tag[1]">
+    <span [innerHTML]="tag[0] | tgEmojify"></span>
+    <tg-svg
+        class="icon-close e2e-delete-tag"
+        *ngIf="hasPermissions && !isArchived"
+        svg-icon="icon-close"
+        svg-title-translate="COMMON.TAG.DELETE"
+        (click)="onDelete()"
+    ></tg-svg>
+</div>
