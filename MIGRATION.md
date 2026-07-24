@@ -841,6 +841,43 @@ neuf) a révélé deux soucis que les checks statiques ne pouvaient pas voir :
 navigateur réel (pas seulement build + karma) est nécessaire avant de committer — ces deux
 classes de bugs ne remontent dans aucun des deux.
 
+### Sixième lot : 10 modules débloqués par `tg-nav`, et pourquoi `user-timeline-item` ne l'est pas
+
+Suite à l'ajout de `TgNavDirective` (section précédente), 10 des modules qu'elle débloquait
+ont été migrés dans la foulée, chacun vérifié en navigateur réel (pas seulement build +
+karma) : `profile-bar`, `dropdown-project-list`, `dropdown-user`, `profile-contacts`,
+`profile-projects`, `dropdown-notifications`, `belong-to-epics`, `story-row`, `epic-row`,
+`related-userstory-row`. Détails et bugs trouvés dans les commits individuels et la
+section précédente (piège attribut-vs-élément, écart de permissivité AngularJS/Angular).
+
+**`user-timeline-item` reste bloqué, pour une raison différente et plus profonde.** Son
+template utilise `tg-compile-html` (app/coffee/modules/common/compile-html.directive.coffee) :
+`element.html(newValue); $compile(element.contents())(scope)` — ça prend une chaîne HTML et
+la fait *compiler* par AngularJS contre le scope courant, exécutant tout directive/binding
+qu'elle contient. Le contenu compilé
+(`timeline.get('title_html')`, calculé côté client par
+`user-timeline-item-title.service.coffee`) contient un **vrai `tg-nav` fonctionnel intégré**
+généré dynamiquement, par ex. `<a tg-nav="project-issues-detail:project=timeline.getIn([...]),ref=timeline.getIn([...])">`
+— la MÊME syntaxe DSL en chaîne que l'ancien `tg-nav`, à évaluer contre le scope au moment
+de la compilation.
+
+Un simple `[innerHTML]` Angular ne compile RIEN de ce qui est injecté — l'attribut
+`tg-nav` intégré resterait totalement inerte (pas de href calculé, aucun clic
+fonctionnel). Pour porter ça fidèlement il faudrait soit :
+- appeler `$compile` manuellement depuis le composant Angular (récupérer le service
+  AngularJS, compiler la chaîne contre un scope construit à la main, insérer le noeud DOM
+  résultant) — un pont bien plus invasif que tout ce qui a été fait jusqu'ici, ou
+- réécrire `user-timeline-item-title.service.coffee` pour qu'il retourne des données
+  structurées (nom de route + params) plutôt qu'une chaîne HTML avec un `tg-nav` intégré —
+  ce qui dépasse le périmètre d'un simple leaf et touche un service partagé avec
+  `notifications.service.coffee`.
+
+Les deux options représentent un effort et un risque disproportionnés par rapport à un
+seul module — reporté plutôt que tenté sous pression de temps avec un résultat
+probablement cassé. Repéré aussi en passant : `tg-user-timeline-title` (utilisé dans le
+même template) ne correspond à aucune directive enregistrée nulle part — mort, comme
+`tg-related-userstories-create-form` trouvé plus tôt.
+
 ## Patron à suivre pour migrer un module suivant
 
 1. Repérer ses dépendances réelles (services/directives utilisés *et* utilisateurs) avant
