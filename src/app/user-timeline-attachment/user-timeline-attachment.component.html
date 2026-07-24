@@ -1,0 +1,18 @@
+<div class="activity-image-attachment" *ngIf="isImage; else genericAttachment">
+    <blockquote>
+        <a [href]="attachment.get('url')" [title]="'See ' + attachment.get('filename')" target="_blank">
+            <img [src]="attachment.get('thumb_url') || attachment.get('url')" [alt]="attachment.get('filename')" />
+        </a>
+    </blockquote>
+</div>
+
+<ng-template #genericAttachment>
+    <div class="single-attachment">
+        <blockquote>
+            <a [href]="attachment.get('url')" [title]="'Click to download ' + attachment.get('filename')" target="_blank">
+                <tg-svg svg-icon="icon-attachment"></tg-svg>
+                <span>{{ attachment.get('filename') }}</span>
+            </a>
+        </blockquote>
+    </div>
+</ng-template>

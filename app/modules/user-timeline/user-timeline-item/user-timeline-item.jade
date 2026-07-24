@@ -42,4 +42,4 @@
             p {{::timeline.getIn(['member','role', 'name'])}}
 
     div(tg-repeat="attachment in timeline.get('attachments')")
-            div(tg-user-timeline-attachment="attachment")
+            tg-user-timeline-attachment(bind-attachment="attachment")
