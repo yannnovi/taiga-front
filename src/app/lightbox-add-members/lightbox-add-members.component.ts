@@ -1,7 +1,13 @@
-import { Component, Inject, OnInit } from "@angular/core";
-import { AJS_CURRENT_USER_SERVICE, AJS_PROJECT_SERVICE, AJS_USER_SERVICE } from "../shared/ajs-tokens";
+import { Component, ElementRef, Inject, OnInit } from "@angular/core";
+import {
+    AJS_CURRENT_USER_SERVICE,
+    AJS_LIGHTBOX_SERVICE,
+    AJS_PROJECT_SERVICE,
+    AJS_USER_SERVICE,
+} from "../shared/ajs-tokens";
 
 declare const Immutable: any;
+declare const $: any;
 
 /**
  * Angular replacement for the AngularJS `tgLbAddMembers` directive
@@ -22,6 +28,10 @@ declare const Immutable: any;
  *
  * Both children (`tg-suggest-add-members`, `tg-invite-members-form`) are already
  * downgraded Angular components from earlier batches.
+ *
+ * The original's `link` called `lightboxService.open(el)` directly (it's what actually
+ * makes the lightbox visible - adds the `.open` class and sets `display: flex`); replicated
+ * here in the constructor, same as `NewsletterEmailLightboxComponent`.
  */
 @Component({
     selector: "tg-lb-add-members",
@@ -34,10 +44,14 @@ export class LightboxAddMembersComponent implements OnInit {
     displayContactList = false;
 
     constructor(
+        private elementRef: ElementRef,
+        @Inject(AJS_LIGHTBOX_SERVICE) private lightboxService: any,
         @Inject(AJS_USER_SERVICE) private userService: any,
         @Inject(AJS_CURRENT_USER_SERVICE) private currentUserService: any,
         @Inject(AJS_PROJECT_SERVICE) private projectService: any,
-    ) {}
+    ) {
+        this.lightboxService.open($(this.elementRef.nativeElement));
+    }
 
     ngOnInit(): void {
         const userId = this.currentUserService.getUser().get("id");

@@ -1,4 +1,4 @@
-import { Component, Inject, Input, OnChanges } from "@angular/core";
+import { Component, ElementRef, Inject, Input, OnChanges } from "@angular/core";
 import {
     AJS_CONFIRM,
     AJS_LIGHTBOX_SERVICE,
@@ -9,6 +9,7 @@ import {
 } from "../shared/ajs-tokens";
 
 declare const _: any;
+declare const $: any;
 
 /**
  * Angular replacement for the AngularJS `tgLbMoveToSprint` directive
@@ -16,6 +17,10 @@ declare const _: any;
  * the same name - the lightbox opened by the already-migrated `MoveToSprintComponent`.
  * That caller's `lightboxFactory.create` attrs switch from plain `sprint`/`open-items` to
  * `bind-sprint`/`bind-open-items`.
+ *
+ * The original's `link` called `lightboxService.open(el)` directly (it's what actually
+ * makes the lightbox visible - adds the `.open` class and sets `display: flex`); replicated
+ * here in the constructor, same as `NewsletterEmailLightboxComponent`.
  */
 @Component({
     selector: "tg-lb-move-to-sprint",
@@ -38,6 +43,7 @@ export class LightboxMoveToSprintComponent implements OnChanges {
     issuesCount = 0;
 
     constructor(
+        private elementRef: ElementRef,
         @Inject(AJS_ROOT_SCOPE) private rootScope: any,
         @Inject(AJS_TG_RESOURCES) private rs: any,
         @Inject(AJS_PROJECT_SERVICE) private projectService: any,
@@ -45,6 +51,7 @@ export class LightboxMoveToSprintComponent implements OnChanges {
         @Inject(AJS_LIGHTBOX_SERVICE) private lightboxService: any,
         @Inject(AJS_CONFIRM) private confirm: any,
     ) {
+        this.lightboxService.open($(this.elementRef.nativeElement));
         this.projectId = this.projectService.project.get("id");
         this.loadSprints();
     }

@@ -1,8 +1,9 @@
-import { Component, Inject, Input } from "@angular/core";
+import { Component, ElementRef, Inject, Input } from "@angular/core";
 import { AJS_CONFIRM, AJS_LIGHTBOX_SERVICE, AJS_PROJECT_LOGO_SERVICE, AJS_RESOURCES } from "../shared/ajs-tokens";
 
 declare const Immutable: any;
 declare const window: any;
+declare const $: any;
 
 /**
  * Angular replacement for the AngularJS `tgLbContactProject` directive
@@ -22,6 +23,10 @@ declare const window: any;
  * `tg-project-logo-big-src` fallback branch (template-less, replicated inline via
  * `tgProjectLogoService`) ever actually rendered. Simplified to just that one branch,
  * faithful to the original's actual (buggy) behavior rather than its apparent intent.
+ *
+ * The original's `link` called `lightboxService.open(el)` directly (it's what actually
+ * makes the lightbox visible - adds the `.open` class and sets `display: flex`); replicated
+ * here in the constructor, same as `NewsletterEmailLightboxComponent`.
  */
 @Component({
     selector: "tg-lb-contact-project",
@@ -35,11 +40,14 @@ export class LightboxContactProjectComponent {
     spinnerSrc = `${window._version}/svg/spinner-circle.svg`;
 
     constructor(
+        private elementRef: ElementRef,
         @Inject(AJS_LIGHTBOX_SERVICE) private lightboxService: any,
         @Inject(AJS_RESOURCES) private rs: any,
         @Inject(AJS_CONFIRM) private confirm: any,
         @Inject(AJS_PROJECT_LOGO_SERVICE) private projectLogoService: any,
-    ) {}
+    ) {
+        this.lightboxService.open($(this.elementRef.nativeElement));
+    }
 
     getLogoUrl(): string {
         const project = Immutable.fromJS(this.project);
