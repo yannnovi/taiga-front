@@ -931,6 +931,17 @@ et non affecté (ouvre un élément statique séparé depuis un click handler, p
 aussi vérifier que l'élément devient réellement visible (`.open` + `display`), pas
 seulement qu'il a du contenu.
 
+`tgLbImportError` → `LightboxImportErrorComponent` migré ensuite. La directive d'origine
+n'avait aucun `scope:` (scope ambiant), mais son seul appelant réel
+(`import-project.service.coffee`) passe toujours la même forme fixe
+(`{key, values: {max_memberships, members}}`), répliquée en deux `@Input()` plutôt qu'un
+refactor de scope ambiant plus large. `lightboxService.open(el)` répliqué dès le
+constructeur (leçon du bug précédent). Repéré mais volontairement non touché : deux des six
+branches `ng-switch` traduisent une clé locale (`PROJECT_MEMBERS_DESC`) qui n'existe pas
+dans `locale-en.json` (les vraies clés sont suffixées `_PRIVATE`/`_PUBLIC`) — bug préexistant
+sans lien avec la migration, confirmé pour dégrader de la même façon (clé brute affichée)
+avant et après.
+
 ## Patron à suivre pour migrer un module suivant
 
 1. Repérer ses dépendances réelles (services/directives utilisés *et* utilisateurs) avant
