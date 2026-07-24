@@ -747,6 +747,66 @@ Pas migré, à nettoyer un jour.
   (scope isolé, pas de dépendance connue à `tg-nav`) mais non explorés en détail faute de
   temps dans cette passe — bons points de départ pour la suite.
 
+### `tg-nav` version Angular (débloque les modules qui en dépendaient dans leur propre template)
+
+Jusqu'ici, tout module dont le *propre* template utilisait `tg-nav` était systématiquement
+écarté (`dropdown-project-list`, `dropdown-user`, `profile-bar`, `profile-contacts`,
+`profile-projects`, `user-timeline-item`, `epic-row`, `story-row`,
+`related-userstory-row`, `dropdown-notifications`, `highlighted`...) — `tg-nav` étant une
+directive AngularJS jQuery-lourde à fort rayon d'impact (calcul paresseux d'URL au
+survol, interception de clic, DSL de chaîne parsée à la main), jugée trop risquée à
+toucher directement.
+
+**Ce qui a été fait** : une **nouvelle** directive Angular `TgNavDirective`
+(`src/app/shared/tg-nav.directive.ts`), écrite from scratch, PAS un wrapper de
+l'ancienne. L'ancienne `tg-nav` AngularJS reste **intouchée** et continue de fonctionner
+exactement comme avant pour tous les templates encore AngularJS. La nouvelle directive
+Angular est additive : elle sert uniquement depuis les templates des *nouveaux* composants
+Angular, pour qu'un leaf n'ait plus à rester AngularJS uniquement à cause d'un lien de
+navigation.
+
+**Aucun changement du routing** : ngRoute reste seul maître de toutes les routes.
+`TgNavDirective` résout les URLs via les mêmes services existants (`$tgNavUrls`,
+`$tgSections`, injectés via le pont de tokens) et navigue via `$tgLocation` — la même
+mécanique que l'original, juste appelée depuis Angular.
+
+**Convention d'appel différente, volontairement** : le DSL de chaîne de l'original
+(`tg-nav="project:project=vm.x,section=vm.y"`, parsé à la main puis `$scope.$eval`'d)
+n'a pas d'équivalent Angular — Angular n'a pas de mécanisme pour évaluer une expression
+arbitraire depuis un attribut texte, et en réimplémenter un aurait juste été un `$parse`
+maison de moins bonne qualité. À la place, deux inputs Angular ordinaires :
+
+```html
+<a [tgNav]="'project'" [tgNavParams]="{project: x.slug, section: y}">
+```
+
+Comportement conservé : suffixe de route `project` via `$tgSections.getPath(...)`, ajout
+automatique du `user` courant aux params, vrai `href` posé sur les balises `<a>` (survol/
+clic-droit/nouvel onglet fonctionnent nativement), clic principal → navigation via
+`$tgLocation` + fermeture des lightboxes, clic milieu → nouvel onglet, meta/ctrl-clic
+laissé au navigateur, classe `.noclick` toujours respectée.
+
+**Simplification volontaire** : calcul de l'URL fait de façon eager (`ngOnChanges`) plutôt
+que paresseuse au `pointerenter` comme l'original (une optimisation perf pour les grosses
+listes) — plus simple et idiomatique côté Angular ; à revisiter seulement si un vrai souci
+de perf apparaît sur une grosse liste.
+
+**Preuve de concept** : `profile-bar` (`tgProfileBar`), écarté dans le lot précédent
+précisément pour cette raison, a été migré avec succès en utilisant
+`[tgNav]="'user-settings-user-profile'"`. Nouveaux tokens `AJS_AUTH` (`$tgAuth`) et
+`AJS_SECTIONS` (`$tgSections`).
+
+**Limite de vérification** : la page profil elle-même dépend d'un vrai backend pour son
+`resolve` de route (même limitation déjà rencontrée pour les autres pages de détail
+authentifiées) — build et karma vérifiés propres, zéro erreur console en naviguant vers la
+page, mais le clic de navigation lui-même n'a pas pu être vérifié interactivement dans cet
+environnement.
+
+**Pour la suite** : les modules listés au premier paragraphe (`dropdown-project-list`,
+`profile-contacts`, `profile-projects`, `epic-row`, `story-row`,
+`related-userstory-row`, `dropdown-notifications`, etc.) sont maintenant candidats à une
+migration en suivant ce même patron.
+
 ## Patron à suivre pour migrer un module suivant
 
 1. Repérer ses dépendances réelles (services/directives utilisés *et* utilisateurs) avant
