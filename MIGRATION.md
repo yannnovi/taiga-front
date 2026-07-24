@@ -541,6 +541,55 @@ formulations de grep (`$` échappé, avec/sans le dossier `resources/`) et, si p
 avec un vrai clic dans un navigateur plutôt qu'une simple compilation propre - c'est
 exactement ce qui a permis de détecter celui-ci.
 
+### Troisième lot de leafs en place (5 modules)
+
+Cinq composants de plus, même patron "leaf en place", résumés ensemble.
+
+- **`history-entry`** : `tg-avatar` (encore une directive sans template, même famille que
+  `tg-loading`/`tg-autofocus`/`tg-check-permission`) répliqué en ligne via `tgAvatarService`.
+  L'original contenait un `ng-alt="{{entry.user.name}}"` - pas un vrai attribut AngularJS
+  (aucune directive ne s'appelle `ngAlt`), donc un no-op sans effet - omis comme le reste du
+  balisage mort déjà rencontré ailleurs.
+- **`user-timeline-attachment`** : l'original choisissait entre deux templates au moment du
+  link via `$compile` + `$tgTemplate.get(...)` selon que la pièce jointe est une image -
+  remplacé nativement par `*ngIf`/`*ngIf; else`. **Bug de l'original reproduit
+  fidèlement** : `isImage()` calculait `url.indexOf(extension, url - extension.length)` -
+  soustraire un nombre d'une chaîne donne `NaN`, et `indexOf` traite un `fromIndex` `NaN`
+  comme `0`, donc malgré l'air d'un test "se termine par", le code vérifie en réalité si
+  l'extension apparaît *n'importe où* dans l'url. Reproduit tel quel via `.includes()` (le
+  comportement réel, pas celui que le code a l'air de viser).
+- **`move-to-sprint`** : nouveau token `AJS_LIGHTBOX_FACTORY` (`tgLightboxFactory`). Point
+  d'attention : `lightboxFactory.create(name, attrs, scopeAttrs)` construit un nouveau scope
+  AngularJS à partir de `scopeAttrs` puis pose `attrs` comme attributs HTML littéraux sur
+  l'élément compilé - `attrs.sprint = "sprint"` est l'*expression* `"sprint"` évaluée contre
+  ce nouveau scope, pas une valeur littérale. L'appel est reproduit à l'identique pour que
+  `tg-lb-move-to-sprint` (une lightbox non touchée, toujours AngularJS) continue de
+  fonctionner sans modification.
+- **`suggest-add-members`** : `@Output()`s nommés `inviteSuggested`/`inviteEmail` (pas
+  `onInviteSuggested`/`onInviteEmail`) pour matcher les attributs existants
+  `on-invite-suggested`/`on-invite-email` du seul appelant - même piège que partout ailleurs
+  dans cette migration.
+- **`attachments-simple`** : `tg-attachments-drop` et `tg-file-change` (deux directives sans
+  template, même famille que `tg-avatar`) répliquées en `(dragover)`/`(dragleave)`/`(drop)`/
+  `(change)` natifs. Nouveau token `AJS_ATTACHMENTS_SERVICE` (`tgAttachmentsService`).
+  L'original gardait `if @.onAdd`/`if @.onDelete` avant d'émettre puisqu'un binding `&`
+  AngularJS peut rester non fourni - un `@Output()` Angular existe toujours, `.emit()` sans
+  auditeur est déjà un no-op équivalent, donc la garde est omise.
+
+Trois nouveaux pipes partagés au passage : `tgMomentFormat` (`moment-format.pipe.ts`, wrap du
+filtre `momentFormat`), `tgMarkdownToHtml` (`markdown-to-html.pipe.ts`, wrap de
+`tgWysiwygService.getHTML()` - nouveau token `AJS_WYSIWYG_SERVICE`), `tgSizeFormat`
+(`size-format.pipe.ts`, wrap de l'utilitaire global `taiga.sizeFormat`).
+
+Vérifié : build Angular propre (`strictTemplates`), karma **433/433** (437 - 4 tests des
+specs de contrôleur/directive supprimés), et absence de régression sur `/` (page d'accueil
+rechargée en Chrome headless, session simulée via `localStorage.setItem('userInfo', ...)`,
+zéro erreur console/exception JS). Les cinq nouveaux composants vivent dans des zones
+profondément imbriquées (historique de ticket, timeline utilisateur, résumé de sprint,
+invitation de membres, pièces jointes d'epic/ticket) qui nécessitent une session
+authentifiée réelle contre un `taiga-back` pour être exercées au-delà de la compilation -
+non vérifiables interactivement dans cet environnement, comme les lots précédents.
+
 ## Patron à suivre pour migrer un module suivant
 
 1. Repérer ses dépendances réelles (services/directives utilisés *et* utilisateurs) avant

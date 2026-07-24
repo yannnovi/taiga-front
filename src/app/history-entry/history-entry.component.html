@@ -1,0 +1,22 @@
+<div class="entry-wrapper">
+    <img class="entry-avatar" [src]="avatar.url" [title]="avatar.fullName" [alt]="avatar.fullName" [style.background]="avatar.bg" />
+    <div class="entry-main">
+        <div class="entry-data">
+            <span class="entry-creator">{{ entry.user.full_name_display }}</span>
+            <span class="entry-date">{{ entry.date | tgMomentFormat:'DD MMM YYYY HH:mm' }}</span>
+            <tg-svg
+                class="display-full-entry"
+                svg-icon="icon-arrow-down"
+                [class.inactive]="!displayFullEntry"
+                (click)="toggleDisplayFullEntry()"
+                [style.display]="entry.comment.length >= 75 ? '' : 'none'"
+            ></tg-svg>
+        </div>
+        <div
+            class="entry-text"
+            [class.ellipsed]="!displayFullEntry && entry.comment.length >= 75"
+            [class.blurry]="entry.comment.length >= 75 && !displayFullEntry"
+            [innerHTML]="entry.comment | tgMarkdownToHtml"
+        ></div>
+    </div>
+</div>

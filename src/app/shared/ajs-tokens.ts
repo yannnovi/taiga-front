@@ -39,6 +39,10 @@ export const AJS_TG_RESOURCES = new InjectionToken<any>("$tgResources");
 export const AJS_STORAGE = new InjectionToken<any>("$tgStorage");
 export const AJS_CONFIRM = new InjectionToken<any>("$tgConfirm");
 export const AJS_EMOJIS = new InjectionToken<any>("$tgEmojis");
+export const AJS_WYSIWYG_SERVICE = new InjectionToken<any>("tgWysiwygService");
+export const AJS_TASKBOARD_TASKS_SERVICE = new InjectionToken<any>("tgTaskboardTasks");
+export const AJS_LIGHTBOX_FACTORY = new InjectionToken<any>("tgLightboxFactory");
+export const AJS_ATTACHMENTS_SERVICE = new InjectionToken<any>("tgAttachmentsService");
 
 export function upgradedService(token: InjectionToken<any>, ajsName: string): Provider {
     return {

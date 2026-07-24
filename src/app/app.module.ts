@@ -45,6 +45,16 @@ import { PromoteToUsButtonComponent } from "./promote-to-us/promote-to-us.compon
 import "./promote-to-us/register-legacy";
 import { TagComponent } from "./tag/tag.component";
 import "./tag/register-legacy";
+import { HistoryEntryComponent } from "./history-entry/history-entry.component";
+import "./history-entry/register-legacy";
+import { UserTimelineAttachmentComponent } from "./user-timeline-attachment/user-timeline-attachment.component";
+import "./user-timeline-attachment/register-legacy";
+import { MoveToSprintComponent } from "./move-to-sprint/move-to-sprint.component";
+import "./move-to-sprint/register-legacy";
+import { SuggestAddMembersComponent } from "./suggest-add-members/suggest-add-members.component";
+import "./suggest-add-members/register-legacy";
+import { AttachmentsSimpleComponent } from "./attachments-simple/attachments-simple.component";
+import "./attachments-simple/register-legacy";
 import { TgHomeProjectListUpgradedDirective } from "./upgraded/tg-home-project-list.upgraded-directive";
 import { TgWorkingOnUpgradedDirective } from "./upgraded/tg-working-on.upgraded-directive";
 import { TgDiscoverSearchBarUpgradedDirective } from "./upgraded/tg-discover-search-bar.upgraded-directive";
@@ -76,10 +86,16 @@ import {
     AJS_TRANSLATE,
     AJS_WINDOW,
     AJS_XHR_ERROR_SERVICE,
+    AJS_WYSIWYG_SERVICE,
+    AJS_LIGHTBOX_FACTORY,
+    AJS_ATTACHMENTS_SERVICE,
     upgradedService,
 } from "./shared/ajs-tokens";
 import { TgTranslatePipe } from "./shared/translate.pipe";
 import { TgEmojifyPipe } from "./shared/emojify.pipe";
+import { TgMomentFormatPipe } from "./shared/moment-format.pipe";
+import { TgMarkdownToHtmlPipe } from "./shared/markdown-to-html.pipe";
+import { TgSizeFormatPipe } from "./shared/size-format.pipe";
 
 /**
  * Hybrid shell for the AngularJS -> Angular migration: AngularJS keeps owning the app
@@ -110,6 +126,11 @@ import { TgEmojifyPipe } from "./shared/emojify.pipe";
         ColorSelectorComponent,
         PromoteToUsButtonComponent,
         TagComponent,
+        HistoryEntryComponent,
+        UserTimelineAttachmentComponent,
+        MoveToSprintComponent,
+        SuggestAddMembersComponent,
+        AttachmentsSimpleComponent,
         TgWorkingOnUpgradedDirective,
         TgHomeProjectListUpgradedDirective,
         TgDiscoverSearchBarUpgradedDirective,
@@ -120,6 +141,9 @@ import { TgEmojifyPipe } from "./shared/emojify.pipe";
         TgNotificationsListUpgradedDirective,
         TgTranslatePipe,
         TgEmojifyPipe,
+        TgMomentFormatPipe,
+        TgMarkdownToHtmlPipe,
+        TgSizeFormatPipe,
     ],
     providers: [
         upgradedService(AJS_CURRENT_USER_SERVICE, "tgCurrentUserService"),
@@ -144,6 +168,9 @@ import { TgEmojifyPipe } from "./shared/emojify.pipe";
         upgradedService(AJS_STORAGE, "$tgStorage"),
         upgradedService(AJS_CONFIRM, "$tgConfirm"),
         upgradedService(AJS_EMOJIS, "$tgEmojis"),
+        upgradedService(AJS_WYSIWYG_SERVICE, "tgWysiwygService"),
+        upgradedService(AJS_LIGHTBOX_FACTORY, "tgLightboxFactory"),
+        upgradedService(AJS_ATTACHMENTS_SERVICE, "tgAttachmentsService"),
     ],
 })
 export class AppModule implements DoBootstrap {
