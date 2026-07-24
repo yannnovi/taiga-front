@@ -1,0 +1,57 @@
+<button
+    class="track-button watch-button"
+    [title]="'PROJECT.WATCH_BUTTON.BUTTON_TITLE' | tgTranslate"
+    (click)="toggleWatcherOptions()"
+    [class.active]="project.get('is_watcher')"
+>
+    <span class="track-inner">
+        <span class="track-icon">
+            <tg-svg svg-icon="icon-watch"></tg-svg>
+        </span>
+        <span *ngIf="!project.get('is_watcher')">{{ "PROJECT.WATCH_BUTTON.WATCH" | tgTranslate }}</span>
+        <span *ngIf="project.get('is_watcher')">{{ "PROJECT.WATCH_BUTTON.WATCHING" | tgTranslate }}</span>
+        <tg-svg class="watch-options-arrow" svg-icon="icon-arrow-down"></tg-svg>
+    </span>
+
+    <span
+        class="track-button-counter"
+        [title]="'PROJECT.WATCH_BUTTON.COUNTER_TITLE' | tgTranslate:{total: project.get('total_watchers') || 0}:'messageformat'"
+    >
+        <img *ngIf="loading" class="loading-spinner" [src]="spinnerSrc" alt="loading..." />
+        <ng-container *ngIf="!loading">{{ project.get("total_watchers") }}</ng-container>
+    </span>
+</button>
+
+<ul class="watch-options" [class.hidden]="!showWatchOptions" (mouseleave)="closeWatcherOptions()">
+    <li>
+        <a
+            href=""
+            [title]="'PROJECT.WATCH_BUTTON.OPTIONS.NOTIFY_ALL_TITLE' | tgTranslate"
+            (click)="watch(2)"
+            [class.active]="project.get('is_watcher') && project.get('notify_level') == 2"
+        >
+            <span>{{ "PROJECT.WATCH_BUTTON.OPTIONS.NOTIFY_ALL" | tgTranslate }}</span>
+            <span class="watch-check" *ngIf="project.get('is_watcher') && project.get('notify_level') == 2">
+                <tg-svg svg-icon="icon-check-empty"></tg-svg>
+            </span>
+        </a>
+    </li>
+    <li>
+        <a
+            href=""
+            [title]="'PROJECT.WATCH_BUTTON.OPTIONS.NOTIFY_INVOLVED_TITLE' | tgTranslate"
+            (click)="watch(1)"
+            [class.active]="project.get('is_watcher') && project.get('notify_level') == 1"
+        >
+            <span>{{ "PROJECT.WATCH_BUTTON.OPTIONS.NOTIFY_INVOLVED" | tgTranslate }}</span>
+            <span class="watch-check" *ngIf="project.get('is_watcher') && project.get('notify_level') == 1">
+                <tg-svg svg-icon="icon-check-empty"></tg-svg>
+            </span>
+        </a>
+    </li>
+    <li *ngIf="project.get('is_watcher')">
+        <a href="" [title]="'PROJECT.WATCH_BUTTON.OPTIONS.UNWATCH_TITLE' | tgTranslate" (click)="unwatch()">
+            <span>{{ "PROJECT.WATCH_BUTTON.OPTIONS.UNWATCH" | tgTranslate }}</span>
+        </a>
+    </li>
+</ul>

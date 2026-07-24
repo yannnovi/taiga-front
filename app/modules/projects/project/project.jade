@@ -30,11 +30,11 @@ div.wrapper
                         )
 
                     div.track-buttons-container(ng-if="vm.user")
-                        tg-like-project-button(project="vm.project")
-                        tg-watch-project-button(project="vm.project")
+                        tg-like-project-button(bind-project="vm.project")
+                        tg-watch-project-button(bind-project="vm.project")
                         tg-contact-project-button(
                             ng-if="!vm.project.get('archived_code') && vm.project.get('is_contact_activated')"
-                            project="vm.project"
+                            bind-project="vm.project"
                         )
 
                     div.track-container(ng-if="!vm.user")
@@ -72,7 +72,7 @@ div.wrapper
                         p(ng-if="vm.project.get('looking_for_people_note')") {{::vm.project.get('looking_for_people_note')}}
                         tg-contact-project-button(
                             ng-if="vm.isAuthenticated && vm.project.get('is_contact_activated')"
-                            project="vm.project"
+                            bind-project="vm.project"
                             layout="large"
                         )
                         div(ng-if="!vm.isAuthenticated")

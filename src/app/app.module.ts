@@ -55,6 +55,12 @@ import { SuggestAddMembersComponent } from "./suggest-add-members/suggest-add-me
 import "./suggest-add-members/register-legacy";
 import { AttachmentsSimpleComponent } from "./attachments-simple/attachments-simple.component";
 import "./attachments-simple/register-legacy";
+import { ContactProjectButtonComponent } from "./contact-project-button/contact-project-button.component";
+import "./contact-project-button/register-legacy";
+import { LikeProjectButtonComponent } from "./like-project-button/like-project-button.component";
+import "./like-project-button/register-legacy";
+import { WatchProjectButtonComponent } from "./watch-project-button/watch-project-button.component";
+import "./watch-project-button/register-legacy";
 import { TgHomeProjectListUpgradedDirective } from "./upgraded/tg-home-project-list.upgraded-directive";
 import { TgWorkingOnUpgradedDirective } from "./upgraded/tg-working-on.upgraded-directive";
 import { TgDiscoverSearchBarUpgradedDirective } from "./upgraded/tg-discover-search-bar.upgraded-directive";
@@ -89,6 +95,8 @@ import {
     AJS_WYSIWYG_SERVICE,
     AJS_LIGHTBOX_FACTORY,
     AJS_ATTACHMENTS_SERVICE,
+    AJS_LIKE_PROJECT_BUTTON_SERVICE,
+    AJS_WATCH_PROJECT_BUTTON_SERVICE,
     upgradedService,
 } from "./shared/ajs-tokens";
 import { TgTranslatePipe } from "./shared/translate.pipe";
@@ -131,6 +139,9 @@ import { TgSizeFormatPipe } from "./shared/size-format.pipe";
         MoveToSprintComponent,
         SuggestAddMembersComponent,
         AttachmentsSimpleComponent,
+        ContactProjectButtonComponent,
+        LikeProjectButtonComponent,
+        WatchProjectButtonComponent,
         TgWorkingOnUpgradedDirective,
         TgHomeProjectListUpgradedDirective,
         TgDiscoverSearchBarUpgradedDirective,
@@ -171,6 +182,8 @@ import { TgSizeFormatPipe } from "./shared/size-format.pipe";
         upgradedService(AJS_WYSIWYG_SERVICE, "tgWysiwygService"),
         upgradedService(AJS_LIGHTBOX_FACTORY, "tgLightboxFactory"),
         upgradedService(AJS_ATTACHMENTS_SERVICE, "tgAttachmentsService"),
+        upgradedService(AJS_LIKE_PROJECT_BUTTON_SERVICE, "tgLikeProjectButtonService"),
+        upgradedService(AJS_WATCH_PROJECT_BUTTON_SERVICE, "tgWatchProjectButtonService"),
     ],
 })
 export class AppModule implements DoBootstrap {

@@ -1,0 +1,9 @@
+<button
+    class="track-button contact-team e2e-contact-team"
+    [title]="'PROJECT.CONTACT_BUTTON.CONTACT_TITLE' | tgTranslate"
+    (click)="launchContactForm()"
+    [class.contact-team-large]="layout === 'large'"
+>
+    <tg-svg svg-icon="icon-mail"></tg-svg>
+    <span *ngIf="layout === 'large'">{{ "PROJECT.CONTACT_BUTTON.CONTACT_BUTTON" | tgTranslate }}</span>
+</button>
