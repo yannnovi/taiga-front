@@ -1,0 +1,7 @@
+<div *ngIf="!project.get('i_am_owner')">
+    <div>{{ "PROJECT.BLOCKED_PROJECT.THIS_PROJECT_IS_BLOCKED" | tgTranslate }}</div>
+</div>
+
+<div *ngIf="project.get('i_am_owner')">
+    <div>{{ "PROJECT.BLOCKED_PROJECT.TO_UNBLOCK_CONTACT_THE_ADMIN_STAFF" | tgTranslate }}</div>
+</div>

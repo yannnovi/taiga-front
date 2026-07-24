@@ -61,6 +61,10 @@ import { LikeProjectButtonComponent } from "./like-project-button/like-project-b
 import "./like-project-button/register-legacy";
 import { WatchProjectButtonComponent } from "./watch-project-button/watch-project-button.component";
 import "./watch-project-button/register-legacy";
+import { BlockedProjectExplanationComponent } from "./blocked-project-explanation/blocked-project-explanation.component";
+import "./blocked-project-explanation/register-legacy";
+import { CantOwnProjectExplanationComponent } from "./cant-own-project-explanation/cant-own-project-explanation.component";
+import "./cant-own-project-explanation/register-legacy";
 import { TgHomeProjectListUpgradedDirective } from "./upgraded/tg-home-project-list.upgraded-directive";
 import { TgWorkingOnUpgradedDirective } from "./upgraded/tg-working-on.upgraded-directive";
 import { TgDiscoverSearchBarUpgradedDirective } from "./upgraded/tg-discover-search-bar.upgraded-directive";
@@ -142,6 +146,8 @@ import { TgSizeFormatPipe } from "./shared/size-format.pipe";
         ContactProjectButtonComponent,
         LikeProjectButtonComponent,
         WatchProjectButtonComponent,
+        BlockedProjectExplanationComponent,
+        CantOwnProjectExplanationComponent,
         TgWorkingOnUpgradedDirective,
         TgHomeProjectListUpgradedDirective,
         TgDiscoverSearchBarUpgradedDirective,
