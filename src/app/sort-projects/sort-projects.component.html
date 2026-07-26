@@ -1,0 +1,41 @@
+<ul cdkDropList (cdkDropListDropped)="drop($event)">
+    <li
+        class="list-itemtype-project"
+        cdkDrag
+        *ngFor="let project of displayProjects"
+        [class.blocked-project]="project.get('blocked_code')"
+        [class.archived-project]="project.get('archived_code')"
+    >
+        <div class="list-itemtype-project-left">
+            <div class="list-itemtype-project-data-wrapper">
+                <a
+                    class="list-itemtype-project-image"
+                    href="#"
+                    [tgNav]="'project'"
+                    [tgNavParams]="{project: project.get('slug'), section: project.get('my_homepage')}"
+                    [title]="project.get('name')"
+                >
+                    <img [src]="getProjectLogoUrl(project)" [style.background]="getProjectLogoBg(project)" [alt]="project.get('name')" />
+                </a>
+                <div class="list-itemtype-project-data">
+                    <div class="list-itemtype-data-title">
+                        <a
+                            class="project-title"
+                            href="#"
+                            [tgNav]="'project'"
+                            [tgNavParams]="{project: project.get('slug'), section: project.get('my_homepage')}"
+                            [title]="project.get('name')"
+                        >{{ project.get('name') }}</a>
+                        <tg-svg *ngIf="project.get('is_private')" svg-icon="icon-private" svg-title-translate="PROJECT.PRIVATE"></tg-svg>
+                        <tg-svg *ngIf="project.get('i_am_owner')" svg-icon="icon-badge" svg-title-translate="COMMON.OWNER"></tg-svg>
+                        <tg-svg *ngIf="project.get('blocked_code') || project.get('archived_code')" svg-icon="icon-blocked-project" svg-title-translate="PROJECT.BLOCKED_PROJECT.BLOCKED"></tg-svg>
+                    </div>
+                    <div class="list-itemtype-data-meta project-description">
+                        {{ descriptionPreview(project) }}<span *ngIf="project.get('description')?.length > 300">...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <tg-svg class="drag" svg-icon="icon-draggable"></tg-svg>
+    </li>
+</ul>

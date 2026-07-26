@@ -942,6 +942,45 @@ dans `locale-en.json` (les vraies clés sont suffixées `_PRIVATE`/`_PUBLIC`) �
 sans lien avec la migration, confirmé pour dégrader de la même façon (clé brute affichée)
 avant et après.
 
+### Phase 2, sous-projet 1 : dragula → @angular/cdk/drag-drop — premier module (`tgSortProjects`)
+
+Un audit complet des 10 usages de `dragula` dans le code (voir `MIGRATION_ROADMAP.md`) a
+montré que ce n'est pas un bloc homogène : `tgSortProjects` (scope isolé, un seul appelant,
+un seul conteneur, pas de `window.dragMultiple`) était le seul candidat immédiat ; les
+autres sont soit entangled avec un blocage de scope ambiant déjà connu, soit du drag
+multi-conteneurs complexe (backlog/kanban/taskboard) qui reste un chantier séparé.
+
+`@angular/cdk@17.3.10` ajouté (compatible avec `@angular/core@^17.3.0`), `DragDropModule`
+importé dans `app.module.ts`. `tgSortProjects` → `SortProjectsComponent` : contrairement
+aux migrations précédentes, ce n'est pas une simple substitution de directive — la
+directive d'origine enveloppait une liste déjà existante (`ul`/`tg-repeat`) avec `dragula`
+plutôt que de la posséder ; migrer cette liste vers `@angular/cdk/drag-drop` a donc demandé
+d'internaliser **toute la liste** (le `ul` et ses `li`) dans le nouveau composant plutôt que
+juste le wrapper de drag — même logique que `epic-row`/`story-row` qui possèdent déjà leur
+propre liste d'enfants. Aucune tentative de downgrader les directives CDK elles-mêmes dans
+un template AngularJS (technique jamais éprouvée dans ce projet, jugée plus risquée que
+d'internaliser la liste).
+
+**Bug réel trouvé et corrigé avant de committer** : `@angular/cdk/drag-drop` ne déplace pas
+lui-même le DOM au drop (contrairement à `dragula`, qui manipule physiquement le nœud
+déplacé pour un retour visuel instantané) — l'app est censée réordonner son propre tableau
+lié dans `(cdkDropListDropped)`. Un premier essai appelait `moveItemInArray` sur une copie
+jetable (`this.projects.toJS()`) sans jamais la réutiliser pour l'affichage : la commande
+serveur (`bulkUpdateProjectsOrder`) partait avec les bonnes données, mais la liste affichée
+revenait visuellement à l'ordre d'avant, sans retour optimiste. Corrigé en gardant une copie
+locale mutable (`displayProjects`, rafraîchie depuis `@Input() projects` à chaque
+changement) que `drop()` réordonne immédiatement pour le rendu, exactement comme le
+comportement optimiste du `dragula` d'origine (la liste réelle se corrige d'elle-même dès
+que le parent recharge et repasse un nouveau `@Input() projects`).
+
+**Première vérification de ce type dans toute la migration** : comme ce module implique un
+vrai geste utilisateur (pas juste du rendu statique), la vérification en navigateur headless
+a simulé un vrai drag via CDP (`Input.dispatchMouseEvent`: `mousePressed` → plusieurs
+`mouseMoved` → `mouseReleased` entre le 1er et le 3ème item) plutôt que de se contenter d'un
+dump du DOM. Confirmé : l'ordre visuel change immédiatement après le drop, et
+`bulkUpdateProjectsOrder` est appelé avec le payload `{project_id, order}` correctement
+recalculé. Karma (367 specs) reste vert.
+
 **Les quatre candidats Phase 1 restants se sont tous révélés bloqués à la lecture du code**
 — la feuille de route les avait listés comme "quick wins probables" sans avoir vérifié leur
 implémentation en détail (comme elle le prévenait elle-même de ne pas faire) :

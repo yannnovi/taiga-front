@@ -2,6 +2,7 @@ import { DoBootstrap, NgModule } from "@angular/core";
 import { BrowserModule } from "@angular/platform-browser";
 import { UpgradeModule } from "@angular/upgrade/static";
 import { FormsModule } from "@angular/forms";
+import { DragDropModule } from "@angular/cdk/drag-drop";
 
 import { HomeComponent } from "./home/home.component";
 import "./home/register-legacy";
@@ -103,6 +104,8 @@ import { LightboxContactProjectComponent } from "./lightbox-contact-project/ligh
 import "./lightbox-contact-project/register-legacy";
 import { LightboxImportErrorComponent } from "./lightbox-import-error/lightbox-import-error.component";
 import "./lightbox-import-error/register-legacy";
+import { SortProjectsComponent } from "./sort-projects/sort-projects.component";
+import "./sort-projects/register-legacy";
 import { AttachmentsPreviewComponent } from "./attachments-preview/attachments-preview.component";
 import "./attachments-preview/register-legacy";
 import { NoMoreMembershipsExplanationComponent } from "./no-more-memberships-explanation/no-more-memberships-explanation.component";
@@ -192,7 +195,7 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
  * are added incrementally via upgrade/downgrade. Nothing here replaces AngularJS yet.
  */
 @NgModule({
-    imports: [BrowserModule, UpgradeModule, FormsModule],
+    imports: [BrowserModule, UpgradeModule, FormsModule, DragDropModule],
     declarations: [
         HomeComponent,
         DiscoverHomeComponent,
@@ -244,6 +247,7 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         LightboxMoveToSprintComponent,
         LightboxContactProjectComponent,
         LightboxImportErrorComponent,
+        SortProjectsComponent,
         AttachmentsPreviewComponent,
         NoMoreMembershipsExplanationComponent,
         DutyComponent,

@@ -72,6 +72,19 @@ tests), pas un "module de plus". À choisir un par un selon la priorité produit
    kanban, le backlog, le taskboard (`*-sortable`, `tg-kanban-*`, `tg-backlog-*`,
    `tg-taskboard-*`), et aussi `tgWikiNav`. C'est le bloc le plus gros et le plus visible
    du reste de l'app.
+
+   **🚧 En cours.** Infrastructure en place (`@angular/cdk@17.3.10`, `DragDropModule`
+   importé) et premier module migré : `tgSortProjects` → `SortProjectsComponent` (motif
+   validé : la liste entière internalisée dans le composant, pas de downgrade des
+   directives CDK dans un template AngularJS ; un vrai geste de drag simulé en navigateur
+   a été vérifié, pas seulement le rendu statique — détails et bug corrigé au passage dans
+   `MIGRATION.md`). Prochains candidats, dans l'ordre : `tgAttachmentsSortable`,
+   `tgRelatedUserstoriesSortable`, `tgEpicsSortable` (scope ambiant mais items déjà
+   Angular pour au moins les deux premiers — à vérifier chacun) ; puis les 3 usages de
+   `admin/project-values.coffee` (scope ambiant à lever d'abord) ; les trois gros
+   (`backlog`/`kanban`/`taskboard`) restent un chantier séparé, à cause du drag
+   multi-conteneurs dynamique et de `window.dragMultiple` (aucun équivalent CDK prêt à
+   l'emploi).
 2. **Éditeur WYSIWYG (CKEditor → wrapper `UpgradeComponent` ou remplacement moderne)** —
    débloque `comment`/`comments` et les champs description partout (`tg-item-wysiwyg`).
 3. **Validation de formulaire (checksley → Angular Reactive Forms)** — débloque
