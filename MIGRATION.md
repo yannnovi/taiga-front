@@ -1013,6 +1013,38 @@ Vérifié en navigateur headless (profil neuf) avec un vrai drag simulé (comme
 visuellement, l'événement `reorder` part avec le bon attachment et le bon index, et
 l'événement `toggle` part au clic. Karma (367 specs) reste vert.
 
+### Phase 2, sous-projet 1 (suite) : `tgRelatedUserstoriesSortable`
+
+Troisième module. Même situation que les deux précédents : la directive d'origine
+enveloppait la section `.related-userstories-body` de `related-userstories.jade`
+(propriété de `tgRelatedUserstories`, dont le scope est en fait isolé et propre — bloqué
+de la migration complète seulement par son enfant `tg-related-userstories-create`, encore
+AngularJS, non audité ici) plutôt que de la posséder — migrée en internalisant uniquement
+cette section (la liste triable de `tg-related-userstory-row`, déjà un composant Angular
+d'un lot précédent) dans `RelatedUserstoriesSortableComponent`, en laissant le reste de
+`related-userstories.jade` inchangé. Au passage, le `div(tg-related-userstories-create-form)`
+en fin de template — déjà confirmé mort dans un lot précédent (aucune directive
+enregistrée sous ce nom) — a été supprimé.
+
+Deux vérifications de permission distinctes existaient dans l'original et sont gardées
+distinctes ici plutôt que fusionnées : le `link` de la directive n'instanciait `dragula`
+que si `projectService.hasPermission("modify_epic")` (vérifié une seule fois, pas de façon
+réactive) — répliqué via `[cdkDropListDisabled]`, calculé une seule fois dans le
+constructeur ; alors que la classe CSS `sortable` dépendait de `vm.userCanSort()`
+(`projectService.canEdit("modify_epic")`, une méthode différente) - gardée comme un
+`@Input()` séparé plutôt que de supposer que les deux vérifications sont interchangeables.
+
+Comme `tgSortProjects` (et contrairement à `tgAttachmentsSortable`),
+`epicsService.reorderRelatedUserstory` ne réordonne pas ses propres données avant l'appel
+serveur - il recalcule les données d'ordre, appelle l'API, puis recharge toute la liste au
+succès. Une copie locale mutable (`displayUserstories`) est donc réordonnée immédiatement
+dans `drop()` pour le même retour visuel optimiste que `dragula` donnait gratuitement.
+
+Vérifié en navigateur headless (profil neuf) avec un vrai drag simulé entre le 1er et le
+3ème item (permissions forcées à `true` sur le service stubé pour permettre le test) : les
+3 lignes se rendent, l'événement `reorder` part avec la bonne userstory et le bon index,
+aucune erreur console. Karma (367 specs) reste vert.
+
 **Les quatre candidats Phase 1 restants se sont tous révélés bloqués à la lecture du code**
 — la feuille de route les avait listés comme "quick wins probables" sans avoir vérifié leur
 implémentation en détail (comme elle le prévenait elle-même de ne pas faire) :

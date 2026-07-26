@@ -19,17 +19,11 @@ section.related-userstories(
           load-related-userstories="vm.loadRelatedUserstories()"
         )
 
-    .related-userstories-body(
-        tg-related-userstories-sortable="vm.reorderRelatedUserstory(us, newIndex)"
+    tg-related-userstories-sortable(
+        bind-userstories="vm.userstories"
+        bind-epic="vm.epic"
+        bind-project="vm.project"
+        bind-user-can-sort="vm.userCanSort()"
+        on-reorder="vm.reorderRelatedUserstory($event.us, $event.newIndex)"
+        on-load-related-userstories="vm.loadRelatedUserstories()"
     )
-        tg-related-userstory-row.row(
-            tg-repeat="us in vm.userstories track by us.get('id')"
-            ng-class="{closed: us.get('is_closed'), blocked: us.get('is_blocked'), sortable: vm.userCanSort()}"
-            bind-userstory="us"
-            bind-epic="vm.epic"
-            bind-project="vm.project"
-            on-load-related-userstories="vm.loadRelatedUserstories()"
-            tg-bind-scope
-        )
-
-    div(tg-related-userstories-create-form)

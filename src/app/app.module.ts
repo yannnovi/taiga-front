@@ -108,6 +108,8 @@ import { SortProjectsComponent } from "./sort-projects/sort-projects.component";
 import "./sort-projects/register-legacy";
 import { AttachmentsSortableComponent } from "./attachments-sortable/attachments-sortable.component";
 import "./attachments-sortable/register-legacy";
+import { RelatedUserstoriesSortableComponent } from "./related-userstories-sortable/related-userstories-sortable.component";
+import "./related-userstories-sortable/register-legacy";
 import { AttachmentsPreviewComponent } from "./attachments-preview/attachments-preview.component";
 import "./attachments-preview/register-legacy";
 import { NoMoreMembershipsExplanationComponent } from "./no-more-memberships-explanation/no-more-memberships-explanation.component";
@@ -251,6 +253,7 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         LightboxImportErrorComponent,
         SortProjectsComponent,
         AttachmentsSortableComponent,
+        RelatedUserstoriesSortableComponent,
         AttachmentsPreviewComponent,
         NoMoreMembershipsExplanationComponent,
         DutyComponent,

@@ -1,0 +1,15 @@
+<div class="related-userstories-body" cdkDropList [cdkDropListDisabled]="sortingDisabled" (cdkDropListDropped)="drop($event)">
+    <tg-related-userstory-row
+        class="row"
+        *ngFor="let us of displayUserstories"
+        cdkDrag
+        [cdkDragDisabled]="sortingDisabled"
+        [class.closed]="us.get('is_closed')"
+        [class.blocked]="us.get('is_blocked')"
+        [class.sortable]="userCanSort"
+        [userstory]="us"
+        [epic]="epic"
+        [project]="project"
+        (loadRelatedUserstories)="loadRelatedUserstories.emit()"
+    ></tg-related-userstory-row>
+</div>
