@@ -110,6 +110,8 @@ import { AttachmentsSortableComponent } from "./attachments-sortable/attachments
 import "./attachments-sortable/register-legacy";
 import { RelatedUserstoriesSortableComponent } from "./related-userstories-sortable/related-userstories-sortable.component";
 import "./related-userstories-sortable/register-legacy";
+import { EpicsSortableComponent } from "./epics-sortable/epics-sortable.component";
+import "./epics-sortable/register-legacy";
 import { AttachmentsPreviewComponent } from "./attachments-preview/attachments-preview.component";
 import "./attachments-preview/register-legacy";
 import { NoMoreMembershipsExplanationComponent } from "./no-more-memberships-explanation/no-more-memberships-explanation.component";
@@ -254,6 +256,7 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         SortProjectsComponent,
         AttachmentsSortableComponent,
         RelatedUserstoriesSortableComponent,
+        EpicsSortableComponent,
         AttachmentsPreviewComponent,
         NoMoreMembershipsExplanationComponent,
         DutyComponent,

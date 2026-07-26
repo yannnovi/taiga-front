@@ -86,12 +86,15 @@ tests), pas un "module de plus". À choisir un par un selon la priorité produit
    - `tgRelatedUserstoriesSortable` → `RelatedUserstoriesSortableComponent` ✅ (deux
      vérifications de permission distinctes dans l'original, gardées distinctes plutôt que
      fusionnées — détails dans `MIGRATION.md`).
+   - `tgEpicsSortable` → `EpicsSortableComponent` ✅ (imbriqué à l'intérieur du conteneur
+     `.epics-table-body` d'origine, qui garde son `infinite-scroll` intact — ce blocage-là
+     reste entier, voir item 4 ci-dessous).
 
-   Prochain candidat : `tgEpicsSortable` (scope ambiant, à vérifier comme les précédents) ;
-   puis les 3 usages de `admin/project-values.coffee` (scope ambiant à lever d'abord) ; les
-   trois gros (`backlog`/`kanban`/`taskboard`) restent un chantier séparé, à cause du drag
-   multi-conteneurs dynamique et de `window.dragMultiple` (aucun équivalent CDK prêt à
-   l'emploi).
+   **Les quatre candidats faciles identifiés lors de l'audit initial sont maintenant tous
+   traités.** Prochains candidats : les 3 usages de `admin/project-values.coffee` (scope
+   ambiant à lever d'abord) ; les trois gros (`backlog`/`kanban`/`taskboard`) restent un
+   chantier séparé, à cause du drag multi-conteneurs dynamique et de `window.dragMultiple`
+   (aucun équivalent CDK prêt à l'emploi).
 2. **Éditeur WYSIWYG (CKEditor → wrapper `UpgradeComponent` ou remplacement moderne)** —
    débloque `comment`/`comments` et les champs description partout (`tg-item-wysiwyg`).
 3. **Validation de formulaire (checksley → Angular Reactive Forms)** — débloque

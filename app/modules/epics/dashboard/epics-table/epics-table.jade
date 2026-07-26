@@ -98,18 +98,14 @@ mixin epicSwitch(name, model)
                     +epicSwitch('switch-closed_us', 'vm.options.closed_us')
 
     .epics-table-body(
-        tg-epics-sortable="vm.reorderEpic(epic, newIndex)"
         infinite-scroll="vm.nextPage()"
         infinite-scroll-disabled="vm.disabledEpicsPagination"
         infinite-scroll-immediate-check="false"
     )
-        .epics-table-body-row(
-            tg-repeat="epic in vm.epics track by epic.get('id')"
-            tg-bind-scope
+        tg-epics-sortable(
+            bind-epics="vm.epics"
+            bind-options="vm.options"
+            on-reorder="vm.reorderEpic($event.epic, $event.newIndex)"
         )
-            tg-epic-row.e2e-epic(
-                bind-epic="epic"
-                bind-options="vm.options"
-            )
 
         div(tg-loading="vm.loadingEpics")

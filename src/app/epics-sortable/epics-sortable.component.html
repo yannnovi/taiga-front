@@ -1,0 +1,5 @@
+<div cdkDropList [cdkDropListDisabled]="sortingDisabled" (cdkDropListDropped)="drop($event)">
+    <div class="epics-table-body-row" *ngFor="let epic of displayEpics" cdkDrag [cdkDragDisabled]="sortingDisabled">
+        <tg-epic-row class="e2e-epic" [epic]="epic" [options]="options"></tg-epic-row>
+    </div>
+</div>

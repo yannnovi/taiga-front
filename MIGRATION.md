@@ -1045,6 +1045,35 @@ Vérifié en navigateur headless (profil neuf) avec un vrai drag simulé entre l
 3 lignes se rendent, l'événement `reorder` part avec la bonne userstory et le bon index,
 aucune erreur console. Karma (367 specs) reste vert.
 
+### Phase 2, sous-projet 1 (suite) : `tgEpicsSortable`
+
+Quatrième module. Cas un peu différent des trois précédents : la directive d'origine
+enveloppait `.epics-table-body-row` à l'intérieur de `.epics-table-body`
+(`epics-table.jade`) — mais ce MÊME `div` extérieur porte aussi `infinite-scroll`
+(`ngInfiniteScroll`), un blocage Phase 2 **différent et pas encore traité** (item 4 de la
+feuille de route). Plutôt que d'y toucher, `EpicsSortableComponent` n'internalise que la
+liste de lignes elle-même (déjà `tg-epic-row`, un composant Angular d'un lot précédent) et
+reste imbriqué À L'INTÉRIEUR du `.epics-table-body` d'origine, qui garde son
+`infinite-scroll` intact côté AngularJS.
+
+Même double vérification de permission que `tgRelatedUserstoriesSortable` (gate de
+`dragula` via `hasPermission("modify_epic")`, une seule fois au link — répliqué via
+`[cdkDropListDisabled]` calculé une fois au constructeur). Comme `tgAttachmentsSortable`,
+`epicsService.reorderEpic` réordonne déjà sa propre `Immutable List` avant l'appel serveur
+— `displayEpics` n'est qu'une copie mutable pour `moveItemInArray`, pas un correctif de
+retour optimiste.
+
+Vérifié en navigateur headless (profil neuf) avec un vrai drag simulé : l'événement
+`reorder` part avec le bon epic et le bon index. Une erreur de test isolée (non liée à ce
+composant) a été creusée avant d'être écartée : `tg-epic-row` (déjà migré dans un lot
+antérieur) lit `projectService.project.toJS()` dans son `ngOnChanges` — un premier essai
+appelait `projectService.setProject(...)` puis compilait immédiatement dans le même script
+synchrone, et les composants Angular imbriqués (créés de façon asynchrone par
+`downgradeComponent`) se sont initialisés avant que l'affectation soit visible, journalisant
+une exception ponctuelle. Confirmé sans lien avec `EpicsSortableComponent` en relançant le
+même test avec le projet déjà défini au préalable : rendu propre, aucune erreur. Karma
+(367 specs) reste vert.
+
 **Les quatre candidats Phase 1 restants se sont tous révélés bloqués à la lecture du code**
 — la feuille de route les avait listés comme "quick wins probables" sans avoir vérifié leur
 implémentation en détail (comme elle le prévenait elle-même de ne pas faire) :
