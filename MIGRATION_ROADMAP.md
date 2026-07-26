@@ -102,24 +102,27 @@ tests), pas un "module de plus". À choisir un par un selon la priorité produit
    tard**, dans un sous-projet séparé - les migrations ci-dessous acceptent une régression
    UX temporaire (un seul item à la fois) en attendant.
 
-   - **Backlog** (`backlog/sortable.coffee`) : ne dépend PAS de `tg-card` (lignes = simples
-     partials Jade `backlog-row.jade`/`sprint.jade`, pas de checksley/wysiwyg détecté).
-     Cross-conteneurs dynamique : backlog + 2 placeholders + n'importe quel `.sprint-table`
-     accepté à la volée (`isContainer`, pas de liste fixe puisque les sprints sont
-     dynamiques). Mutation optimiste JS directe (`moveUs`), pas de refetch serveur (sauf
-     fallback websocket déconnecté). **Candidat retenu pour démarrer** - introduit la vraie
-     nouveauté technique (plusieurs `cdkDropList` connectées dynamiquement via
-     `cdkDropListGroup`/`[cdkDropListConnectedTo]`), sans le coût de `tg-card` en plus.
+   - **Backlog** (`backlog/sortable.coffee`) : ~~ne dépend pas de `tg-card`~~ **correction
+     après lecture détaillée de `backlog-row.jade`** : le vrai template de ligne appelle
+     `tg-us-status` (bouton de statut), `tg-backlog-us-points` (éditeur de points) et
+     `tg-us-edit-selector` (menu d'options) - aucun des trois migré, et `tg-us-status`
+     confirmé ambiant/`$compile`+jQuery manuel (même famille bloquée que Phase 1/3), les
+     deux autres vivent dans le même genre de fichiers grab-bag (`backlog/main.coffee`,
+     `common/popovers.coffee`). La directive d'origine exige en plus explicitement
+     `$scope.ctrl` (le `BacklogCtrl`, gros contrôleur non-Immutable avec sa propre file
+     `pendingDrag`). Au final le backlog a son propre lot de prérequis ambiants à lever
+     avant de porter quoi que ce soit à `@angular/cdk/drag-drop` - **pas le point de départ
+     le plus simple, contrairement à l'hypothèse initiale**. Reporté après `tg-card`.
    - **`tg-card` (prérequis partagé kanban+taskboard)** : PAS migré -
      `app/modules/components/card/`, 12 fichiers, ~1193 lignes, sous-templates rendus via
      des directives `_.template()` qui construisent du HTML à la main plutôt que du
-     templating Angular standard. Projet de migration à part entière.
+     templating Angular standard. Projet de migration à part entière, mais autonome et déjà
+     bien scopé (contrairement au backlog). **Candidat retenu pour démarrer.**
    - **Taskboard** (`taskboard/sortable.coffee`) : dépend de `tg-card`. Une seule instance
      dragula pour tout le board (pas de croissance dynamique de conteneurs, pas de
      swimlanes ici). **N'utilise PAS `window.dragMultiple`** (confirmé par grep) - aucune
      régression à accepter sur ce module. Mutation optimiste directe
-     (`taskboardTasksService.move`), pas de refetch. Le plus simple des deux modules
-     dépendant de `tg-card`.
+     (`taskboardTasksService.move`), pas de refetch. Le plus simple des trois candidats.
    - **Kanban** (`kanban/sortable.coffee`) : dépend de `tg-card`. Une seule instance
      dragula pour tout le board, mais avec croissance dynamique des conteneurs par
      swimlane (`drake.containers.push(...)` sur une instance déjà vivante quand une
@@ -128,12 +131,14 @@ tests), pas un "module de plus". À choisir un par un selon la priorité produit
      Mutation optimiste sur `Immutable.Map` (`kanbanUserstoriesService`). Utilise
      `window.dragMultiple` (différé). Le plus complexe des quatre.
 
-   **Séquence recommandée et actée avec l'utilisateur** : (1) `tgBacklogSortable` d'abord
-   (pas de dépendance à `tg-card`, prouve le motif multi-conteneurs dynamique) ; (2)
-   migration de `tg-card` ; (3) `tgTaskboardSortable` (le plus simple une fois `tg-card`
-   fait) ; (4) `tgKanbanSortable` (le plus complexe) ; (5) sous-projet séparé plus tard
-   pour reconstruire `window.dragMultiple`. **En cours : étape (1), prototype puis
-   migration complète de `tgBacklogSortable`.**
+   **Séquence corrigée et actée avec l'utilisateur** : (1) migration de `tg-card` d'abord
+   (projet autonome, déjà bien scopé - contrairement au backlog dont le vrai périmètre
+   ambiant vient d'être découvert) ; (2) `tgTaskboardSortable` (le plus simple une fois
+   `tg-card` fait) ; (3) `tgKanbanSortable` (le plus complexe, croissance dynamique des
+   conteneurs) ; (4) `tgBacklogSortable` seulement après avoir levé ses propres blocages
+   ambiants (`tg-us-status`, `tg-backlog-us-points`, `tg-us-edit-selector`) ; (5)
+   sous-projet séparé plus tard pour reconstruire `window.dragMultiple`. **En cours :
+   étape (1), migration de `tg-card`.**
 2. **Éditeur WYSIWYG (CKEditor → wrapper `UpgradeComponent` ou remplacement moderne)** —
    débloque `comment`/`comments` et les champs description partout (`tg-item-wysiwyg`).
 3. **Validation de formulaire (checksley → Angular Reactive Forms)** — débloque
