@@ -981,6 +981,38 @@ dump du DOM. Confirmé : l'ordre visuel change immédiatement après le drop, et
 `bulkUpdateProjectsOrder` est appelé avec le payload `{project_id, order}` correctement
 recalculé. Karma (367 specs) reste vert.
 
+### Phase 2, sous-projet 1 (suite) : `tgAttachmentsSortable`
+
+Deuxième module du remplacement de `dragula`. Comme `tgSortProjects`, la directive
+d'origine (`app/modules/components/attachments-sortable/`) était un attribut ambiant
+enveloppant une section déjà existante de `attachments-full.jade` (elle-même propriété de
+`tgAttachmentsFull`, qui reste 100% AngularJS) plutôt que de la posséder — migrée en
+internalisant toute la section `.attachment-list.sortable` (la liste triable de
+`tg-attachment`, les placeholders de fichiers en cours d'upload non-triables, et le lien
+"afficher/masquer les pièces jointes obsolètes" juste en dessous) dans le nouveau
+`AttachmentsSortableComponent`, plutôt que de downgrader les directives CDK dans le
+template AngularJS restant.
+
+Différence notable avec `tgSortProjects` : `tgAttachmentsFullService.reorderAttachment`
+réordonne déjà sa propre `Immutable List` interne de façon synchrone *avant* l'appel serveur
+— donc `attachmentsVisible` (le `@Input()`, lié directement depuis ce service via le
+contrôleur AngularJS parent) reflète déjà le nouvel ordre au digest suivant. Pas besoin
+d'une copie locale optimiste façon `displayProjects` ici — juste une copie mutable
+(`displayAttachments`, rafraîchie à chaque changement d'`@Input()`) pour que
+`moveItemInArray` ait un tableau à réordonner pour `@angular/cdk/drag-drop`.
+
+Les événements `delete`/`update` de `tg-attachment` (déjà migré) sont simplement
+retransmis vers le haut via les `@Output()` du nouveau composant, puisque les méthodes
+`deleteAttachment`/`updateAttachment` du contrôleur parent restent côté AngularJS. Le
+`title` du lien "plus d'attachments" reste toujours `ATTACHMENT.SHOW_DEPRECATED` même une
+fois basculé en mode "masquer" (seul le texte du `span` visible change) — bug préexistant
+mineur, gardé tel quel, pas "corrigé".
+
+Vérifié en navigateur headless (profil neuf) avec un vrai drag simulé (comme
+`tgSortProjects`) ET un vrai clic sur le lien de bascule : la liste se réordonne
+visuellement, l'événement `reorder` part avec le bon attachment et le bon index, et
+l'événement `toggle` part au clic. Karma (367 specs) reste vert.
+
 **Les quatre candidats Phase 1 restants se sont tous révélés bloqués à la lecture du code**
 — la feuille de route les avait listés comme "quick wins probables" sans avoir vérifié leur
 implémentation en détail (comme elle le prévenait elle-même de ne pas faire) :

@@ -48,47 +48,18 @@ section.attachments.attachment-full(
 
     .attachments-empty(ng-if="!vm.attachments.size && !vm.uploadingAttachments().length")
         div {{'ATTACHMENT.DROP' | translate}}
-    .attachment-list.sortable(ng-if="vm.mode == 'list'")
-        div(tg-attachments-sortable="vm.reorderAttachment(attachment, index)")
-          div(
-            tg-repeat="attachment in vm.attachmentsVisible track by attachment.getIn(['file', 'id'])",
-            tg-bind-scope
-          )
-            tg-attachment(
-                bind-attachment="attachment",
-                on-delete="vm.deleteAttachment($event.attachment)",
-                on-update="vm.updateAttachment($event.attachment)",
-                bind-type="vm.type"
-            )
-
-          .single-attachment.uploading-attachment(ng-repeat="file in vm.uploadingAttachments()")
-              .attachment-name
-                  tg-svg(svg-icon="icon-attachment")
-                  span {{file.name}}
-              .attachment-size
-                  span {{file.size | sizeFormat}}
-              .attachment-comments
-                  span {{file.progressMessage}}
-                  progress.percentage(value="{{file.progressPercent}}" max="100")
-
-        a.more-attachments(
-          href="",
-          title="{{'ATTACHMENT.SHOW_DEPRECATED' | translate}}",
-          ng-if="vm.deprecatedsCount > 0",
-          ng-click="vm.toggleDeprecatedsVisible()"
-        )
-            span.text(
-              ng-show="!vm.deprecatedsVisible",
-              translate="ATTACHMENT.SHOW_DEPRECATED"
-            )
-            span.text(
-              ng-show="vm.deprecatedsVisible",
-              translate="ATTACHMENT.HIDE_DEPRECATED"
-            )
-            span.more-attachments-num(
-              translate="ATTACHMENT.COUNT_DEPRECATED",
-              translate-values="{counter: '{{vm.deprecatedsCount}}'}"
-            )
+    tg-attachments-sortable(
+        ng-if="vm.mode == 'list'",
+        bind-attachments-visible="vm.attachmentsVisible",
+        bind-uploading-attachments="vm.uploadingAttachments()",
+        bind-type="vm.type",
+        bind-deprecateds-count="vm.deprecatedsCount",
+        bind-deprecateds-visible="vm.deprecatedsVisible",
+        on-reorder="vm.reorderAttachment($event.attachment, $event.index)",
+        on-delete="vm.deleteAttachment($event.attachment)",
+        on-update="vm.updateAttachment($event.attachment)",
+        on-toggle-deprecateds-visible="vm.toggleDeprecatedsVisible()"
+    )
 
     .attachment-gallery(ng-if="vm.mode == 'gallery'")
         tg-attachment-gallery.attachment-gallery-container(

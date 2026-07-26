@@ -1,0 +1,33 @@
+<div class="attachment-list sortable">
+    <div cdkDropList (cdkDropListDropped)="drop($event)">
+        <div *ngFor="let attachment of displayAttachments" cdkDrag>
+            <tg-attachment [attachment]="attachment" [type]="type" (delete)="delete.emit($event)" (update)="update.emit($event)"></tg-attachment>
+        </div>
+
+        <div class="single-attachment uploading-attachment" *ngFor="let file of uploadingAttachments">
+            <div class="attachment-name">
+                <tg-svg svg-icon="icon-attachment"></tg-svg>
+                <span>{{ file.name }}</span>
+            </div>
+            <div class="attachment-size">
+                <span>{{ file.size | tgSizeFormat }}</span>
+            </div>
+            <div class="attachment-comments">
+                <span>{{ file.progressMessage }}</span>
+                <progress class="percentage" [value]="file.progressPercent" max="100"></progress>
+            </div>
+        </div>
+    </div>
+
+    <a
+        class="more-attachments"
+        href=""
+        [title]="'ATTACHMENT.SHOW_DEPRECATED' | tgTranslate"
+        *ngIf="deprecatedsCount > 0"
+        (click)="toggleDeprecatedsVisible.emit()"
+    >
+        <span class="text" *ngIf="!deprecatedsVisible">{{ "ATTACHMENT.SHOW_DEPRECATED" | tgTranslate }}</span>
+        <span class="text" *ngIf="deprecatedsVisible">{{ "ATTACHMENT.HIDE_DEPRECATED" | tgTranslate }}</span>
+        <span class="more-attachments-num">{{ "ATTACHMENT.COUNT_DEPRECATED" | tgTranslate:{counter: deprecatedsCount} }}</span>
+    </a>
+</div>

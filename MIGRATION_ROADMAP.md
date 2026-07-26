@@ -74,13 +74,18 @@ tests), pas un "module de plus". À choisir un par un selon la priorité produit
    du reste de l'app.
 
    **🚧 En cours.** Infrastructure en place (`@angular/cdk@17.3.10`, `DragDropModule`
-   importé) et premier module migré : `tgSortProjects` → `SortProjectsComponent` (motif
-   validé : la liste entière internalisée dans le composant, pas de downgrade des
-   directives CDK dans un template AngularJS ; un vrai geste de drag simulé en navigateur
-   a été vérifié, pas seulement le rendu statique — détails et bug corrigé au passage dans
-   `MIGRATION.md`). Prochains candidats, dans l'ordre : `tgAttachmentsSortable`,
-   `tgRelatedUserstoriesSortable`, `tgEpicsSortable` (scope ambiant mais items déjà
-   Angular pour au moins les deux premiers — à vérifier chacun) ; puis les 3 usages de
+   importé). Deux modules migrés, motif "liste entière internalisée dans le composant,
+   pas de downgrade des directives CDK dans un template AngularJS" validé deux fois, avec
+   un vrai geste de drag simulé en navigateur à chaque fois (pas seulement le rendu
+   statique) :
+   - `tgSortProjects` → `SortProjectsComponent` ✅ (bug de retour optimiste manquant
+     trouvé et corrigé au passage — détails dans `MIGRATION.md`).
+   - `tgAttachmentsSortable` → `AttachmentsSortableComponent` ✅ (a aussi internalisé le
+     lien "afficher/masquer les pièces jointes obsolètes" adjacent, dans le même bloc DOM
+     que la liste d'origine).
+
+   Prochains candidats, dans l'ordre : `tgRelatedUserstoriesSortable`, `tgEpicsSortable`
+   (scope ambiant, à vérifier chacun comme les deux précédents) ; puis les 3 usages de
    `admin/project-values.coffee` (scope ambiant à lever d'abord) ; les trois gros
    (`backlog`/`kanban`/`taskboard`) restent un chantier séparé, à cause du drag
    multi-conteneurs dynamique et de `window.dragMultiple` (aucun équivalent CDK prêt à
