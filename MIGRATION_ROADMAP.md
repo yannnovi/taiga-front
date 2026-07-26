@@ -91,10 +91,49 @@ tests), pas un "module de plus". À choisir un par un selon la priorité produit
      reste entier, voir item 4 ci-dessous).
 
    **Les quatre candidats faciles identifiés lors de l'audit initial sont maintenant tous
-   traités.** Prochains candidats : les 3 usages de `admin/project-values.coffee` (scope
-   ambiant à lever d'abord) ; les trois gros (`backlog`/`kanban`/`taskboard`) restent un
-   chantier séparé, à cause du drag multi-conteneurs dynamique et de `window.dragMultiple`
-   (aucun équivalent CDK prêt à l'emploi).
+   traités.** Restent : les 3 usages de `admin/project-values.coffee` (confirmé ambiant -
+   `$el.controller()`, aucune clé `scope:` dans les trois - à traiter en Phase 3) et le
+   "gros chantier" `backlog`/`kanban`/`taskboard`, scopé en détail ci-dessous.
+
+   **Scoping du gros chantier (backlog/kanban/taskboard) :**
+   Ce n'est pas un seul chantier mais trois, avec un vrai prérequis partagé. Décision
+   utilisateur actée : `window.dragMultiple` (sélection multiple + glisser groupé, utilisé
+   par backlog ET kanban, aucun équivalent CDK prêt à l'emploi) sera **reconstruit plus
+   tard**, dans un sous-projet séparé - les migrations ci-dessous acceptent une régression
+   UX temporaire (un seul item à la fois) en attendant.
+
+   - **Backlog** (`backlog/sortable.coffee`) : ne dépend PAS de `tg-card` (lignes = simples
+     partials Jade `backlog-row.jade`/`sprint.jade`, pas de checksley/wysiwyg détecté).
+     Cross-conteneurs dynamique : backlog + 2 placeholders + n'importe quel `.sprint-table`
+     accepté à la volée (`isContainer`, pas de liste fixe puisque les sprints sont
+     dynamiques). Mutation optimiste JS directe (`moveUs`), pas de refetch serveur (sauf
+     fallback websocket déconnecté). **Candidat retenu pour démarrer** - introduit la vraie
+     nouveauté technique (plusieurs `cdkDropList` connectées dynamiquement via
+     `cdkDropListGroup`/`[cdkDropListConnectedTo]`), sans le coût de `tg-card` en plus.
+   - **`tg-card` (prérequis partagé kanban+taskboard)** : PAS migré -
+     `app/modules/components/card/`, 12 fichiers, ~1193 lignes, sous-templates rendus via
+     des directives `_.template()` qui construisent du HTML à la main plutôt que du
+     templating Angular standard. Projet de migration à part entière.
+   - **Taskboard** (`taskboard/sortable.coffee`) : dépend de `tg-card`. Une seule instance
+     dragula pour tout le board (pas de croissance dynamique de conteneurs, pas de
+     swimlanes ici). **N'utilise PAS `window.dragMultiple`** (confirmé par grep) - aucune
+     régression à accepter sur ce module. Mutation optimiste directe
+     (`taskboardTasksService.move`), pas de refetch. Le plus simple des deux modules
+     dépendant de `tg-card`.
+   - **Kanban** (`kanban/sortable.coffee`) : dépend de `tg-card`. Une seule instance
+     dragula pour tout le board, mais avec croissance dynamique des conteneurs par
+     swimlane (`drake.containers.push(...)` sur une instance déjà vivante quand une
+     swimlane s'ouvre - confirmé que dragula supporte ça nativement ; à vérifier si
+     `cdkDropListGroup` accepte l'ajout de `cdkDropList` à la volée de la même façon).
+     Mutation optimiste sur `Immutable.Map` (`kanbanUserstoriesService`). Utilise
+     `window.dragMultiple` (différé). Le plus complexe des quatre.
+
+   **Séquence recommandée et actée avec l'utilisateur** : (1) `tgBacklogSortable` d'abord
+   (pas de dépendance à `tg-card`, prouve le motif multi-conteneurs dynamique) ; (2)
+   migration de `tg-card` ; (3) `tgTaskboardSortable` (le plus simple une fois `tg-card`
+   fait) ; (4) `tgKanbanSortable` (le plus complexe) ; (5) sous-projet séparé plus tard
+   pour reconstruire `window.dragMultiple`. **En cours : étape (1), prototype puis
+   migration complète de `tgBacklogSortable`.**
 2. **Éditeur WYSIWYG (CKEditor → wrapper `UpgradeComponent` ou remplacement moderne)** —
    débloque `comment`/`comments` et les champs description partout (`tg-item-wysiwyg`).
 3. **Validation de formulaire (checksley → Angular Reactive Forms)** — débloque
