@@ -1,0 +1,11 @@
+<div class="card-slideshow" *ngIf="images.size">
+    <tg-svg class="slideshow-icon slideshow-left" (click)="previous()" *ngIf="images.size > 1" svg-icon="icon-arrow-left"></tg-svg>
+    <tg-svg class="slideshow-icon slideshow-right" (click)="next()" *ngIf="images.size > 1" svg-icon="icon-arrow-right"></tg-svg>
+
+    <ng-container *ngFor="let image of images; let i = index">
+        <div class="card-slideshow-wrapper" *ngIf="i === index">
+            <img *ngIf="loading" class="loading-spinner" [src]="spinnerSrc" alt="loading..." />
+            <img [style.display]="loading ? 'none' : ''" [src]="image.get('thumbnail_card_url')" (load)="onImageLoad()" />
+        </div>
+    </ng-container>
+</div>

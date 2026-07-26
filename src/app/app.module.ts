@@ -112,6 +112,10 @@ import { RelatedUserstoriesSortableComponent } from "./related-userstories-sorta
 import "./related-userstories-sortable/register-legacy";
 import { EpicsSortableComponent } from "./epics-sortable/epics-sortable.component";
 import "./epics-sortable/register-legacy";
+import { CardSlideshowComponent } from "./card-slideshow/card-slideshow.component";
+import "./card-slideshow/register-legacy";
+import { CardComponent } from "./card/card.component";
+import "./card/register-legacy";
 import { AttachmentsPreviewComponent } from "./attachments-preview/attachments-preview.component";
 import "./attachments-preview/register-legacy";
 import { NoMoreMembershipsExplanationComponent } from "./no-more-memberships-explanation/no-more-memberships-explanation.component";
@@ -186,6 +190,7 @@ import {
     AJS_SECTIONS,
     AJS_PROJECTS_SERVICE,
     AJS_EPICS_SERVICE,
+    AJS_DUE_DATE_SERVICE,
     upgradedService,
 } from "./shared/ajs-tokens";
 import { TgTranslatePipe } from "./shared/translate.pipe";
@@ -257,6 +262,8 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         AttachmentsSortableComponent,
         RelatedUserstoriesSortableComponent,
         EpicsSortableComponent,
+        CardSlideshowComponent,
+        CardComponent,
         AttachmentsPreviewComponent,
         NoMoreMembershipsExplanationComponent,
         DutyComponent,
@@ -324,6 +331,7 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         upgradedService(AJS_SECTIONS, "$tgSections"),
         upgradedService(AJS_PROJECTS_SERVICE, "tgProjectsService"),
         upgradedService(AJS_EPICS_SERVICE, "tgEpicsService"),
+        upgradedService(AJS_DUE_DATE_SERVICE, "tgDueDateService"),
     ],
 })
 export class AppModule implements DoBootstrap {

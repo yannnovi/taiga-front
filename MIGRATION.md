@@ -1074,6 +1074,75 @@ une exception ponctuelle. Confirmé sans lien avec `EpicsSortableComponent` en r
 même test avec le projet déjà défini au préalable : rendu propre, aucune erreur. Karma
 (367 specs) reste vert.
 
+### Phase 2, sous-projet 1 (suite) : scoping du gros chantier backlog/kanban/taskboard, puis `tg-card`
+
+Après les 4 modules "quick win", seul restait le "gros chantier" (backlog/kanban/
+taskboard), scopé en détail via un audit du code (voir `MIGRATION_ROADMAP.md` pour le
+tableau complet). Deux corrections importantes sont survenues pendant le scoping :
+
+1. L'hypothèse initiale ("le backlog ne dépend pas de `tg-card`, c'est le point de départ
+   le plus simple") s'est révélée fausse à la lecture de `backlog-row.jade` : la ligne de
+   backlog appelle `tg-us-status`, `tg-backlog-us-points`, `tg-us-edit-selector` — aucun
+   migré, et `tg-us-status` confirmé ambiant/`$compile` manuel (même famille bloquée que
+   Phase 1/3). La directive d'origine exige aussi explicitement `$scope.ctrl`
+   (`BacklogCtrl`, gros contrôleur non-Immutable). Séquence corrigée avec l'utilisateur :
+   `tg-card` d'abord (prérequis partagé kanban+taskboard, projet autonome déjà bien
+   scopé), puis taskboard, puis kanban, le backlog en dernier une fois ses propres
+   blocages levés.
+2. Décision actée avec l'utilisateur : `window.dragMultiple` (sélection multiple + glisser
+   groupé, backlog+kanban) sera reconstruit plus tard dans un sous-projet séparé — les
+   migrations suivantes acceptent une régression UX temporaire (un item à la fois).
+
+`tg-card` migré ensuite → `CardComponent` (+ `CardSlideshowComponent` séparé pour
+`tg-card-slideshow`, migré en même temps car trivial et utilisé nativement par
+`CardComponent`). Le plus gros composant de toute cette migration à ce jour : l'original
+tenait sur 12 fichiers (~1193 lignes) à cause d'un contournement AngularJS particulier —
+5 des 8 sous-templates (`card-tags`/`card-epics`/`card-title`/`card-tasks`/`card-unfold`)
+étaient de vrais `include` Jade (compilés dans le même scope que le contrôleur, inlinés
+directement dans le nouveau template Angular, même logique que `wiki-history-entry`
+inlinant `history-attachments`), mais les 3 autres (`tgCardAssignedTo`/`tgCardData`/
+`tgCardActions`, dans `kanban/main.coffee`) étaient de VRAIES directives AngularJS
+séparées qui construisaient du HTML à la main via `_.template()` (un fichier `.jade` qui
+est en réalité de l'EJS, pas du vrai Jade) et l'injectaient avec `$el.html(html)` — ce
+contournement disparaît entièrement, remplacé par du templating Angular standard
+(`*ngIf`/`*ngFor`/bindings).
+
+**`getLinkParams()` (utilisé par `card-title.jade` pour `tg-nav-get-params`)** remontait la
+chaîne de scope AngularJS (`taiga.findScope`) pour trouver le `KanbanController` parent et
+lire `lastLoadUserstoriesParams`/`scope.swimlanesList`, afin de préserver le contexte
+swimlane/filtre du kanban en naviguant vers une US puis en revenant. Un vrai composant
+Angular n'a pas cette chaîne de scope à remonter : devenu un `@Input() linkParams`
+explicite — une nouvelle méthode `getCardLinkParams(item)` ajoutée directement au
+`KanbanController` (qui a déjà accès direct à ces données, pas besoin de remonter quoi que
+ce soit) calcule la même chose, et l'appelant kanban la passe en binding ; l'appelant
+taskboard ne la passe pas du tout (son contrôleur n'a jamais eu l'équivalent non plus, le
+scope-walk serait de toute façon retombé sur `{}`).
+
+**Code mort trouvé et non répliqué** : `onClickRemove` (déclaré dans le `bindToController`
+d'origine mais jamais câblé par aucune des 3 directives, jamais lu par le contrôleur,
+jamais passé par aucun appelant) — omis entièrement. Le calcul `avatars` de
+`card-data.jade` (bâti par l'ancienne `CardDataDirective`) n'est en fait jamais référencé
+dans le template lui-même — confirmé mort, non répliqué. `hasMultipleAssignedUsers()` est
+aussi inutilisé par tout template mais était une vraie méthode du contrôleur (contrairement
+à `onClickRemove`, jamais implémenté) — gardée pour fidélité.
+
+**Bug réel trouvé et corrigé avant de committer** : `openActionsPopup()` capturait
+`event.currentTarget` dans une closure (le callback de fermeture du popover, exécuté plus
+tard) — mais `Event.currentTarget` redevient `null` une fois la phase de dispatch de
+l'événement terminée, donc le callback différé plantait. Corrigé en capturant l'élément
+bouton lui-même dans une variable locale avant l'appel à `taiga.globalPopover`, réutilisée
+telle quelle dans le callback de fermeture plutôt que de relire `event.currentTarget`.
+
+Vérifié en navigateur headless (profil neuf) avec un scénario complet : rendu des tags,
+epics, avatars multiples (aperçu + badge "+N"), points, date d'échéance, statistiques de
+tâches, ouverture du menu d'actions (clic réel sur le bouton "..."), clic sur "Edit" dans
+le menu (vérifie l'événement `clickEdit`), et bascule du fold — tout correct, aucune
+erreur console sur un profil Chrome neuf. **Leçon reconfirmée** : deux fausses pistes
+d'erreurs sont apparues en réutilisant le même processus Chrome sur plusieurs vérifications
+manuelles successives (le même piège déjà documenté plus haut) — un profil neuf à chaque
+vérification les a fait disparaître. Karma (361 specs, -6 après suppression des 3 anciennes
+directives + leur spec) reste vert.
+
 **Les quatre candidats Phase 1 restants se sont tous révélés bloqués à la lecture du code**
 — la feuille de route les avait listés comme "quick wins probables" sans avoir vérifié leur
 implémentation en détail (comme elle le prévenait elle-même de ne pas faire) :

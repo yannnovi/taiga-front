@@ -113,11 +113,17 @@ tests), pas un "module de plus". À choisir un par un selon la priorité produit
      `pendingDrag`). Au final le backlog a son propre lot de prérequis ambiants à lever
      avant de porter quoi que ce soit à `@angular/cdk/drag-drop` - **pas le point de départ
      le plus simple, contrairement à l'hypothèse initiale**. Reporté après `tg-card`.
-   - **`tg-card` (prérequis partagé kanban+taskboard)** : PAS migré -
-     `app/modules/components/card/`, 12 fichiers, ~1193 lignes, sous-templates rendus via
-     des directives `_.template()` qui construisent du HTML à la main plutôt que du
-     templating Angular standard. Projet de migration à part entière, mais autonome et déjà
-     bien scopé (contrairement au backlog). **Candidat retenu pour démarrer.**
+   - **`tg-card` (prérequis partagé kanban+taskboard)** : ✅ migré →
+     `CardComponent` (+ `CardSlideshowComponent` pour `tg-card-slideshow`, au passage).
+     12 fichiers/~1193 lignes d'origine (5 `include` Jade inlinés directement, 3 vraies
+     directives EJS-templatées (`tgCardAssignedTo`/`tgCardData`/`tgCardActions`)
+     réécrites en templating Angular standard). Un `@Input() linkParams` explicite
+     remplace l'ancien scope-walk (`getLinkParams()`) - une nouvelle méthode
+     `getCardLinkParams(item)` ajoutée à `KanbanController` calcule la même chose
+     directement. Un vrai bug trouvé et corrigé avant de committer
+     (`event.currentTarget` capturé dans une closure différée, redevenu `null` - voir
+     `MIGRATION.md`). Vérifié en navigateur avec un scénario complet (tags, epics,
+     avatars multiples, popover d'actions, clic "Edit", bascule fold).
    - **Taskboard** (`taskboard/sortable.coffee`) : dépend de `tg-card`. Une seule instance
      dragula pour tout le board (pas de croissance dynamique de conteneurs, pas de
      swimlanes ici). **N'utilise PAS `window.dragMultiple`** (confirmé par grep) - aucune
@@ -137,8 +143,8 @@ tests), pas un "module de plus". À choisir un par un selon la priorité produit
    `tg-card` fait) ; (3) `tgKanbanSortable` (le plus complexe, croissance dynamique des
    conteneurs) ; (4) `tgBacklogSortable` seulement après avoir levé ses propres blocages
    ambiants (`tg-us-status`, `tg-backlog-us-points`, `tg-us-edit-selector`) ; (5)
-   sous-projet séparé plus tard pour reconstruire `window.dragMultiple`. **En cours :
-   étape (1), migration de `tg-card`.**
+   sous-projet séparé plus tard pour reconstruire `window.dragMultiple`. **Étape (1)
+   terminée** (`tg-card` migré). **Prochaine étape : (2), `tgTaskboardSortable`.**
 2. **Éditeur WYSIWYG (CKEditor → wrapper `UpgradeComponent` ou remplacement moderne)** —
    débloque `comment`/`comments` et les champs description partout (`tg-item-wysiwyg`).
 3. **Validation de formulaire (checksley → Angular Reactive Forms)** — débloque

@@ -461,6 +461,32 @@ class KanbanController extends mixOf(taiga.Controller, taiga.PageMixin, taiga.Fi
 
             @kanbanUserstoriesService.refresh(false)
 
+    # Used by the Angular `tg-card` component (bind-link-params) to preserve the current
+    # swimlane/filter context when navigating to a US detail and back - previously computed
+    # inside CardController.getLinkParams() by walking UP the AngularJS scope chain
+    # (taiga.findScope) to reach this same controller; now computed here directly and
+    # passed down as a plain input, since a real Angular component has no scope chain to
+    # walk. Taskboard's card caller has no equivalent (its controller never had
+    # lastLoadUserstoriesParams either) and simply doesn't pass link-params at all.
+    getCardLinkParams: (item) ->
+        if not @.lastLoadUserstoriesParams
+            return {}
+
+        params = _.clone(@.lastLoadUserstoriesParams)
+        params['status'] = item.getIn(['model', 'status'])
+        params['swimlane'] = item.getIn(['model', 'swimlane'])
+
+        params = _.pickBy(params, _.identity)
+
+        if @scope.swimlanesList.size && !params['swimlane']
+            params.swimlane = "null"
+
+        parsedParams = {}
+        Object.keys(params).forEach (key) =>
+            parsedParams['kanban-' + key] = params[key]
+
+        return parsedParams
+
     loadUserstories: () ->
         params = @.loadUserstoriesParams()
 
@@ -851,278 +877,6 @@ KanbanWipLimitDirective = ($timeout) ->
     return {link: link}
 
 module.directive("tgKanbanWipLimit", ["$timeout", KanbanWipLimitDirective])
-
-CardSvgTemplate = """
-    <tg-svg>
-        <svg class="icon <%- svgIcon %>" style="fill: <%- svgFill %>">
-            <use xlink:href="#<%- svgIcon %>" attr-href="#<%- svgIcon %>">
-                <% if(svgTitle) { %>
-                <title><%- svgTitle %></title>
-                <% } %>
-            </use>
-        </svg>
-    </tg-svg>
-    """
-
-CardAssignedToDirective = ($template, $translate, avatarService, projectService) ->
-    template = $template.get("components/card/card-templates/card-assigned-to.html", true)
-    svgTemplate  = _.template(CardSvgTemplate)
-
-    render = (vm) =>
-        avatars = {}
-        (vm.item.get('assigned_users') || [vm.item.get('assigned_to')]).forEach (user) =>
-            if user
-                avatars[user.get('id')] = avatarService.getAvatar(user, 'avatar')
-
-        return template({
-            vm: vm,
-            avatars: avatars,
-            translate: (key, params) =>
-                return $translate.instant(key, params)
-            checkPermission: (permission) =>
-                return projectService.hasPermission(permission)
-            svg: (svgData) =>
-                return svgTemplate(Object.assign({
-                    svgTitle: '',
-                    svgFill: ''
-                }, svgData))
-            loading: """
-                <img
-                    class='loading-spinner'
-                    src='#{window._version}/svg/spinner-circle.svg'
-                    alt='loading...'
-                />
-            """
-        })
-
-    return {
-        scope: {
-            zoomLevel: '<',
-            item: '<',
-            vm: '<'
-        },
-        link: ($scope, $el) ->
-            initializeZoom = false
-
-            onChange = () =>
-                html = render($scope.vm)
-                $el.off()
-
-                $el.html(html)
-
-                $el.find('.card-user-avatar').on 'click', (event) =>
-                    if !event.ctrlKey && !event.metaKey
-                        $scope.vm.onClickAssignedTo({id: $scope.vm.item.get('id')})
-
-            $scope.$watch 'item', onChange
-            # ignore the first watch because is the same as item
-            $scope.$watch 'zoomLevel', () =>
-                if initializeZoom
-                    onChange()
-                else
-                    initializeZoom = true
-
-            $scope.$on "$destroy", ->
-                $el.off()
-    }
-
-
-module.directive("tgCardAssignedTo", [
-    "$tgTemplate",
-    "$translate",
-    "tgAvatarService",
-    "tgProjectService",
-    CardAssignedToDirective])
-
-CardDataDirective = ($template, $translate, avatarService, projectService, dueDateService) ->
-    template = $template.get("components/card/card-templates/card-data.html", true)
-    svgTemplate  = _.template(CardSvgTemplate)
-
-    render = (vm) =>
-        avatars = {}
-        (vm.item.get('assigned_users') || []).forEach (user) =>
-            if user
-                avatars[user.get('id')] = avatarService.getAvatar(user, 'avatar')
-            else
-                console.error 'invalid assigned_users', vm.item.get('assigned_users').toJS()
-
-        return template({
-            vm: vm,
-            avatars: avatars,
-            emptyTask: () =>
-                tasks = vm.item.getIn(['model', 'tasks'])
-                return !tasks || !tasks.size
-            dueDateColor: () =>
-                dueDateService.color({
-                    dueDate: vm.item.getIn(['model', 'due_date']),
-                    isClosed: vm.item.getIn(['model', 'is_closed']),
-                    objType: vm.type
-                })
-            dueDateTitle: () =>
-                dueDateService.title({
-                    dueDate: vm.item.getIn(['model', 'due_date']),
-                    isClosed: vm.item.getIn(['model', 'is_closed']),
-                    objType: vm.type
-                })
-            totalAttachments: () =>
-                if vm.type == 'task'
-                    return vm.item.getIn(['model', 'attachments']).size
-                else
-                    return vm.item.getIn(['model', 'total_attachments'])
-
-            translate: (key, params) =>
-                return $translate.instant(key, params)
-            svg: (svgData) =>
-                return svgTemplate(Object.assign({
-                    svgTitle: '',
-                    svgFill: ''
-                }, svgData))
-        })
-
-    return {
-        scope: {
-            zoomLevel: '<',
-            item: '<',
-            vm: '<'
-        },
-        link: ($scope, $el) ->
-            initializeZoom = false
-
-            onChange = () =>
-                html = render($scope.vm)
-                $el.off()
-
-                $el.html(html)
-
-            $scope.$watch 'item', onChange
-            # ignore the first watch because is the same as item
-            $scope.$watch 'zoomLevel', () =>
-                if initializeZoom
-                    onChange()
-                else
-                    initializeZoom = true
-
-            $scope.$on "$destroy", ->
-                $el.off()
-    }
-
-module.directive("tgCardData", [
-    "$tgTemplate",
-    "$translate",
-    "tgAvatarService",
-    "tgProjectService",
-    "tgDueDateService",
-    CardDataDirective])
-
-
-CardActionsDirective = ($template, $translate, projectService) ->
-    template = $template.get("components/card/card-templates/card-actions.html", true)
-    svgTemplate  = _.template(CardSvgTemplate)
-
-    render = (vm) =>
-        return template({
-            vm: vm,
-            translate: (key, params) =>
-                return $translate.instant(key, params)
-            checkPermission: (permission) =>
-                return projectService.canEdit(permission)
-            svg: (svgData) =>
-                return svgTemplate(Object.assign({
-                    svgTitle: '',
-                    svgFill: ''
-                }, svgData))
-        })
-
-    return {
-        scope: {
-            zoomLevel: '<',
-            item: '<',
-            vm: '<'
-        },
-        link: ($scope, $el) ->
-            initializeZoom = false
-            openPopup = false
-
-            removePopupOpenState = () ->
-                openPopup = false
-                $el.find(".js-popup-button").removeClass('popover-open')
-
-            onChange = () =>
-                html = render($scope.vm)
-                $el.off()
-
-                $el.html(html)
-                openPopup = false
-                $el.find('.js-popup-button').on 'click', (event) =>
-                    if openPopup
-                        return
-
-                    openPopup = true
-                    $(event.currentTarget).addClass('popover-open')
-
-                    actions = []
-
-                    if projectService.canEdit($scope.vm.getModifyPermisionKey())
-                        actions.push(
-                            {
-                                text: $translate.instant('COMMON.CARD.EDIT'),
-                                icon: 'icon-edit'
-                                event: () ->
-                                    $scope.vm.onClickEdit({id: $scope.vm.item.get('id')})
-                            },
-                            {
-                                text: $translate.instant('COMMON.CARD.ASSIGN_TO'),
-                                icon: 'icon-assign-to',
-                                event: () ->
-                                    $scope.vm.onClickAssignedTo({id: $scope.vm.item.get('id')})
-                            },
-                        )
-
-                    if projectService.canEdit($scope.vm.getDeletePermisionKey())
-                        actions.push(
-                            {
-                                text: $translate.instant('COMMON.CARD.DELETE'),
-                                icon: 'icon-trash',
-                                event: () ->
-                                    $scope.vm.onClickDelete({id: $scope.vm.item.get('id')})
-                            },
-                        )
-
-                    if projectService.canEdit($scope.vm.getModifyPermisionKey()) && !$scope.vm.isFirst
-                        actions.push(
-                            {
-                                text: $translate.instant('COMMON.CARD.MOVE_TO_TOP'),
-                                icon: 'icon-move-to-top',
-                                event: () ->
-                                    $scope.vm.onClickMoveToTop($scope.vm.item)
-                            },
-                        )
-
-                    taiga.globalPopover(
-                        event.currentTarget,actions,
-                        {},
-                        () ->
-                            removePopupOpenState()
-                    )
-
-            $scope.$watch 'item', onChange
-            # ignore the first watch because is the same as item
-            $scope.$watch 'zoomLevel', () =>
-                if initializeZoom
-                    onChange()
-                else
-                    initializeZoom = true
-
-            $scope.$on "$destroy", ->
-                $el.off()
-    }
-
-
-module.directive("tgCardActions", [
-    "$tgTemplate",
-    "$translate",
-    "tgProjectService",
-    CardActionsDirective])
 
 #############################################################################
 ## Kanban Swimlane Directive

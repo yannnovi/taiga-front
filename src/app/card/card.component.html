@@ -1,0 +1,215 @@
+<div
+    class="card-inner"
+    *ngIf="inViewPort"
+    [attr.title]="(zoomLevel === 0 || folded) ? (item.getIn(['model', 'subject']) | tgEmojify) : item.getIn(['model', 'blocked_note'])"
+    [class]="'zoom-' + zoomLevel + ' type-' + type"
+    [ngClass]="{
+        'card-blocked': item.getIn(['model', 'is_blocked']),
+        'archived': archived,
+        'with-assigned-user': item.get('assigned_users').size,
+        'with-fold-action': visible('unfold') && (hasTasks() || hasVisibleAttachments())
+    }"
+>
+    <div class="card-tags" *ngIf="visible('tags') && item.get('colorized_tags').size">
+        <span
+            class="card-tag"
+            *ngFor="let tag of item.get('colorized_tags')"
+            [ngStyle]="{'background-color': getTagColor(tag.get('color'))}"
+            [title]="tag.get('name')"
+        >{{ zoomLevel === 3 ? tag.get('name') : '' }}</span>
+    </div>
+
+    <div class="card-actions" *ngIf="zoomLevel > 0 && (canEditModify() || canEditDelete())">
+        <button class="js-popup-button" [class.popover-open]="openPopup" (click)="openActionsPopup($event)">
+            <tg-svg svg-icon="icon-more-vertical"></tg-svg>
+        </button>
+    </div>
+
+    <div *ngIf="zoomLevel > 0">
+        <div class="card-epics" *ngIf="item.getIn(['model', 'epics']).size">
+            <a
+                class="card-epic"
+                *ngFor="let epic of item.getIn(['model', 'epics']); let i = index"
+                [tgNav]="'project-epics-detail'"
+                [tgNavParams]="{project: item.getIn(['model', 'project_extra_info', 'slug']), ref: epic.get('ref')}"
+            >
+                <span class="epic-color" [ngStyle]="{'background-color': epic.get('color')}" [title]="epic.get('subject')"></span>
+                <span
+                    class="epic-name"
+                    [title]="epic.get('subject')"
+                    *ngIf="i === 0 && zoomLevel !== 0"
+                    [innerHTML]="epic.get('subject') | tgEmojify"
+                ></span>
+            </a>
+        </div>
+    </div>
+
+    <h2 class="card-title">
+        <a
+            href=""
+            [tgNav]="getNavKey()"
+            [tgNavParams]="{project: project.slug, ref: item.getIn(['model', 'ref'])}"
+            [tgNavGetParams]="linkParams"
+            [attr.title]="zoomLevel === 0 ? ('#' + item.getIn(['model', 'ref']) + ' ' + item.getIn(['model', 'subject'])) : null"
+        >
+            <span class="card-ref" *ngIf="visible('ref')">{{ "#" + item.getIn(['model', 'ref']) }}</span>
+            <span class="card-subject e2e-title" *ngIf="visible('subject')" [innerHTML]="item.getIn(['model', 'subject']) | tgEmojify"></span>
+        </a>
+
+        <div class="card-compact-epics" *ngIf="zoomLevel === 0">
+            <div class="card-epics" *ngIf="item.getIn(['model', 'epics']).size">
+                <a
+                    class="card-epic"
+                    *ngFor="let epic of item.getIn(['model', 'epics']); let i = index"
+                    [tgNav]="'project-epics-detail'"
+                    [tgNavParams]="{project: item.getIn(['model', 'project_extra_info', 'slug']), ref: epic.get('ref')}"
+                >
+                    <span class="epic-color" [ngStyle]="{'background-color': epic.get('color')}" [title]="epic.get('subject')"></span>
+                    <span
+                        class="epic-name"
+                        [title]="epic.get('subject')"
+                        *ngIf="i === 0 && zoomLevel !== 0"
+                        [innerHTML]="epic.get('subject') | tgEmojify"
+                    ></span>
+                </a>
+            </div>
+        </div>
+    </h2>
+
+    <div class="wrapper-assigned-to-data">
+        <div class="card-assigned-to" *ngIf="visible('assigned_to') && !project.archived_code" [class.is_iocaine]="item.getIn(['model', 'is_iocaine'])">
+            <div class="card-user-avatar card-not-assigned" *ngIf="!item.get('assigned_to') && !(item.get('assigned_users') && item.get('assigned_users').size)">
+                <img [title]="'COMMON.ASSIGNED_TO.NOT_ASSIGNED' | tgTranslate" [src]="unassignedImageSrc" />
+                <span class="card-not-assigned-title" *ngIf="visible('assigned_to_extended')">{{ "COMMON.ASSIGNED_TO.NOT_ASSIGNED" | tgTranslate }}</span>
+            </div>
+
+            <ng-container *ngIf="item.get('assigned_to') || (item.get('assigned_users') && item.get('assigned_users').size)">
+                <ng-container *ngIf="assignedUsersPreview; else singleAssignee">
+                    <div class="card-user-avatar" *ngFor="let assignedUser of assignedUsersPreview; let i = index">
+                        <img
+                            *ngIf="i < 2 || item.get('assigned_users').size === 3"
+                            [src]="avatarsById[assignedUser.id].url"
+                            [title]="avatarsById[assignedUser.id].fullName"
+                            [alt]="avatarsById[assignedUser.id].fullName"
+                            [style.background-color]="avatarsById[assignedUser.id].bg || ''"
+                        />
+                        <span
+                            class="extra-assigned"
+                            *ngIf="i === 2 && item.get('assigned_users') && item.get('assigned_users').size > 3"
+                            [title]="'COMMON.CARD.EXTRA_ASSIGNED_USERS' | tgTranslate:{total: item.get('assigned_users').size - 2}"
+                        >{{ item.get('assigned_users').size - 2 }}+</span>
+                    </div>
+                </ng-container>
+                <ng-template #singleAssignee>
+                    <div class="card-user-avatar">
+                        <img
+                            [src]="avatarsById[item.getIn(['assigned_to', 'id'])].url"
+                            [title]="avatarsById[item.getIn(['assigned_to', 'id'])].fullName"
+                            [alt]="avatarsById[item.getIn(['assigned_to', 'id'])].fullName"
+                            [style.background-color]="avatarsById[item.getIn(['assigned_to', 'id'])].bg || ''"
+                        />
+                        <div class="card-iocaine-user-bg" *ngIf="item.getIn(['model', 'is_iocaine'])">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 28 17">
+                                <path fill="#B400D1" fill-opacity=".5" d="M27.409 3c0 7.732-6.136 14-13.705 14C6.136 17 0 10.732 0 3s.703 3.5 8.272 3.5S27.409-4.732 27.409 3z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </ng-template>
+            </ng-container>
+        </div>
+
+        <div class="card-data" *ngIf="visible('card-data')" [class.empty-tasks]="emptyTask()">
+            <div class="card-statistics-init">
+                <span *ngIf="type === 'us'">
+                    <span class="card-estimation" *ngIf="item.getIn(['model', 'total_points'])" [attr.data-id]="item.getIn(['model', 'id'])" [title]="'COMMON.CARD.PTS' | tgTranslate">
+                        {{ "COMMON.CARD.PTS" | tgTranslate:{pts: item.getIn(['model', 'total_points'])} }}
+                    </span>
+                    <span class="card-estimation" *ngIf="!item.getIn(['model', 'total_points'])">{{ "COMMON.CARD.NO_PTS" | tgTranslate }}</span>
+                </span>
+
+                <div class="card-due-date" *ngIf="item.getIn(['model', 'due_date'])" [title]="dueDateTitle()">
+                    <tg-svg svg-icon="icon-clock" [svgTitle]="'COMMON.CARD.DUE_DATE' | tgTranslate:{date: dueDateTitle()}" [svgFill]="dueDateColor()"></tg-svg>
+                </div>
+
+                <div class="card-iocaine" *ngIf="item.getIn(['model', 'is_iocaine'])" [title]="'TASK.FIELDS.IS_IOCAINE' | tgTranslate">
+                    <tg-svg svg-icon="icon-iocaine" [svgTitle]="'TASK.FIELDS.IS_IOCAINE' | tgTranslate"></tg-svg>
+                </div>
+
+                <span class="card-lock" *ngIf="item.getIn(['model', 'is_blocked'])">
+                    <tg-svg svg-icon="icon-lock"></tg-svg>
+                </span>
+            </div>
+
+            <div class="card-statistics">
+                <div class="statistic card-attachments" *ngIf="totalAttachments()" [title]="'ATTACHMENT.SECTION_NAME' | tgTranslate">
+                    <tg-svg svg-icon="icon-paperclip"></tg-svg>
+                    <span>{{ totalAttachments() }}</span>
+                </div>
+                <div class="statistic card-watchers" *ngIf="item.getIn(['model', 'watchers']).size" [title]="'COMMON.WATCHERS.WATCHERS' | tgTranslate">
+                    <tg-svg svg-icon="icon-eye"></tg-svg>
+                    <span>{{ item.getIn(['model', 'watchers']).size }}</span>
+                </div>
+                <div class="statistic card-comments" *ngIf="item.getIn(['model', 'total_comments'])" [title]="'COMMENTS.TITLE' | tgTranslate">
+                    <tg-svg svg-icon="icon-message-square"></tg-svg>
+                    <span>{{ item.getIn(['model', 'total_comments']) }}</span>
+                </div>
+                <div
+                    class="statistic card-completed-tasks"
+                    *ngIf="item.getIn(['model', 'tasks']) && item.getIn(['model', 'tasks']).size"
+                    [class.completed]="getClosedTasks().size === item.getIn(['model', 'tasks']).size"
+                    [title]="'COMMON.CARD.TASKS' | tgTranslate:{completed: getClosedTasks().size, total: item.getIn(['model', 'tasks']).size}"
+                >{{ getClosedTasks().size }} / {{ item.getIn(['model', 'tasks']).size }}</div>
+            </div>
+        </div>
+    </div>
+
+    <tg-card-slideshow *ngIf="isSlideshowVisible()" [images]="item.get('images')"></tg-card-slideshow>
+
+    <div class="card-tasks" *ngIf="isRelatedTasksVisible()">
+        <ul>
+            <li class="card-task" *ngFor="let task of item.getIn(['model', 'tasks'])">
+                <a
+                    href="#"
+                    [tgNav]="'project-tasks-detail'"
+                    [tgNavParams]="{project: project.slug, ref: task.get('ref')}"
+                    [class.closed-task]="task.get('is_closed')"
+                    [class.blocked-task]="task.get('is_blocked')"
+                >
+                    <span class="card-task-ref">{{ "#" + task.get('ref') }}</span>
+                    <span class="card-task-subject" [innerHTML]="task.get('subject') | tgEmojify"></span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div
+        class="card-unfold ng-animate-disabled"
+        role="button"
+        *ngIf="visible('unfold') && (hasTasks() || hasVisibleAttachments())"
+        (click)="!$event.ctrlKey && !$event.metaKey && toggleFold.emit({id: item.get('id')})"
+    >
+        <tg-svg *ngIf="zoomLevel === 2" [svgIcon]="!item.get('foldStatusChanged') ? 'icon-arrow-down' : 'icon-arrow-up'"></tg-svg>
+        <tg-svg *ngIf="zoomLevel !== 2" [svgIcon]="item.get('foldStatusChanged') ? 'icon-arrow-down' : 'icon-arrow-up'"></tg-svg>
+    </div>
+
+    <div class="loading-extra">
+        <img *ngIf="item.get('loading-extra')" class="loading-spinner" [src]="spinnerSrc" alt="loading..." />
+    </div>
+</div>
+
+<div class="card-transit-multi">
+    <div class="fake-us">
+        <div class="fake-img"></div>
+        <div class="column">
+            <div class="fake-text"></div>
+            <div class="fake-text"></div>
+        </div>
+    </div>
+    <div class="fake-us">
+        <div class="fake-img"></div>
+        <div class="column">
+            <div class="fake-text"></div>
+            <div class="fake-text"></div>
+        </div>
+    </div>
+</div>
