@@ -77,7 +77,44 @@ div.wrapper(
                         on-remove-filter="ctrl.removeFilter(filter)"
                         on-change-q="ctrl.changeQ(q)"
                     )
-                include ../includes/modules/taskboard-table
+                tg-taskboard-sortable(
+                    bind-project="project"
+                    bind-project-id="projectId"
+                    bind-sprint-id="sprintId"
+                    bind-userstories="userstories"
+                    bind-us-tasks="usTasks"
+                    bind-tasks-by-us="tasksByUs"
+                    bind-task-map="taskMap"
+                    bind-us-status-by-id="usStatusById"
+                    bind-task-status-list="::taskStatusList"
+                    bind-zoom="ctrl.zoom"
+                    bind-zoom-level="ctrl.zoomLevel"
+                    bind-not-found-tasks="ctrl.notFoundTasks"
+                    bind-back-to-backlog-url="ctrl.backToBacklogUrl"
+                    on-toggle-fold="ctrl.toggleFold($event.id, 'tasks')"
+                    on-edit-task="ctrl.editTask($event.id)"
+                    on-delete-task="ctrl.deleteTask($event.id)"
+                    on-change-task-assigned-to="ctrl.changeTaskAssignedTo($event.id)"
+                    on-add-new-task="ctrl.addNewTask($event.type, $event.us)"
+                    on-reorder="ctrl.taskMove(null, $event.task, $event.oldStatusId, $event.newUsId, $event.newStatusId, $event.order)"
+                )
+                .issues-wrapper(
+                    ng-class="{'zoom-0': ctrl.zoomLevel == 0, 'zoom-1': ctrl.zoomLevel == 1, 'zoom-2': ctrl.zoomLevel == 2, 'zoom-3': ctrl.zoomLevel == 3}"
+                )
+                    tg-issues-table(
+                        tg-issues-ordering
+                        ng-if="ctrl.initIssues"
+                        sprint-issues="true"
+                        issues="issues"
+                        show-tags="showTags"
+                        on-load-issues="ctrl.loadIssues()"
+                        on-add-new-issue="ctrl.addNewIssue('standard', null)"
+                        on-add-issues-in-bulk="ctrl.addNewIssue('bulk', null)"
+                        on-delete-issue="ctrl.deleteIssue(id)"
+                        on-detach-issue="ctrl.removeIssueFromSprint(id)"
+                        on-edit-issue="ctrl.editIssue(id)"
+                        on-toggle-tags="ctrl.toggleTags(tags)"
+                    )
 
     div.lightbox.lightbox-generic-form.lightbox-create-edit(tg-lb-create-edit)
 

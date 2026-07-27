@@ -1,0 +1,272 @@
+<ng-template #addNewTaskTpl let-us="us">
+    <div class="add-new-task">
+        <tg-svg
+            class="add-action btn-board"
+            *ngIf="canAddTask()"
+            [title]="'TASKBOARD.TITLE_ACTION_ADD' | tgTranslate"
+            (click)="addNewTask.emit({type: 'standard', us: us})"
+            svg-icon="icon-add"
+        ></tg-svg>
+        <tg-svg
+            class="bulk-action btn-board"
+            *ngIf="canAddTask()"
+            [title]="'TASKBOARD.TITLE_ACTION_ADD_BULK' | tgTranslate"
+            (click)="addNewTask.emit({type: 'bulk', us: us})"
+            svg-icon="icon-bulk"
+        ></tg-svg>
+    </div>
+</ng-template>
+
+<ng-template #placeholderTpl>
+    <ng-container *ngIf="!notFoundTasks">
+        <div class="placeholder-board-card clean">
+            <div class="placeholder-board-row">
+                <div class="placeholder-board-text small"></div>
+                <div class="placeholder-board-text big"></div>
+            </div>
+            <div class="placeholder-board-row">
+                <div class="placeholder-board-text"></div>
+            </div>
+            <div class="placeholder-board-row">
+                <div class="placeholder-board-last-text"></div>
+            </div>
+        </div>
+        <p class="title">{{ "TASKBOARD.PLACEHOLDER_CARD_TITLE" | tgTranslate }}</p>
+        <p class="text" [innerHTML]="'TASKBOARD.PLACEHOLDER_CARD_TEXT' | tgTranslate:{backlogUrl: backToBacklogUrl}"></p>
+    </ng-container>
+    <ng-container *ngIf="notFoundTasks">
+        <p class="title">{{ "TASKBOARD.TASK_NOT_FOUND_TITLE" | tgTranslate }}</p>
+        <p>{{ "TASKBOARD.TASK_NOT_FOUND_TEXT" | tgTranslate }}</p>
+    </ng-container>
+</ng-template>
+
+<div
+    class="taskboard-table"
+    [ngClass]="{'zoom-0': zoomLevel === 0, 'zoom-1': zoomLevel === 1, 'zoom-2': zoomLevel === 2, 'zoom-3': zoomLevel === 3}"
+>
+    <div class="taskboard-table-header">
+        <div class="taskboard-table-inner">
+            <h2 class="task-colum-name">{{ "TASKBOARD.TABLE.COLUMN" | tgTranslate }}</h2>
+            <h2
+                class="task-colum-name"
+                *ngFor="let s of taskStatusList"
+                [ngStyle]="{'border-bottom-color': s.color}"
+                [class.column-fold]="statusesFolded[s.id]"
+                [class]="'squish-status-' + s.id"
+                [title]="s.name"
+            >
+                <span>{{ s.name }}</span>
+
+                <button class="btn-board" (click)="foldStatus(s)" [class.hidden]="statusesFolded[s.id]">
+                    <tg-svg class="hfold fold-action" svg-icon="icon-fold-column" [svgTitle]="'TASKBOARD.TABLE.TITLE_ACTION_FOLD' | tgTranslate"></tg-svg>
+                </button>
+
+                <button class="btn-board" (click)="foldStatus(s)" [class.hidden]="!statusesFolded[s.id]">
+                    <tg-svg class="hunfold fold-action" svg-icon="icon-unfold-column" [svgTitle]="'TASKBOARD.TABLE.TITLE_ACTION_UNFOLD' | tgTranslate"></tg-svg>
+                </button>
+            </h2>
+        </div>
+    </div>
+
+    <div class="taskbord-utility-wrapper" data-js="taskboard-table-hscroll">
+        <div class="taskboard-table-body">
+            <div class="taskboard-table-inner" [style.width.px]="getTaskboardWidth()" cdkDropListGroup>
+                <div
+                    class="taskboard-row"
+                    *ngIf="userstories.length === 0"
+                    [class.row-fold]="isUsFolded(null)"
+                    [class.empty]="!(tasksByUs.get(null)?.size)"
+                >
+                    <div class="taskboard-row-title-box taskboard-column">
+                        <div class="card-placeholder" [class.not-found]="notFoundTasks">
+                            <ng-container *ngTemplateOutlet="placeholderTpl"></ng-container>
+                        </div>
+                    </div>
+
+                    <div
+                        class="taskboard-cards-box taskboard-column"
+                        *ngFor="let st of taskStatusList"
+                        [class]="'squish-status-' + st.id"
+                        [class.column-fold]="statusesFolded[st.id]"
+                    ></div>
+                </div>
+
+                <div
+                    class="taskboard-row"
+                    *ngFor="let us of userstories"
+                    [class.blocked]="us.is_blocked"
+                    [class.row-fold]="isUsFolded(us.id)"
+                    [class.empty]="!(tasksByUs.get(us.id)?.size)"
+                >
+                    <div class="taskboard-row-title-box taskboard-column" [title]="us.blocked_note">
+                        <div class="folding-actions" (click)="foldUs(us.id)">
+                            <tg-svg
+                                class="vfold fold-action"
+                                svg-icon="icon-arrow-up"
+                                [svgTitle]="'TASKBOARD.TABLE.TITLE_ACTION_FOLD_ROW' | tgTranslate"
+                                [class.hidden]="isUsFolded(us.id)"
+                            ></tg-svg>
+                            <tg-svg
+                                class="vunfold fold-action"
+                                svg-icon="icon-arrow-down"
+                                [svgTitle]="'TASKBOARD.TABLE.TITLE_ACTION_UNFOLD_ROW' | tgTranslate"
+                                [class.hidden]="!isUsFolded(us.id)"
+                            ></tg-svg>
+                        </div>
+
+                        <div class="taskboard-us">
+                            <h3 class="us-title">
+                                <a
+                                    href=""
+                                    [tgNav]="'project-userstories-detail'"
+                                    [tgNavParams]="{project: project.slug, ref: us.ref}"
+                                    [tgNavGetParams]="{milestone: us.milestone}"
+                                    [title]="'#' + us.ref + ' ' + us.subject"
+                                >
+                                    <span class="us-ref">{{ "#" + us.ref }}</span>
+                                    <span class="us-subject" [innerHTML]="us.subject | tgEmojify"></span>
+                                </a>
+                            </h3>
+                            <tg-belong-to-epics format="pill" *ngIf="us.epics" [epics]="us.epics"></tg-belong-to-epics>
+                            <div class="us-data">
+                                <p class="points-value" [attr.data-id]="us.id">
+                                    <span class="card-estimation" *ngIf="us.total_points" [title]="'COMMON.CARD.ESTIMATION' | tgTranslate">
+                                        {{ "COMMON.CARD.PTS" | tgTranslate:{pts: us.total_points} }}
+                                    </span>
+                                    <span class="card-estimation not-estimated" *ngIf="!us.total_points">{{ "US.NOT_ESTIMATED" | tgTranslate }}</span>
+                                </p>
+
+                                <tg-svg
+                                    class="due-date"
+                                    *ngIf="us.due_date"
+                                    svg-icon="icon-clock"
+                                    [svgTitle]="dueDateTitle(us)"
+                                    [svgFill]="dueDateColor(us)"
+                                ></tg-svg>
+
+                                <span class="card-lock" *ngIf="us.is_blocked">
+                                    <tg-svg svg-icon="icon-lock"></tg-svg>
+                                </span>
+
+                                <p class="status-value" *ngIf="usStatusById[us.status]">
+                                    <span [style.color]="usStatusById[us.status].color">{{ usStatusById[us.status].name }}</span>
+                                </p>
+                            </div>
+
+                            <ng-container *ngTemplateOutlet="addNewTaskTpl; context: {us: us}"></ng-container>
+                        </div>
+                    </div>
+
+                    <div
+                        class="taskboard-cards-box taskboard-column"
+                        *ngFor="let st of taskStatusList"
+                        [class]="'squish-status-' + st.id"
+                        [class.column-fold]="statusesFolded[st.id]"
+                        [class.row-max-two]="getTasksForColumn(us.id, st.id).size === 2"
+                        [class.row-max-three]="getTasksForColumn(us.id, st.id).size >= 3"
+                        cdkDropList
+                        [cdkDropListDisabled]="sortingDisabled"
+                        [cdkDropListData]="{usId: us.id, statusId: st.id}"
+                        (cdkDropListDropped)="drop($event)"
+                    >
+                        <div
+                            class="ng-animate-disabled"
+                            *ngFor="let taskId of getTasksForColumn(us.id, st.id)"
+                            [attr.data-id]="taskId"
+                            cdkDrag
+                            [cdkDragData]="taskId"
+                            [cdkDragDisabled]="sortingDisabled"
+                        >
+                            <tg-card
+                                class="card"
+                                [project]="project"
+                                [item]="getTaskById(taskId)"
+                                type="task"
+                                [zoom]="zoom"
+                                [zoomLevel]="zoomLevel"
+                                [inViewPort]="true"
+                                [folded]="statusesFolded[st.id] || isUsFolded(us.id)"
+                                (toggleFold)="toggleFold.emit($event)"
+                                (clickEdit)="editTask.emit($event)"
+                                (clickDelete)="deleteTask.emit($event)"
+                                (clickAssignedTo)="changeTaskAssignedTo.emit($event)"
+                            ></tg-card>
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    class="taskboard-row"
+                    [class.row-fold]="isUsFolded(null)"
+                    [class.empty]="!(tasksByUs.get(null)?.size)"
+                >
+                    <div class="taskboard-row-title-box taskboard-column">
+                        <div class="folding-actions">
+                            <a
+                                class="vfold"
+                                href=""
+                                [title]="'TASKBOARD.TABLE.TITLE_ACTION_FOLD_ROW' | tgTranslate"
+                                (click)="foldUs(null)"
+                                [class.hidden]="isUsFolded(null)"
+                            >
+                                <tg-svg class="fold-action" svg-icon="icon-arrow-up"></tg-svg>
+                            </a>
+                            <a
+                                class="vunfold"
+                                href=""
+                                [title]="'TASKBOARD.TABLE.TITLE_ACTION_UNFOLD_ROW' | tgTranslate"
+                                (click)="foldUs(null)"
+                                [class.hidden]="!isUsFolded(null)"
+                            >
+                                <tg-svg class="fold-action" svg-icon="icon-arrow-down"></tg-svg>
+                            </a>
+                        </div>
+
+                        <div class="taskboard-us">
+                            <h3 class="us-title">
+                                <span>{{ "TASKBOARD.TABLE.ROW_STORYLESS_TASKS_TITLE" | tgTranslate }}</span>
+                            </h3>
+
+                            <ng-container *ngTemplateOutlet="addNewTaskTpl; context: {us: null}"></ng-container>
+                        </div>
+                    </div>
+
+                    <div
+                        class="taskboard-cards-box taskboard-column"
+                        *ngFor="let st of taskStatusList"
+                        [class]="'squish-status-' + st.id"
+                        [class.column-fold]="statusesFolded[st.id]"
+                        cdkDropList
+                        [cdkDropListDisabled]="sortingDisabled"
+                        [cdkDropListData]="{usId: null, statusId: st.id}"
+                        (cdkDropListDropped)="drop($event)"
+                    >
+                        <div
+                            class="ng-animate-disabled"
+                            *ngFor="let taskId of getTasksForColumn(null, st.id)"
+                            [attr.data-id]="taskId"
+                            cdkDrag
+                            [cdkDragData]="taskId"
+                            [cdkDragDisabled]="sortingDisabled"
+                        >
+                            <tg-card
+                                class="card"
+                                [project]="project"
+                                [item]="getTaskById(taskId)"
+                                type="task"
+                                [zoom]="zoom"
+                                [zoomLevel]="zoomLevel"
+                                [inViewPort]="true"
+                                [folded]="statusesFolded[st.id] || isUsFolded(null)"
+                                (toggleFold)="toggleFold.emit($event)"
+                                (clickEdit)="editTask.emit($event)"
+                                (clickDelete)="deleteTask.emit($event)"
+                                (clickAssignedTo)="changeTaskAssignedTo.emit($event)"
+                            ></tg-card>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

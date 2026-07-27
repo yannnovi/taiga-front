@@ -124,11 +124,17 @@ tests), pas un "module de plus". À choisir un par un selon la priorité produit
      (`event.currentTarget` capturé dans une closure différée, redevenu `null` - voir
      `MIGRATION.md`). Vérifié en navigateur avec un scénario complet (tags, epics,
      avatars multiples, popover d'actions, clic "Edit", bascule fold).
-   - **Taskboard** (`taskboard/sortable.coffee`) : dépend de `tg-card`. Une seule instance
-     dragula pour tout le board (pas de croissance dynamique de conteneurs, pas de
-     swimlanes ici). **N'utilise PAS `window.dragMultiple`** (confirmé par grep) - aucune
-     régression à accepter sur ce module. Mutation optimiste directe
-     (`taskboardTasksService.move`), pas de refetch. Le plus simple des trois candidats.
+   - **Taskboard** (`taskboard/sortable.coffee`) : ✅ migré → **tout le tableau taskboard**
+     (pas seulement le wrapper de drag - `cdkDropListGroup` exige que les `cdkDropList`
+     connectées soient descendantes du même arbre Angular, ce que dragula n'exigeait pas
+     pour son instance unique couvrant tout le board) internalisé dans
+     `TaskboardTableComponent`, sélecteur conservé `tg-taskboard-sortable`. A aussi
+     absorbé `tgTaskboardSquishColumn` (une directive séparée qui posait l'état de pli et
+     le calcul de largeur de colonne sur le même scope ambiant que le contrôleur - aucun
+     des deux n'était vraiment "à" `TaskboardController`). Vérifié en navigateur avec un
+     vrai drag **entre deux colonnes de la même ligne US** ET **entre deux lignes US
+     différentes** (réassignation) - les deux cas que dragula gérait dans une seule
+     instance. Détails complets dans `MIGRATION.md`.
    - **Kanban** (`kanban/sortable.coffee`) : dépend de `tg-card`. Une seule instance
      dragula pour tout le board, mais avec croissance dynamique des conteneurs par
      swimlane (`drake.containers.push(...)` sur une instance déjà vivante quand une
@@ -143,8 +149,11 @@ tests), pas un "module de plus". À choisir un par un selon la priorité produit
    `tg-card` fait) ; (3) `tgKanbanSortable` (le plus complexe, croissance dynamique des
    conteneurs) ; (4) `tgBacklogSortable` seulement après avoir levé ses propres blocages
    ambiants (`tg-us-status`, `tg-backlog-us-points`, `tg-us-edit-selector`) ; (5)
-   sous-projet séparé plus tard pour reconstruire `window.dragMultiple`. **Étape (1)
-   terminée** (`tg-card` migré). **Prochaine étape : (2), `tgTaskboardSortable`.**
+   sous-projet séparé plus tard pour reconstruire `window.dragMultiple`. **Étapes (1) et
+   (2) terminées** (`tg-card` puis tout le tableau taskboard migrés). **Prochaine étape :
+   (3), `tgKanbanSortable`** - réutilise `tg-card` et le motif `cdkDropListGroup` validé
+   par le taskboard, mais ajoute la croissance dynamique des conteneurs par swimlane à
+   vérifier en prototype.
 2. **Éditeur WYSIWYG (CKEditor → wrapper `UpgradeComponent` ou remplacement moderne)** —
    débloque `comment`/`comments` et les champs description partout (`tg-item-wysiwyg`).
 3. **Validation de formulaire (checksley → Angular Reactive Forms)** — débloque

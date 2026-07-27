@@ -1162,6 +1162,61 @@ particulier ne l'aurait pas détecté (mon scénario de test initial appelait di
 callbacks avec `$event.id` correctement câblé dans le script, sans passer par les vrais
 templates appelants).
 
+### Phase 2, sous-projet 1 (suite) : `tgTaskboardSortable` → tout le tableau taskboard
+
+Contrairement aux 4 modules "quick win" précédents, celui-ci a demandé de migrer
+**l'intégralité** du tableau taskboard (en-tête, les 3 blocs de lignes, colonnes, cartes,
+état de pli, calcul de largeur de colonne) en un seul nouveau composant
+`TaskboardTableComponent`, sous le sélecteur conservé `tg-taskboard-sortable` — pas
+seulement le wrapper de drag. Raison : l'original faisait glisser des tâches entre
+**toutes** les cellules `.taskboard-column` du tableau (toutes lignes US × tous statuts,
+une seule instance dragula), une tâche pouvant changer de statut ET être réassignée à une
+autre US. `cdkDropListGroup` exige que toutes les `cdkDropList` connectées soient
+descendantes du même arbre de composants Angular — dragula n'a pas cette contrainte.
+Alternative écartée avec l'utilisateur : downgrader les directives CDK dans le template
+AngularJS existant (jugée trop incertaine face à un vrai `.issues-wrapper` déjà exclu du
+périmètre).
+
+**Trouvaille surprenante à l'audit** : `usFolded`/`statusesFolded` (état de pli) et le
+calcul de largeur de colonne n'étaient PAS définis par `TaskboardController` — une
+directive complètement séparée, `tgTaskboardSquishColumn`, les posait sur le même `$scope`
+ambiant partagé avec le contrôleur (aucun des deux n'aurait fonctionné seul). Les deux
+sont maintenant possédés directement par le nouveau composant, persistés de la même
+façon via `$tgResources.tasks.get/storeStatusColumnModes`/`get/storeUsRowModes`
+(`AJS_TG_RESOURCES`, pas le plus petit `AJS_RESOURCES`, puisque ces méthodes vivent dans
+`app/coffee/modules/resources/tasks.coffee`), largeur recalculée de façon réactive via des
+bindings `[style]` plutôt que des appels jQuery `.css()` impératifs.
+
+`ctrl.isMaximized`/`ctrl.isMinimized` (référencés dans le `ng-class` d'origine mais jamais
+définis nulle part dans le code, ni dans le contrôleur ni ailleurs — probablement copiés
+du kanban) sont omis, pas répliqués. `tg-taskboard-table-height-fixer` (aucune directive
+enregistrée sous ce nom) supprimé sans remplacement. `tg-due-date` (mode icône seul,
+utilisé ici) répliqué en ligne via `AJS_DUE_DATE_SERVICE` plutôt que de migrer toute la
+directive `tg-due-date` (partagée ailleurs, risque de dérive de périmètre).
+`addnewtask.jade` (2 boutons, pas de formulaire) et `taskboard-placeholder.jade` (2
+branches statiques) inlinés directement, tous deux confirmés sans autre appelant.
+
+Le `.issues-wrapper`/`tg-issues-table` vivait en fait DANS le fichier
+`taskboard-table.jade` remplacé (pas directement dans `taskboard.jade` comme supposé au
+début du scoping) — déplacé tel quel dans `taskboard.jade` pour rester inchangé plutôt que
+d'être perdu par erreur lors de la suppression du fichier.
+
+**Bizarrerie préexistante répliquée telle quelle** : la garde de permission d'origine
+(`if not (my_permissions.indexOf("modify_task") > -1) and project.archived_code then return`)
+active en fait le drag si la permission existe OU si le projet n'est PAS archivé — pas
+"corrigée", juste reproduite à l'identique dans `sortingDisabled`.
+
+Vérifié en navigateur headless (profil neuf) : rendu complet (2 lignes US + ligne
+"storyless", en-têtes de colonnes, cartes), **un vrai drag simulé entre deux colonnes de
+la même ligne US** (changement de statut seul) ET **un vrai drag entre deux lignes US
+différentes** (réassignation ET changement de statut simultanés) — les deux cas que
+`dragula` gérait dans une seule instance, chacun vérifié séparément puisque c'est la
+vraie nouveauté par rapport aux 4 modules précédents (aucun n'avait de cross-conteneur
+réel). Clic réel sur "ajouter une tâche" vérifié via CDP. Le clic de pli de colonne a été
+vérifié fonctionnellement correct via un `.click()` DOM direct après qu'un premier essai de
+clic par coordonnées CDP ait manqué la petite zone cliquable du bouton (20×20px) — un
+artefact de script de test, pas un bug du composant. Karma (361 specs) reste vert.
+
 **Les quatre candidats Phase 1 restants se sont tous révélés bloqués à la lecture du code**
 — la feuille de route les avait listés comme "quick wins probables" sans avoir vérifié leur
 implémentation en détail (comme elle le prévenait elle-même de ne pas faire) :

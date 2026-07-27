@@ -116,6 +116,8 @@ import { CardSlideshowComponent } from "./card-slideshow/card-slideshow.componen
 import "./card-slideshow/register-legacy";
 import { CardComponent } from "./card/card.component";
 import "./card/register-legacy";
+import { TaskboardTableComponent } from "./taskboard-table/taskboard-table.component";
+import "./taskboard-table/register-legacy";
 import { AttachmentsPreviewComponent } from "./attachments-preview/attachments-preview.component";
 import "./attachments-preview/register-legacy";
 import { NoMoreMembershipsExplanationComponent } from "./no-more-memberships-explanation/no-more-memberships-explanation.component";
@@ -264,6 +266,7 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         EpicsSortableComponent,
         CardSlideshowComponent,
         CardComponent,
+        TaskboardTableComponent,
         AttachmentsPreviewComponent,
         NoMoreMembershipsExplanationComponent,
         DutyComponent,
