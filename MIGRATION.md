@@ -1237,6 +1237,28 @@ factices pour un composant migré, préférer `null` à `[]`/`{}` pour les champ
 sauf certitude que l'API ne renvoie jamais `null` — `[]` masque exactement cette classe de
 bug.
 
+### Second bug de production remonté : boucle infinie de `$digest` sur le kanban
+
+`[$rootScope:infdig] 10 $digest() iterations reached`, avec
+`ctrl.getCardLinkParams(usMap.get(usId))` comme watcher fautif. Cause : `bind-link-params`
+de `tg-card` réévalue cette méthode à chaque digest AngularJS — contrairement à l'original
+`CardController.getLinkParams()`, qui n'était jamais lu qu'à travers une interpolation
+`{{ }}` (`tg-nav-get-params="{{ vm.getLinkParams() }}"`), implicitement transformée en
+chaîne de caractères (une valeur stable, indépendante de la référence). Lié directement en
+tant qu'objet ici, `getCardLinkParams()` construit un objet neuf à chaque appel (`_.clone`
++ littéral `parsedParams` frais) — même avec un contenu identique d'un appel à l'autre, la
+référence ne correspond jamais, et le digest ne se stabilise jamais.
+
+Corrigé en mettant en cache les paramètres calculés par id d'item, retournant la MÊME
+référence tant que le contenu n'a pas réellement changé (vérifié par égalité profonde) —
+stable quel que soit le mécanisme de watch sous-jacent (référence ou valeur). Le taskboard
+n'est pas concerné : son contrôleur n'a jamais eu de propriété équivalente et son appelant
+ne passe pas `link-params` du tout.
+
+Vérifié en navigateur headless (profil neuf) : 15 cycles `$digest()` explicites contre la
+logique corrigée (plus que le seuil de 10 itérations qui déclenchait l'erreur d'origine)
+se terminent sans lever d'exception. Karma (361 specs) reste vert.
+
 **Les quatre candidats Phase 1 restants se sont tous révélés bloqués à la lecture du code**
 — la feuille de route les avait listés comme "quick wins probables" sans avoir vérifié leur
 implémentation en détail (comme elle le prévenait elle-même de ne pas faire) :
