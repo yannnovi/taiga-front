@@ -1259,6 +1259,23 @@ Vérifié en navigateur headless (profil neuf) : 15 cycles `$digest()` explicite
 logique corrigée (plus que le seuil de 10 itérations qui déclenchait l'erreur d'origine)
 se terminent sans lever d'exception. Karma (361 specs) reste vert.
 
+### Troisième bug de production remonté : barre de progression d'upload dans `AttachmentsSortableComponent`
+
+`Failed to set the 'value' property on 'HTMLProgressElement': The provided double value
+is non-finite.` Cause : `attachments-resource.service.coffee` pose `file.progressPercent`
+comme une **chaîne** calculée par `Math.round((evt.loaded / evt.total) * 100)` — `"NaN"`
+si `evt.total` vaut `0`, et le champ n'existe même pas avant le premier événement de
+progression (le `File` brut poussé dans `uploadingAttachments` n'a pas encore cette
+propriété). Le template AngularJS d'origine liait ça via
+`value="{{file.progressPercent}}"` — un **attribut** HTML posé par interpolation de
+chaîne, toujours tolérant aux valeurs malformées. `[value]` lie la **propriété** DOM à la
+place, et le setter de `HTMLProgressElement` lève une exception sur toute valeur non
+finie, contrairement au chemin attribut. Corrigé en utilisant `[attr.value]` — restaure le
+comportement tolérant d'origine avec un changement minimal, sans toucher au calcul de
+progression en amont. Vérifié en navigateur headless (profil neuf) avec le champ absent,
+`"NaN"`, `"Infinity"`, et une valeur normale `"45"` : les quatre se rendent sans lever
+d'exception. Karma (361 specs) reste vert.
+
 **Les quatre candidats Phase 1 restants se sont tous révélés bloqués à la lecture du code**
 — la feuille de route les avait listés comme "quick wins probables" sans avoir vérifié leur
 implémentation en détail (comme elle le prévenait elle-même de ne pas faire) :
