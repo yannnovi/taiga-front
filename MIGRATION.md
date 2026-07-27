@@ -1217,6 +1217,26 @@ vérifié fonctionnellement correct via un `.click()` DOM direct après qu'un pr
 clic par coordonnées CDP ait manqué la petite zone cliquable du bouton (20×20px) — un
 artefact de script de test, pas un bug du composant. Karma (361 specs) reste vert.
 
+### Bug de production trouvé après coup dans `CardComponent` : `null` vs tableau vide
+
+Remonté par l'utilisateur en conditions réelles : `TypeError: Cannot read properties of
+null (reading 'size')` dans le template de `CardComponent`. Même famille de bug déjà
+documentée dans cette migration (les expressions AngularJS parsées tolèrent silencieusement
+`null.size`, les templates Angular stricts non) — mes données de test lors de la migration
+de `tg-card` utilisaient systématiquement des tableaux vides (`[]`) pour les champs
+Immutable optionnels, ce qui masquait le problème : les vraies données de l'API peuvent
+avoir `epics`/`watchers`/`attachments`/`colorized_tags`/`assigned_users`/`images` réellement
+`null` plutôt que vides, et le template AngularJS d'origine ne plantait jamais sur ces
+lectures `.size` non protégées puisque `$parse` avale les erreurs d'accès de propriété sur
+`null`. Corrigé en ajoutant `?.size` partout où c'était lu directement sans garde `&&`
+existante déjà en place ; les autres lectures `.size` du template sont restées telles
+quelles là où un `*ngIf` parent garantit déjà la non-nullité au moment où elles s'exécutent.
+Vérifié en navigateur headless (profil neuf) avec ces six champs explicitement à `null` :
+rendu propre, aucune erreur. **Leçon** : lors de la construction de données de test
+factices pour un composant migré, préférer `null` à `[]`/`{}` pour les champs optionnels
+sauf certitude que l'API ne renvoie jamais `null` — `[]` masque exactement cette classe de
+bug.
+
 **Les quatre candidats Phase 1 restants se sont tous révélés bloqués à la lecture du code**
 — la feuille de route les avait listés comme "quick wins probables" sans avoir vérifié leur
 implémentation en détail (comme elle le prévenait elle-même de ne pas faire) :
