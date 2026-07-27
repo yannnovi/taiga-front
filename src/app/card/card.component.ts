@@ -114,7 +114,7 @@ export class CardComponent implements OnChanges {
     }
 
     hasVisibleAttachments(): boolean {
-        return this.item.get("images").size > 0;
+        return this.item.get("images")?.size > 0;
     }
 
     getClosedTasks(): any {
@@ -211,7 +211,7 @@ export class CardComponent implements OnChanges {
 
     totalAttachments(): number {
         if (this.type === "task") {
-            return this.item.getIn(["model", "attachments"]).size;
+            return this.item.getIn(["model", "attachments"])?.size;
         }
 
         return this.item.getIn(["model", "total_attachments"]);

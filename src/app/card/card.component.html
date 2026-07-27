@@ -6,11 +6,11 @@
     [ngClass]="{
         'card-blocked': item.getIn(['model', 'is_blocked']),
         'archived': archived,
-        'with-assigned-user': item.get('assigned_users').size,
+        'with-assigned-user': item.get('assigned_users')?.size,
         'with-fold-action': visible('unfold') && (hasTasks() || hasVisibleAttachments())
     }"
 >
-    <div class="card-tags" *ngIf="visible('tags') && item.get('colorized_tags').size">
+    <div class="card-tags" *ngIf="visible('tags') && item.get('colorized_tags')?.size">
         <span
             class="card-tag"
             *ngFor="let tag of item.get('colorized_tags')"
@@ -26,7 +26,7 @@
     </div>
 
     <div *ngIf="zoomLevel > 0">
-        <div class="card-epics" *ngIf="item.getIn(['model', 'epics']).size">
+        <div class="card-epics" *ngIf="item.getIn(['model', 'epics'])?.size">
             <a
                 class="card-epic"
                 *ngFor="let epic of item.getIn(['model', 'epics']); let i = index"
@@ -57,7 +57,7 @@
         </a>
 
         <div class="card-compact-epics" *ngIf="zoomLevel === 0">
-            <div class="card-epics" *ngIf="item.getIn(['model', 'epics']).size">
+            <div class="card-epics" *ngIf="item.getIn(['model', 'epics'])?.size">
                 <a
                     class="card-epic"
                     *ngFor="let epic of item.getIn(['model', 'epics']); let i = index"
@@ -87,7 +87,7 @@
                 <ng-container *ngIf="assignedUsersPreview; else singleAssignee">
                     <div class="card-user-avatar" *ngFor="let assignedUser of assignedUsersPreview; let i = index">
                         <img
-                            *ngIf="i < 2 || item.get('assigned_users').size === 3"
+                            *ngIf="i < 2 || item.get('assigned_users')?.size === 3"
                             [src]="avatarsById[assignedUser.id].url"
                             [title]="avatarsById[assignedUser.id].fullName"
                             [alt]="avatarsById[assignedUser.id].fullName"
@@ -145,9 +145,9 @@
                     <tg-svg svg-icon="icon-paperclip"></tg-svg>
                     <span>{{ totalAttachments() }}</span>
                 </div>
-                <div class="statistic card-watchers" *ngIf="item.getIn(['model', 'watchers']).size" [title]="'COMMON.WATCHERS.WATCHERS' | tgTranslate">
+                <div class="statistic card-watchers" *ngIf="item.getIn(['model', 'watchers'])?.size" [title]="'COMMON.WATCHERS.WATCHERS' | tgTranslate">
                     <tg-svg svg-icon="icon-eye"></tg-svg>
-                    <span>{{ item.getIn(['model', 'watchers']).size }}</span>
+                    <span>{{ item.getIn(['model', 'watchers'])?.size }}</span>
                 </div>
                 <div class="statistic card-comments" *ngIf="item.getIn(['model', 'total_comments'])" [title]="'COMMENTS.TITLE' | tgTranslate">
                     <tg-svg svg-icon="icon-message-square"></tg-svg>
