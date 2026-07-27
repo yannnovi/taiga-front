@@ -81,6 +81,7 @@ class KanbanController extends mixOf(taiga.Controller, taiga.PageMixin, taiga.Fi
         @.foldedSwimlane = Immutable.Map()
         @.isFirstLoad = true
         @.renderBatching = true
+        @._cardLinkParamsCache = {}
 
         @.isLightboxOpened = false # True when a lighbox is open
         @.isRefreshNeeded = false  # True if a lighbox is open and some event arrived
@@ -468,6 +469,15 @@ class KanbanController extends mixOf(taiga.Controller, taiga.PageMixin, taiga.Fi
     # passed down as a plain input, since a real Angular component has no scope chain to
     # walk. Taskboard's card caller has no equivalent (its controller never had
     # lastLoadUserstoriesParams either) and simply doesn't pass link-params at all.
+    # `bind-link-params` on `tg-card` re-evaluates this on every AngularJS digest - unlike
+    # the original `CardController.getLinkParams()`, which was only ever read through a
+    # `{{ }}` string interpolation (`tg-nav-get-params="{{ vm.getLinkParams() }}"`),
+    # implicitly stringified into a stable, reference-independent value. Bound directly as
+    # an object here, a freshly-built object on every call (even with identical content)
+    # never compares equal by reference, which sent the digest into
+    # `[$rootScope:infdig] 10 $digest() iterations reached`. Cached per item id (in
+    # `@._cardLinkParamsCache`, initialized in the constructor below), returning the same
+    # reference whenever the computed content hasn't actually changed.
     getCardLinkParams: (item) ->
         if not @.lastLoadUserstoriesParams
             return {}
@@ -484,6 +494,14 @@ class KanbanController extends mixOf(taiga.Controller, taiga.PageMixin, taiga.Fi
         parsedParams = {}
         Object.keys(params).forEach (key) =>
             parsedParams['kanban-' + key] = params[key]
+
+        itemId = item.get('id')
+        cached = @._cardLinkParamsCache[itemId]
+
+        if cached && _.isEqual(cached, parsedParams)
+            return cached
+
+        @._cardLinkParamsCache[itemId] = parsedParams
 
         return parsedParams
 
