@@ -1143,6 +1143,25 @@ manuelles successives (le même piège déjà documenté plus haut) — un profi
 vérification les a fait disparaître. Karma (361 specs, -6 après suppression des 3 anciennes
 directives + leur spec) reste vert.
 
+**Second bug réel trouvé après coup** (pas pendant la vérification initiale, repéré en
+préparant la migration de `tgTaskboardSortable`) : les appelants kanban/taskboard de
+`tg-card` (`on-toggle-fold`/`on-click-edit`/`on-click-delete`/`on-click-assigned-to`)
+avaient gardé leur syntaxe `&` d'AngularJS d'avant-migration (locaux bruts, ex.
+`on-click-edit="ctrl.editUs(id)"`). Ça ne fonctionnait que parce que le binding `&`
+d'AngularJS invoque l'expression avec l'objet de locaux passé tel quel par la directive —
+`downgradeComponent` fonctionne différemment : confirmé directement dans le code source
+d'`@angular/upgrade` qu'il invoque toujours l'expression appelante avec
+`getter(scope, {'$event': valeur})`, sans jamais étaler les clés de l'objet émis. `id`
+était donc `undefined` dans les 4 appelants, sur kanban ET taskboard, rendant clic sur
+plier/éditer/supprimer/assigner silencieusement inopérants depuis le commit `tgCard`.
+Corrigé en utilisant `$event.id`, même convention que `EpicsSortableComponent`/etc.
+**Leçon** : lors d'une migration de directive, auditer explicitement CHAQUE appelant
+existant pour toute syntaxe `&`-binding old-style restée intacte, pas seulement les
+`bind-x` — une vérification en navigateur qui ne simule pas le clic précis sur CE bouton
+particulier ne l'aurait pas détecté (mon scénario de test initial appelait directement les
+callbacks avec `$event.id` correctement câblé dans le script, sans passer par les vrais
+templates appelants).
+
 **Les quatre candidats Phase 1 restants se sont tous révélés bloqués à la lecture du code**
 — la feuille de route les avait listés comme "quick wins probables" sans avoir vérifié leur
 implémentation en détail (comme elle le prévenait elle-même de ne pas faire) :
