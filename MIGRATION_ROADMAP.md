@@ -135,13 +135,20 @@ tests), pas un "module de plus". À choisir un par un selon la priorité produit
      vrai drag **entre deux colonnes de la même ligne US** ET **entre deux lignes US
      différentes** (réassignation) - les deux cas que dragula gérait dans une seule
      instance. Détails complets dans `MIGRATION.md`.
-   - **Kanban** (`kanban/sortable.coffee`) : dépend de `tg-card`. Une seule instance
-     dragula pour tout le board, mais avec croissance dynamique des conteneurs par
-     swimlane (`drake.containers.push(...)` sur une instance déjà vivante quand une
-     swimlane s'ouvre - confirmé que dragula supporte ça nativement ; à vérifier si
-     `cdkDropListGroup` accepte l'ajout de `cdkDropList` à la volée de la même façon).
-     Mutation optimiste sur `Immutable.Map` (`kanbanUserstoriesService`). Utilise
-     `window.dragMultiple` (différé). Le plus complexe des quatre.
+   - **Kanban** (`kanban/sortable.coffee`) : ✅ migré → **tout le tableau kanban**
+     (le plus gros des quatre - 7 directives AngularJS absorbées, pas seulement 2 comme le
+     taskboard) internalisé dans `KanbanTableComponent`, sélecteur conservé
+     `tg-kanban-sortable`. La croissance dynamique des conteneurs par swimlane
+     (`drake.containers.push(...)` en dragula) n'a **pas** d'équivalent direct sous CDK :
+     vérifié dans le code source de `@angular/cdk/drag-drop` que la liste des zones de drop
+     connectées à un geste de drag est figée une seule fois au début du geste et jamais
+     réévaluée ensuite - régression acceptée et documentée (auto-ouverture d'une swimlane
+     repliée pendant un drag fonctionne visuellement, mais y déposer demande un second
+     geste). Un vrai bug de câblage Angular (injection de dépendances cassée par un
+     `ngTemplateOutlet` déclaré hors du `cdkDropList`, empêchant `CdkDrag` de trouver son
+     conteneur - aucune erreur levée, juste un drag totalement silencieux) trouvé et corrigé
+     avant de committer. Vérifié en navigateur avec un vrai drag entre deux colonnes de
+     statut ET sur un board sans swimlanes. Détails complets dans `MIGRATION.md`.
 
    **Séquence corrigée et actée avec l'utilisateur** : (1) migration de `tg-card` d'abord
    (projet autonome, déjà bien scopé - contrairement au backlog dont le vrai périmètre
@@ -149,11 +156,15 @@ tests), pas un "module de plus". À choisir un par un selon la priorité produit
    `tg-card` fait) ; (3) `tgKanbanSortable` (le plus complexe, croissance dynamique des
    conteneurs) ; (4) `tgBacklogSortable` seulement après avoir levé ses propres blocages
    ambiants (`tg-us-status`, `tg-backlog-us-points`, `tg-us-edit-selector`) ; (5)
-   sous-projet séparé plus tard pour reconstruire `window.dragMultiple`. **Étapes (1) et
-   (2) terminées** (`tg-card` puis tout le tableau taskboard migrés). **Prochaine étape :
-   (3), `tgKanbanSortable`** - réutilise `tg-card` et le motif `cdkDropListGroup` validé
-   par le taskboard, mais ajoute la croissance dynamique des conteneurs par swimlane à
-   vérifier en prototype.
+   sous-projet séparé plus tard pour reconstruire `window.dragMultiple`. **Étapes (1), (2)
+   et (3) terminées** (`tg-card`, tout le tableau taskboard, puis tout le tableau kanban
+   migrés). **Prochaine étape : (4), `tgBacklogSortable`** - seulement après avoir levé ses
+   propres blocages ambiants (`tg-us-status`, `tg-backlog-us-points`, `tg-us-edit-selector`,
+   voir le tableau "prouvé bloqué" plus haut) ; réutilise le motif `cdkDropListGroup`
+   maintenant validé trois fois (sort-projects/attachments/related-userstories/epics en
+   drag simple, taskboard et kanban en board complet), et devra composer avec la même
+   limitation de `cdkDropListGroup` sur les conteneurs ajoutés dynamiquement que le kanban
+   vient de documenter.
 2. **Éditeur WYSIWYG (CKEditor → wrapper `UpgradeComponent` ou remplacement moderne)** —
    débloque `comment`/`comments` et les champs description partout (`tg-item-wysiwyg`).
 3. **Validation de formulaire (checksley → Angular Reactive Forms)** — débloque

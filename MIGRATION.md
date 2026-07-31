@@ -1334,6 +1334,95 @@ de cette tâche gulp. Vérifié en démarrant `npm start` sur un checkout propre
 localhost:9001/conf.json` renvoie désormais le JSON attendu (`api`,
 `http://localhost:8000/api/v1/`, etc.) au lieu du HTML de `index.html`.
 
+### Phase 2, sous-projet 1 (suite) : `tgKanbanSortable` → tout le tableau kanban
+
+Le plus gros et le plus risqué des quatre chantiers drag & drop planifiés (voir
+`MIGRATION_ROADMAP.md`) : contrairement au taskboard (2 directives absorbées), le kanban en
+avait **sept** partageant la même portion de DOM (`.kanban-table` dans
+`kanban-table.jade`) : `tgKanbanSortable` lui-même, `tgKanban` (visibilité en viewport +
+sync de scroll horizontal + `ResizeObserver` pour `--kanban-width`), `tgKanbanSquishColumn`
+(pli des colonnes de statut — même situation "jamais vraiment sur le contrôleur" que
+`usFolded`/`statusesFolded` du taskboard), `tgKanbanWipLimit` (insertion DOM jQuery
+impérative d'un marqueur après la Nième carte), `tgKanbanSwimlane` (titre de swimlane sticky
++ auto-ouverture au survol pendant un drag), `tgKanbanTaskboardColumn` (compteur sticky au
+scroll vertical), `tgKanbanArchivedShowStatusHeader` + `tgKanbanArchivedStatusIntro`
+(chargement paresseux des statuts archivés). Toutes absorbées dans un nouveau
+`KanbanTableComponent` (`src/app/kanban-table/`), downgradé sur le même sélecteur
+`tg-kanban-sortable`, dans le module `taigaKanban` d'origine.
+
+**Trois décisions de scope actées avec l'utilisateur avant l'implémentation** (voir
+`MIGRATION_ROADMAP.md` pour le détail des options écartées) :
+- `window.dragMultiple` (drag multi-sélection) reste hors périmètre — régression déjà
+  actée pour ce lot de migrations.
+- **Auto-ouverture d'une swimlane repliée pendant un drag : régression acceptée, pas
+  corrigée.** Vérifié directement dans le code source de `@angular/cdk/drag-drop`
+  (`drop-list-ref.mjs`) : la liste des zones de drop connectées à un geste de drag est
+  résolue **une seule fois**, au tout début du geste (`_draggingStarted()` →
+  `connectedTo()`), et jamais réévaluée ensuite — contrairement à dragula qui acceptait
+  `drake.containers.push(...)` en cours de route. La swimlane s'ouvre donc toujours
+  visuellement au survol (minuteur de 1s inchangé), mais y déposer une carte demande de
+  relâcher puis reprendre le geste. Monter toutes les swimlanes en permanence (juste
+  repliées en CSS) aurait résolu le problème mais a été écarté pour risque de perf sur les
+  boards à beaucoup de swimlanes/cartes.
+- `ctrl.selectedUss`/`toggleSelectedUs`/`cleanSelectedUss` (sélection ctrl/cmd-clic)
+  supprimés entièrement du contrôleur — confirmé par grep qu'ils ne servaient plus à rien
+  une fois le drag multi-sélection hors périmètre (aucun autre consommateur ; une des deux
+  classes CSS qu'ils pilotaient, `ui-multisortable-multiple`, n'avait même aucune règle CSS
+  associée).
+
+**Simplification supplémentaire prise en cours de route, par précédent** : le suivi de
+visibilité en viewport de `tgKanban` (`initBoard()`/`app/js/boards.js`, un
+`IntersectionObserver` gate-gardant `bind-in-view-port` sur `tg-card`) n'est pas répliqué —
+`tg-card` reçoit `[inViewPort]="true"` en dur, exactement comme `TaskboardTableComponent`
+le fait déjà pour son propre tableau (potentiellement grand lui aussi). `app/js/boards.js`
+et sa référence dans `gulpfile.js` supprimés (plus aucun appelant).
+
+**`previousCard`/`nextCard`** : `kanbanUserstoriesService.move()` a besoin des **id**
+voisins (pas d'un simple index) pour calculer l'ordre — contrairement au taskboard, dont
+`drop()` n'émet qu'un `order: event.currentIndex` numérique brut. Dérivés dans le nouveau
+`drop()` depuis la liste ordonnée pré-drop de la colonne cible (id déplacé filtré, indexé
+par `event.currentIndex`) : équivalent correct aussi bien pour un réordonnancement
+intra-colonne que pour un déplacement inter-colonnes, vérifié en confirmant que
+`bulk_update_kanban_order` recalcule bien l'ordre de toute la colonne cible après un drop
+(pas seulement de la carte déplacée).
+
+**Bug réel trouvé et corrigé avant de committer** : le tout premier essai de drag en
+navigateur ne faisait absolument rien — pas d'erreur console, `cdkDrag`/`cdkDropList`
+présents et correctement configurés dans le DOM (vérifié via `ng.getDirectives()`), le
+geste de drag démarrait bel et bien (`_dragRef.isDragging()` passait à `true`, classe
+`cdk-drag-dragging` posée), mais **aucun preview ni placeholder CDK n'était jamais créé, et
+`(cdkDropListDropped)` ne se déclenchait jamais**. Cause : le template partageait le
+balisage des cartes (le bloc contenant `cdkDrag`) entre les deux branches (avec/sans
+swimlane) via un unique `<ng-template #columnCardsTpl>` + `*ngTemplateOutlet`, déclaré en
+dehors de tout `cdkDropList`. Angular résout l'injection de dépendances d'un
+`TemplateRef` (ici, `CdkDrag` cherchant son `CdkDropList` ambiant via
+`@Optional() dropContainer`) selon le **point de déclaration lexicale** du template, pas
+son point de rendu physique une fois projeté par `ngTemplateOutlet` — donc chaque carte,
+bien que visuellement et structurellement imbriquée dans un `cdkDropList` réel dans le DOM,
+recevait `dropContainer: null` à l'instanciation. Confirmé en lisant `drag-ref.mjs` :
+`_startDragSequence()` ne crée le preview/placeholder que dans la branche
+`if (dropContainer) { ... }` ; sans conteneur détecté, CDK traite silencieusement l'élément
+comme un drag "libre" (positionné par transform direct), sans lever la moindre erreur.
+`TaskboardTableComponent` évitait déjà ce piège par accident, en dupliquant son balisage de
+ligne inline plutôt que de le partager via `ngTemplateOutlet` — même remède appliqué ici :
+le contenu de colonne (compteur, placeholder, cartes, marqueur WIP) est maintenant dupliqué
+tel quel dans les deux branches plutôt que factorisé dans un template partagé.
+
+Vérifié en navigateur headless (profil neuf à chaque script, Puppeteer piloté via
+`puppeteer-core` + le Chrome système, aucun harnais de ce type n'existant déjà dans ce
+repo), connexion simulée via `localStorage` (`token`/`refresh`/`userInfo`, forme confirmée
+dans `app/coffee/modules/auth.coffee`), contre le vrai `taiga-back` de l'utilisateur avec
+données d'exemple : **un vrai drag simulé** (gestes souris réels avec déplacement
+incrémental, pas de saut direct) entre deux colonnes de statut d'une même swimlane (statut
+`New`→`Ready` confirmé via `bulk_update_kanban_order` retournant 200 et le nouveau statut),
+**un vrai drag sur un board sans swimlanes** (`swimlane: null` correctement transmis à
+l'API — corrige au passage un `NaN` accidentel de l'ancien code dragula qui ne "marchait"
+que parce que `NaN` est falsy en JS), et **pli/dépli d'une colonne de statut** (classe
+`.vfold` appliquée, vue repliée verticale rendue correctement). Le drag croisant deux
+swimlanes utilise le même `drop()`/`cdkDropListData` déjà validé dans les deux scénarios
+ci-dessus (seul le `swimlaneId` transmis diffère) — pas re-testé séparément. Karma
+(361 specs) reste vert, aucune régression.
+
 ## Patron à suivre pour migrer un module suivant
 
 1. Repérer ses dépendances réelles (services/directives utilisés *et* utilisateurs) avant
