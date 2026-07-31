@@ -76,12 +76,10 @@ class KanbanController extends mixOf(taiga.Controller, taiga.PageMixin, taiga.Fi
         bindMethods(@)
         @kanbanUserstoriesService.reset()
         @.openFilter = false
-        @.selectedUss = {}
         @.movedUs = []
         @.foldedSwimlane = Immutable.Map()
         @.isFirstLoad = true
         @.renderBatching = true
-        @._cardLinkParamsCache = {}
 
         @.isLightboxOpened = false # True when a lighbox is open
         @.isRefreshNeeded = false  # True if a lighbox is open and some event arrived
@@ -102,13 +100,6 @@ class KanbanController extends mixOf(taiga.Controller, taiga.PageMixin, taiga.Fi
 
         taiga.defineImmutableProperty @.scope, "swimlanesList", () =>
             return @kanbanUserstoriesService.swimlanesList
-
-    cleanSelectedUss: () ->
-        for key of @.selectedUss
-            @.selectedUss[key] = false
-
-    toggleSelectedUs: (usId) ->
-        @.selectedUss[usId] = !@.selectedUss[usId]
 
     firstLoad: () ->
         promise = @.loadInitialData()
@@ -462,49 +453,13 @@ class KanbanController extends mixOf(taiga.Controller, taiga.PageMixin, taiga.Fi
 
             @kanbanUserstoriesService.refresh(false)
 
-    # Used by the Angular `tg-card` component (bind-link-params) to preserve the current
-    # swimlane/filter context when navigating to a US detail and back - previously computed
-    # inside CardController.getLinkParams() by walking UP the AngularJS scope chain
-    # (taiga.findScope) to reach this same controller; now computed here directly and
-    # passed down as a plain input, since a real Angular component has no scope chain to
-    # walk. Taskboard's card caller has no equivalent (its controller never had
-    # lastLoadUserstoriesParams either) and simply doesn't pass link-params at all.
-    # `bind-link-params` on `tg-card` re-evaluates this on every AngularJS digest - unlike
-    # the original `CardController.getLinkParams()`, which was only ever read through a
-    # `{{ }}` string interpolation (`tg-nav-get-params="{{ vm.getLinkParams() }}"`),
-    # implicitly stringified into a stable, reference-independent value. Bound directly as
-    # an object here, a freshly-built object on every call (even with identical content)
-    # never compares equal by reference, which sent the digest into
-    # `[$rootScope:infdig] 10 $digest() iterations reached`. Cached per item id (in
-    # `@._cardLinkParamsCache`, initialized in the constructor below), returning the same
-    # reference whenever the computed content hasn't actually changed.
-    getCardLinkParams: (item) ->
-        if not @.lastLoadUserstoriesParams
-            return {}
-
-        params = _.clone(@.lastLoadUserstoriesParams)
-        params['status'] = item.getIn(['model', 'status'])
-        params['swimlane'] = item.getIn(['model', 'swimlane'])
-
-        params = _.pickBy(params, _.identity)
-
-        if @scope.swimlanesList.size && !params['swimlane']
-            params.swimlane = "null"
-
-        parsedParams = {}
-        Object.keys(params).forEach (key) =>
-            parsedParams['kanban-' + key] = params[key]
-
-        itemId = item.get('id')
-        cached = @._cardLinkParamsCache[itemId]
-
-        if cached && _.isEqual(cached, parsedParams)
-            return cached
-
-        @._cardLinkParamsCache[itemId] = parsedParams
-
-        return parsedParams
-
+    # `@.lastLoadUserstoriesParams` (set below) is read directly by `KanbanTableComponent`
+    # (bind-last-load-userstories-params) to compute `tg-card`'s `linkParams` itself - see
+    # `KanbanTableComponent.getCardLinkParams()` for the port of what used to live here as
+    # `KanbanController.getCardLinkParams()`. That AngularJS-era version existed mainly to
+    # dodge a `$digest` infinite-loop bug from a fresh object reference crossing the
+    # AngularJS/downgraded-component boundary on every digest (see MIGRATION.md) - moot now
+    # that `tg-card` is called directly from pure Angular-land inside that component.
     loadUserstories: () ->
         params = @.loadUserstoriesParams()
 
@@ -638,8 +593,6 @@ class KanbanController extends mixOf(taiga.Controller, taiga.PageMixin, taiga.Fi
         @.generateFilters()
 
     moveUs: (ctx, usList, newStatusId, newSwimlaneId, index, previousCard, nextCard) ->
-        @.cleanSelectedUss()
-
         usList = _.map usList, (us) =>
             return @kanbanUserstoriesService.getUsModel(us.id)
 
@@ -676,306 +629,3 @@ class KanbanController extends mixOf(taiga.Controller, taiga.PageMixin, taiga.Fi
                 @.filtersReloadContent()
 
 module.controller("KanbanController", KanbanController)
-
-#############################################################################
-## Kanban Directive
-#############################################################################
-KanbanDirective = ($repo, $rootscope) ->
-    link = ($scope, $el, $attrs) ->
-        watchKanbanSize = () =>
-            columns = $el.find(".task-colum-name")
-            kanbanStyles = getComputedStyle($el[0])
-            columnMargin = Number(kanbanStyles.getPropertyValue('--kanban-column-margin')
-                .trim()
-                .replace('px', '')
-                .split(' ')[1])
-
-            resizeCb = (entries) =>
-                    width = columns.toArray().reduce (acc, column) =>
-                        if document.body.contains(column)
-                            return acc + column.offsetWidth + columnMargin
-
-                        resizeObserver.unobserve(column)
-                        return acc
-                    , 0
-
-                    if width > 0
-                        document.body.style.setProperty('--kanban-width', (width - columnMargin) + 'px')
-
-            resizeObserver = new ResizeObserver(resizeCb)
-
-            columns.each (index, column) =>
-                resizeObserver.observe(column)
-
-        board = initBoard()
-        board.events (event, entries) =>
-            # the card is visible in the scroll viewport
-            if event == 'SHOW_CARD'
-                visibleEntries = entries.filter (entry) => entry.visible && !$scope.usCardVisibility[entry.id]
-
-                if visibleEntries.length
-                    $scope.$evalAsync () =>
-                        visibleEntries.forEach (entry) =>
-                            $scope.usCardVisibility[entry.id] = true
-
-            return
-
-        $scope.taskColumnLoaded = (event, status, swimlane) ->
-            column = event.target[0]
-            board.addSwimlane(column, status, swimlane)
-
-        $scope.cardLoaded = (event, status, swimlane) ->
-            board.addCard(event.target[0], status, swimlane)
-
-        _tableBody = null
-
-        $scope.isTableLoaded = false
-
-        $scope.kanbanTableLoaded = (event, swimlaneId) ->
-            $scope.$evalAsync () =>
-                # we only want to track when the user open a new swimlane for d&d
-                if swimlaneId
-                    $scope.openSwimlane(swimlaneId)
-
-                $scope.isTableLoaded = true
-
-            tableBody = event.target
-            _tableBody = tableBody
-            tableHeaderDom = $el.find(".kanban-table-header .kanban-table-inner")
-
-            tableBody.on "scroll", (event) ->
-                scroll = -1 * event.currentTarget.scrollLeft
-                tableHeaderDom.css("transform", "translateX(#{scroll}px)")
-
-            watchKanbanSize()
-
-            return
-
-        $scope.$on "$destroy", ->
-            $el.off()
-            if _tableBody
-                _tableBody.off()
-
-    return {link: link}
-
-module.directive("tgKanban", ["$tgRepo", "$rootScope", KanbanDirective])
-
-#############################################################################
-## Kanban Archived Show Status
-#############################################################################
-
-KanbanArchivedShowStatusHeaderDirective = ($rootscope, $translate, kanbanUserstoriesService) ->
-    showArchivedText = $translate.instant("KANBAN.ACTION_SHOW_ARCHIVED")
-
-    link = ($scope, $el, $attrs) ->
-        unwatch = $scope.$watch 'ctrl.initialLoad', (initialLoad) =>
-            return if !initialLoad
-
-            unwatch()
-
-            status = $scope.$eval($attrs.tgKanbanArchivedShowStatusHeader)
-
-            kanbanUserstoriesService.addArchivedStatus(status.id)
-            kanbanUserstoriesService.hideStatus(status.id)
-
-            $el.on "click", (event) ->
-                $scope.$apply ->
-                    if kanbanUserstoriesService.statusHide.includes(status.id)
-                        $rootscope.$broadcast("kanban:show-userstories-for-status", status.id)
-                        kanbanUserstoriesService.showStatus(status.id)
-
-        $scope.$on "$destroy", ->
-            $el.off()
-
-    return {link:link}
-
-module.directive("tgKanbanArchivedShowStatusHeader", [ "$rootScope", "$translate", "tgKanbanUserstories", KanbanArchivedShowStatusHeaderDirective])
-
-#############################################################################
-## Kanban Archived Status Column Intro Directive
-#############################################################################
-
-KanbanArchivedStatusIntroDirective = ($translate, kanbanUserstoriesService) ->
-    userStories = []
-
-    link = ($scope, $el, $attrs) ->
-        status = $scope.$eval($attrs.tgKanbanArchivedStatusIntro)
-
-        $scope.$on "kanban:shown-userstories-for-status", (ctx, statusId, userStoriesLoaded) ->
-            if statusId == status.id
-                kanbanUserstoriesService.deleteStatus(statusId)
-                kanbanUserstoriesService.add(userStoriesLoaded)
-
-        $scope.$on "$destroy", ->
-            $el.off()
-
-    return {link:link}
-
-module.directive("tgKanbanArchivedStatusIntro", ["$translate", "tgKanbanUserstories", KanbanArchivedStatusIntroDirective])
-
-#############################################################################
-## Kanban Squish Column Directive
-#############################################################################
-
-KanbanSquishColumnDirective = (rs, projectService, kanbanUserstoriesService) ->
-    link = ($scope, $el, $attrs) ->
-        $scope.foldStatus = (status) ->
-            if !$scope.folds
-                $scope.folds = rs.kanban.getStatusColumnModes(projectService.project.get('id'))
-
-            $scope.unfold = null
-            $scope.folds[status.id] = !!!$scope.folds[status.id]
-
-            if !$scope.folds[status.id]
-                $scope.unfold = status.id
-
-            rs.kanban.storeStatusColumnModes($scope.projectId, $scope.folds)
-
-            if kanbanUserstoriesService.archivedStatus.includes(status.id) && !kanbanUserstoriesService.statusHide.includes(status.id)
-                kanbanUserstoriesService.hideStatus(status.id)
-
-            return
-
-        unwatch = $scope.$watch 'ctrl.initialLoad', (load) ->
-            if load && $scope.usByStatus?.size
-                $scope.folds = rs.kanban.getStatusColumnModes(projectService.project.get('id'))
-
-                archivedFolds = $scope.usStatusList.filter (status) ->
-                    return status.is_archived
-
-                for status in archivedFolds
-                    $scope.folds[status.id] = true
-
-                unwatch()
-
-    return {link: link}
-
-module.directive("tgKanbanSquishColumn", ["$tgResources", "tgProjectService", "tgKanbanUserstories",KanbanSquishColumnDirective])
-
-#############################################################################
-## Kanban WIP Limit Directive
-#############################################################################
-
-KanbanWipLimitDirective = ($timeout) ->
-    link = ($scope, $el, $attrs) ->
-        status = $scope.$eval($attrs.tgKanbanWipLimit)
-
-        redrawWipLimit = =>
-            $timeout =>
-                cards = $el.find("tg-card")
-
-                wipLimitClass = ''
-                element = null
-
-                if cards.length + 1 == status.wip_limit
-                    wipLimitClass = 'one-left'
-                    element = cards[cards.length - 1]
-                else if cards.length == status.wip_limit
-                    wipLimitClass = 'reached'
-                    element = cards[cards.length - 1]
-                else if cards.length > status.wip_limit
-                    wipLimitClass = 'exceeded'
-                    element = cards[status.wip_limit - 1]
-
-                $el.find(".kanban-wip-limit").remove()
-
-                if element
-                    angular.element(element).after("<div class='kanban-wip-limit #{wipLimitClass}'><span>WIP Limit</span></div>")
-            , 0, false
-
-        if status and not status.is_archived
-            $scope.$on "redraw:wip", redrawWipLimit
-            $scope.$on "kanban:us:move", redrawWipLimit
-            $scope.$on "usform:new:success", redrawWipLimit
-            $scope.$on "usform:bulk:success", redrawWipLimit
-
-        $scope.$on "$destroy", ->
-            $el.off()
-
-    return {link: link}
-
-module.directive("tgKanbanWipLimit", ["$timeout", KanbanWipLimitDirective])
-
-#############################################################################
-## Kanban Swimlane Directive
-#############################################################################
-KanbanSwimlaneDirective = ($timeout) ->
-    link = ($scope, $el, $attrs) ->
-        tableHeaderDom = []
-        addSwimlane = null
-        ctrl = $scope.$parent.ctrl
-
-        if !ctrl
-            throw new Error('KanbanSwimlaneDirective ctrl not found')
-
-        # sticky swimlane title
-        $el.on "scroll", (event) ->
-            if !tableHeaderDom.length
-                tableHeaderDom = $el.find(".kanban-swimlane-title")
-            if !addSwimlane
-                addSwimlane = $el.find(".kanban-swimlane-add")
-
-            scroll = event.currentTarget.scrollLeft
-            tableHeaderDom.css("transform", "translateX(#{scroll}px)")
-            addSwimlane.css("transform", "translateX(#{scroll}px)")
-
-        currentSwimlane = null
-        className = 'pending-to-open'
-
-        $scope.mouseleaveSwimlane = (event) =>
-            if currentSwimlane
-                $timeout.cancel(currentSwimlane.timeoutId)
-                currentSwimlane.el.classList.remove(className)
-                currentSwimlane = null
-
-        $scope.mouseoverSwimlane = (event, swimlaneId) =>
-            return if currentSwimlane && currentSwimlane.id == swimlaneId
-
-            if currentSwimlane
-                $timeout.cancel(currentSwimlane.timeoutId)
-                currentSwimlane.el.classList.remove(className)
-
-            swimlane = event.currentTarget
-
-            if swimlane.classList.contains('folded')
-                isDragging = !!document.querySelectorAll('tg-card.gu-mirror').length
-
-                return if !isDragging
-
-                swimlane.classList.add(className)
-
-                timeoutId = $timeout () ->
-                    swimlane.classList.remove(className)
-                    ctrl.toggleSwimlane(swimlaneId)
-                , 1000
-
-                currentSwimlane = {
-                    id: swimlaneId,
-                    timeoutId: timeoutId,
-                    el: swimlane
-                }
-
-        $scope.$on "$destroy", ->
-            $el.off()
-
-    return {link: link}
-
-module.directive("tgKanbanSwimlane", ['$timeout', KanbanSwimlaneDirective])
-
-#############################################################################
-## Kanban Swimlane Taskboard Column Directive
-#############################################################################
-KanbanTaskboardColumnDirective = () ->
-    link = ($scope, $el, $attrs) ->
-        # sticky num us counter
-        $el.on "scroll", (event) ->
-            scroll = event.currentTarget.scrollTop
-            taskCounterDom = $el.find(".kanban-task-counter")
-            taskCounterDom.css("transform", "translateY(#{scroll}px)")
-
-        $scope.$on "$destroy", ->
-            $el.off()
-
-    return {link: link}
-
-module.directive("tgKanbanTaskboardColumn", [KanbanTaskboardColumnDirective])

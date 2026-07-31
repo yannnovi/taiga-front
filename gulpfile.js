@@ -198,7 +198,6 @@ paths.libs = [
     paths.modules + "dom-autoscroller/dist/dom-autoscroller.js",
     paths.app + "js/angular-sanitize.js",
     paths.app + "js/dragula-drag-multiple.js",
-    paths.app + "js/boards.js",
     paths.app + "js/tg-repeat.js",
     paths.app + "js/sha1-custom.js",
     paths.app + "js/murmurhash3_gc.js"

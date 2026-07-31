@@ -118,6 +118,8 @@ import { CardComponent } from "./card/card.component";
 import "./card/register-legacy";
 import { TaskboardTableComponent } from "./taskboard-table/taskboard-table.component";
 import "./taskboard-table/register-legacy";
+import { KanbanTableComponent } from "./kanban-table/kanban-table.component";
+import "./kanban-table/register-legacy";
 import { AttachmentsPreviewComponent } from "./attachments-preview/attachments-preview.component";
 import "./attachments-preview/register-legacy";
 import { NoMoreMembershipsExplanationComponent } from "./no-more-memberships-explanation/no-more-memberships-explanation.component";
@@ -193,6 +195,7 @@ import {
     AJS_PROJECTS_SERVICE,
     AJS_EPICS_SERVICE,
     AJS_DUE_DATE_SERVICE,
+    AJS_KANBAN_USERSTORIES_SERVICE,
     upgradedService,
 } from "./shared/ajs-tokens";
 import { TgTranslatePipe } from "./shared/translate.pipe";
@@ -267,6 +270,7 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         CardSlideshowComponent,
         CardComponent,
         TaskboardTableComponent,
+        KanbanTableComponent,
         AttachmentsPreviewComponent,
         NoMoreMembershipsExplanationComponent,
         DutyComponent,
@@ -335,6 +339,7 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         upgradedService(AJS_PROJECTS_SERVICE, "tgProjectsService"),
         upgradedService(AJS_EPICS_SERVICE, "tgEpicsService"),
         upgradedService(AJS_DUE_DATE_SERVICE, "tgDueDateService"),
+        upgradedService(AJS_KANBAN_USERSTORIES_SERVICE, "tgKanbanUserstories"),
     ],
 })
 export class AppModule implements DoBootstrap {

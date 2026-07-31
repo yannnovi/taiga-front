@@ -1,0 +1,346 @@
+<ng-template #placeholderTpl let-statusId="statusId" let-swimlaneId="swimlaneId">
+    <div class="card-placeholder" *ngIf="showPlaceholder(statusId, swimlaneId)" [class.not-found]="notFoundUserstories">
+        <ng-container *ngIf="!notFoundUserstories">
+            <div class="placeholder-board-card">
+                <div class="placeholder-board-row">
+                    <div class="placeholder-board-text small"></div>
+                    <div class="placeholder-board-text big"></div>
+                </div>
+                <div class="placeholder-board-row">
+                    <div class="placeholder-board-text"></div>
+                </div>
+                <div class="placeholder-board-row avatar">
+                    <div class="placeholder-board-avatar"></div>
+                    <div class="placeholder-board-user"></div>
+                </div>
+            </div>
+            <div class="placeholder-titles">
+                <div class="text-small"></div>
+                <div class="text-large"></div>
+            </div>
+            <div class="placeholder-avatar">
+                <div class="image"></div>
+                <div class="text"></div>
+            </div>
+            <p class="title">{{ "KANBAN.PLACEHOLDER_CARD_TITLE" | tgTranslate }}</p>
+            <p>{{ "KANBAN.PLACEHOLDER_CARD_TEXT" | tgTranslate }}</p>
+        </ng-container>
+        <ng-container *ngIf="notFoundUserstories">
+            <p class="title">{{ "KANBAN.US_NOT_FOUND_TITLE" | tgTranslate }}</p>
+            <p>{{ "KANBAN.US_NOT_FOUND_TEXT_P1" | tgTranslate }}</p>
+            <p>{{ "KANBAN.US_NOT_FOUND_TEXT_P2" | tgTranslate }}</p>
+        </ng-container>
+    </div>
+</ng-template>
+
+<div
+    class="kanban-table"
+    cdkDropListGroup
+    [ngClass]="{
+        'zoom-0': zoomLevel === 0,
+        'zoom-1': zoomLevel === 1,
+        'zoom-2': zoomLevel === 2,
+        'zoom-3': zoomLevel === 3,
+        'kanban-table-swimlane': isSwimlaneMode()
+    }"
+>
+    <div class="kanban-table-header">
+        <div class="kanban-table-inner" [style.transform]="'translateX(' + headerScrollX + 'px)'">
+            <h2
+                class="task-colum-name"
+                *ngFor="let s of usStatusList"
+                [class.vfold]="folds[s.id]"
+                [class.readonly]="!canModifyTask()"
+                [title]="s.name"
+            >
+                <div class="deco-square" [style.background-color]="s.color" [class.hidden]="folds[s.id]"></div>
+                <div class="title">
+                    <div class="name">{{ s.name }}</div>
+                </div>
+                <div class="options">
+                    <button
+                        class="btn-board option"
+                        *ngIf="canAddUs() && !s.is_archived"
+                        [title]="'KANBAN.TITLE_ACTION_ADD_US' | tgTranslate"
+                        (click)="addNewUs.emit({type: 'standard', statusId: s.id})"
+                    >
+                        <tg-svg class="add-action" svg-icon="icon-add"></tg-svg>
+                    </button>
+
+                    <button
+                        class="btn-board option"
+                        *ngIf="canAddUs() && !s.is_archived"
+                        [title]="'KANBAN.TITLE_ACTION_ADD_BULK' | tgTranslate"
+                        (click)="addNewUs.emit({type: 'bulk', statusId: s.id})"
+                    >
+                        <tg-svg class="bulk-action" svg-icon="icon-bulk"></tg-svg>
+                    </button>
+
+                    <button
+                        class="btn-board option"
+                        (click)="foldStatus(s)"
+                        [title]="'KANBAN.TITLE_ACTION_FOLD' | tgTranslate"
+                        [class.hidden]="folds[s.id]"
+                    >
+                        <tg-svg svg-icon="icon-fold-column"></tg-svg>
+                    </button>
+
+                    <button
+                        class="btn-board option hunfold"
+                        *ngIf="s.is_archived"
+                        (click)="foldStatus(s); showArchivedStatus(s.id)"
+                        [title]="'KANBAN.TITLE_ACTION_UNFOLD' | tgTranslate"
+                        [class.hidden]="!folds[s.id]"
+                    >
+                        <tg-svg svg-icon="icon-unfold-column"></tg-svg>
+                    </button>
+
+                    <button
+                        class="btn-board option hunfold"
+                        *ngIf="!s.is_archived"
+                        (click)="foldStatus(s)"
+                        [title]="'KANBAN.TITLE_ACTION_UNFOLD' | tgTranslate"
+                        [class.hidden]="!folds[s.id]"
+                    >
+                        <tg-svg svg-icon="icon-unfold-column"></tg-svg>
+                    </button>
+                </div>
+            </h2>
+        </div>
+    </div>
+
+    <ng-container *ngIf="isSwimlaneMode()">
+        <div *ngFor="let swimlane of swimlanesList" class="kanban-swimlane" [attr.data-swimlane]="swimlane.id">
+            <button
+                class="kanban-swimlane-title"
+                (mouseover)="onSwimlaneTitleMouseOver($event, swimlane.id)"
+                (mouseleave)="onSwimlaneTitleMouseLeave()"
+                (click)="toggleSwimlane.emit({id: swimlane.id})"
+                [class.unclassified-swimlane]="swimlane.id === -1"
+                [class.folded]="foldedSwimlane.get(swimlane.id.toString())"
+                [style.transform]="'translateX(' + headerScrollX + 'px)'"
+            >
+                <tg-svg class="unfold-action" *ngIf="!foldedSwimlane.get(swimlane.id.toString())" svg-icon="icon-unfolded-swimlane"></tg-svg>
+                <tg-svg class="fold-action" *ngIf="foldedSwimlane.get(swimlane.id.toString())" svg-icon="icon-folded-swimlane"></tg-svg>
+
+                <h2 class="title-name" [class.unclassified-us-title]="swimlane.id === -1">{{ swimlane.name }}</h2>
+
+                <div class="unclassified-us-info" *ngIf="swimlane.id === -1">
+                    <tg-svg svg-icon="icon-help-circle"></tg-svg>
+                    <div class="tooltip pop-help">{{ "KANBAN.UNCLASSIFIED_USER_STORIES_TOOLTIP" | tgTranslate }}</div>
+                </div>
+
+                <div class="default-swimlane" *ngIf="swimlane.id === project.default_swimlane && project.swimlanes.length > 1">
+                    <tg-svg class="default-swimlane-icon" svg-icon="icon-star"></tg-svg>
+                    <span class="default-text">{{ "ADMIN.PROJECT_KANBAN_OPTIONS.DEFAULT" | tgTranslate }}</span>
+                </div>
+            </button>
+
+            <div
+                class="kanban-table-body"
+                *ngIf="!foldedSwimlane.get(swimlane.id.toString())"
+                (scroll)="onTableBodyScroll($event, swimlane.id)"
+            >
+                <div class="kanban-table-inner">
+                    <!--
+                        `cdkDrag` below is inlined directly (not shared via `ngTemplateOutlet`/`ng-template`)
+                        on purpose: a `TemplateRef`'s embedded views resolve directive dependency injection
+                        (here, `CdkDrag` looking up its ancestor `CdkDropList`) against the template's
+                        LEXICAL declaration site, not wherever `ngTemplateOutlet` physically renders it - so
+                        a shared template declared outside the `cdkDropList` div below would silently break
+                        `CdkDrag`'s `dropContainer` injection (verified: CDK then treats every card as a
+                        free-floating drag with no drop container - no preview/placeholder ever created, no
+                        `(cdkDropListDropped)` ever fires, no console error). `TaskboardTableComponent`
+                        avoids this same trap by duplicating its row markup across two branches rather than
+                        sharing it - same pattern followed here.
+                    -->
+                    <div
+                        class="kanban-uses-box taskboard-column"
+                        *ngFor="let s of swimlanesStatuses[swimlane.id]"
+                        [id]="'column-' + s.id"
+                        [class.vfold]="folds[s.id]"
+                        [class.column-fold]="folds[s.id]"
+                        [class.target-drop]="isTargetDrop(s.id, swimlane.id)"
+                        (scroll)="onColumnScroll($event, s.id, swimlane.id)"
+                        cdkDropList
+                        [cdkDropListData]="{statusId: s.id, swimlaneId: swimlane.id}"
+                        (cdkDropListDropped)="drop($event)"
+                        (cdkDropListEntered)="onDropListEntered(s.id, swimlane.id)"
+                        (cdkDropListExited)="onDropListExited(s.id, swimlane.id)"
+                    >
+                        <div class="kanban-task-counter" *ngIf="!folds[s.id]" [attr.title]="'KANBAN.NUMBER_US' | tgTranslate"
+                             [style.transform]="'translateY(' + (columnScrollY[columnKey(s.id, swimlane.id)] || 0) + 'px)'">
+                            <div class="animated-counter-inner" [class.wip-amount]="s.wip_limit" [class.limit-over]="(getUsIds(s.id, swimlane.id)?.size || 0) > s.wip_limit">
+                                <div class="counter-translator">
+                                    <div class="result">
+                                        <span class="current">{{ getUsIds(s.id, swimlane.id)?.size || 0 }}</span>
+                                        <span *ngIf="s.wip_limit"> / {{ s.wip_limit }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="placeholder-collapsed" *ngIf="folds[s.id]">
+                            <div class="placeholder-collapsed-wrapper">
+                                <div class="ammount" *ngIf="!s.is_archived">
+                                    <div class="animated-counter-inner vertical" [class.wip-amount]="s.wip_limit" [class.limit-over]="(getUsIds(s.id, swimlane.id)?.size || 0) > s.wip_limit">
+                                        <span class="current">{{ getUsIds(s.id, swimlane.id)?.size || 0 }}</span>
+                                        <span *ngIf="s.wip_limit"> / {{ s.wip_limit }}</span>
+                                    </div>
+                                </div>
+                                <div class="text-holder">
+                                    <div class="archived" *ngIf="s.is_archived">{{ "KANBAN.ARCHIVED" | tgTranslate }}</div>
+                                    <div class="name">{{ s.name }}</div>
+                                </div>
+                                <div class="square-color" [style.background-color]="s.color"></div>
+                            </div>
+                        </div>
+
+                        <ng-container *ngTemplateOutlet="placeholderTpl; context: {statusId: s.id, swimlaneId: swimlane.id}"></ng-container>
+
+                        <ng-container *ngFor="let usId of (getUsIds(s.id, swimlane.id) || []); let i = index; let first = first">
+                            <div
+                                class="ng-animate-disabled"
+                                [attr.data-id]="usId"
+                                cdkDrag
+                                [cdkDragData]="usId"
+                                (cdkDragStarted)="onDragStarted($event, s.id, swimlane.id)"
+                                (cdkDragEnded)="onDragEnded($event)"
+                            >
+                                <tg-card
+                                    class="card"
+                                    [class.readonly]="!canModifyTask()"
+                                    [class.kanban-moved]="movedUs.indexOf(usId) !== -1"
+                                    [project]="project"
+                                    [item]="getUs(usId)"
+                                    type="us"
+                                    [zoom]="zoom"
+                                    [zoomLevel]="zoomLevel"
+                                    [archived]="isUsInArchivedHiddenStatus(usId)"
+                                    [inViewPort]="true"
+                                    [isFirst]="first"
+                                    [linkParams]="getCardLinkParams(getUs(usId))"
+                                    (toggleFold)="toggleFold.emit($event)"
+                                    (clickEdit)="clickEdit.emit($event)"
+                                    (clickDelete)="clickDelete.emit($event)"
+                                    (clickAssignedTo)="clickAssignedTo.emit($event)"
+                                    (clickMoveToTop)="clickMoveToTop.emit($event)"
+                                ></tg-card>
+                            </div>
+
+                            <div
+                                class="kanban-wip-limit"
+                                *ngIf="getWipLimitMarker(s, getUsIds(s.id, swimlane.id)?.toJS()) as marker"
+                                [ngClass]="marker.cssClass"
+                                [style.display]="i === marker.afterIndex ? null : 'none'"
+                            >
+                                <span>WIP Limit</span>
+                            </div>
+                        </ng-container>
+
+                        <div class="kanban-column-intro" *ngIf="s.is_archived"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <a
+            class="kanban-swimlane-add"
+            *ngIf="swimlanesList.size && project.i_am_admin && swimlanesList.size <= 1"
+            [tgNav]="'project-admin-project-values-kanban-power-ups'"
+            [tgNavParams]="{project: project.slug}"
+        >
+            <tg-svg class="add-action" svg-icon="icon-add"></tg-svg>
+            <span>{{ "KANBAN.CREATE_SWIMLANE" | tgTranslate }}</span>
+        </a>
+    </ng-container>
+
+    <div class="kanban-table-body" *ngIf="!isSwimlaneMode()" (scroll)="onTableBodyScroll($event, null)">
+        <div class="kanban-table-inner">
+            <div
+                class="kanban-uses-box taskboard-column"
+                *ngFor="let s of usStatusList"
+                [id]="'column-' + s.id"
+                [class.vfold]="folds[s.id]"
+                [class.column-fold]="folds[s.id]"
+                [class.target-drop]="isTargetDrop(s.id, null)"
+                (scroll)="onColumnScroll($event, s.id, null)"
+                cdkDropList
+                [cdkDropListData]="{statusId: s.id, swimlaneId: null}"
+                (cdkDropListDropped)="drop($event)"
+                (cdkDropListEntered)="onDropListEntered(s.id, null)"
+                (cdkDropListExited)="onDropListExited(s.id, null)"
+            >
+                <div class="kanban-task-counter" *ngIf="!folds[s.id]" [attr.title]="'KANBAN.NUMBER_US' | tgTranslate"
+                     [style.transform]="'translateY(' + (columnScrollY[columnKey(s.id, null)] || 0) + 'px)'">
+                    <div class="animated-counter-inner" [class.wip-amount]="s.wip_limit" [class.limit-over]="(getUsIds(s.id, null)?.size || 0) > s.wip_limit">
+                        <div class="counter-translator">
+                            <div class="result">
+                                <span class="current">{{ getUsIds(s.id, null)?.size || 0 }}</span>
+                                <span *ngIf="s.wip_limit"> / {{ s.wip_limit }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="placeholder-collapsed" *ngIf="folds[s.id]">
+                    <div class="placeholder-collapsed-wrapper">
+                        <div class="ammount" *ngIf="!s.is_archived">
+                            <div class="animated-counter-inner vertical" [class.wip-amount]="s.wip_limit" [class.limit-over]="(getUsIds(s.id, null)?.size || 0) > s.wip_limit">
+                                <span class="current">{{ getUsIds(s.id, null)?.size || 0 }}</span>
+                                <span *ngIf="s.wip_limit"> / {{ s.wip_limit }}</span>
+                            </div>
+                        </div>
+                        <div class="text-holder">
+                            <div class="archived" *ngIf="s.is_archived">{{ "KANBAN.ARCHIVED" | tgTranslate }}</div>
+                            <div class="name">{{ s.name }}</div>
+                        </div>
+                        <div class="square-color" [style.background-color]="s.color"></div>
+                    </div>
+                </div>
+
+                <ng-container *ngTemplateOutlet="placeholderTpl; context: {statusId: s.id, swimlaneId: null}"></ng-container>
+
+                <ng-container *ngFor="let usId of (getUsIds(s.id, null) || []); let i = index; let first = first">
+                    <div
+                        class="ng-animate-disabled"
+                        [attr.data-id]="usId"
+                        cdkDrag
+                        [cdkDragData]="usId"
+                        (cdkDragStarted)="onDragStarted($event, s.id, null)"
+                        (cdkDragEnded)="onDragEnded($event)"
+                    >
+                        <tg-card
+                            class="card"
+                            [class.readonly]="!canModifyTask()"
+                            [class.kanban-moved]="movedUs.indexOf(usId) !== -1"
+                            [project]="project"
+                            [item]="getUs(usId)"
+                            type="us"
+                            [zoom]="zoom"
+                            [zoomLevel]="zoomLevel"
+                            [archived]="isUsInArchivedHiddenStatus(usId)"
+                            [inViewPort]="true"
+                            [isFirst]="first"
+                            [linkParams]="getCardLinkParams(getUs(usId))"
+                            (toggleFold)="toggleFold.emit($event)"
+                            (clickEdit)="clickEdit.emit($event)"
+                            (clickDelete)="clickDelete.emit($event)"
+                            (clickAssignedTo)="clickAssignedTo.emit($event)"
+                            (clickMoveToTop)="clickMoveToTop.emit($event)"
+                        ></tg-card>
+                    </div>
+
+                    <div
+                        class="kanban-wip-limit"
+                        *ngIf="getWipLimitMarker(s, getUsIds(s.id, null)?.toJS()) as marker"
+                        [ngClass]="marker.cssClass"
+                        [style.display]="i === marker.afterIndex ? null : 'none'"
+                    >
+                        <span>WIP Limit</span>
+                    </div>
+                </ng-container>
+
+                <div class="kanban-column-intro" *ngIf="s.is_archived"></div>
+            </div>
+        </div>
+    </div>
+</div>
