@@ -1315,6 +1315,25 @@ suite logique est soit un vrai sous-projet de Phase 2 (dragula recommandé), soi
 Phase 3 (refactor de scope ambiant) une fois un filet de tests en place, selon la priorité
 produit de l'utilisateur.
 
+### Quatrième bug de production remonté : `conf.json` jamais servi en environnement de dev fraîchement installé
+
+En configurant un environnement de dev tout neuf (Node absent, `npm install` jamais lancé),
+l'app démarrait sans configuration : `taigaConfig` restait vide, donc pas d'URL d'API. Cause :
+la tâche `conf` de `gulpfile.js` fait `gulp.src(["conf/conf.example.json"]).pipe(gulp.dest(paths.dist))`
+sans renommer le fichier — elle produit donc `dist/conf.example.json`, jamais
+`dist/conf.json`. Le serveur de dev (tâche `express`) sert `/conf.json` via
+`express.static(__dirname + "/dist/conf.json")`, qui ne trouve rien et laisse tomber sur le
+catch-all `app.all("/*", ...)` servant `index.html`. Côté client, `app-loader.coffee` fait
+`fetch("conf.json").then(r => r.json())` : le parse JSON échoue sur ce HTML, l'erreur est
+avalée par le `.catch()` qui appelle quand même `mainLoad()` — donc l'app boote silencieusement
+sans jamais fusionner `conf.json` dans `window.taigaConfig`. Corrigé en ajoutant
+`.pipe(rename("conf.json"))` dans la tâche `conf` (le module `gulp-rename` était déjà importé
+et utilisé ailleurs dans le fichier). Le flux Docker (`docker/conf.json.template` +
+`config_env_subst.sh`) n'est pas concerné : il écrit son propre `dist/conf.json` indépendamment
+de cette tâche gulp. Vérifié en démarrant `npm start` sur un checkout propre : `curl
+localhost:9001/conf.json` renvoie désormais le JSON attendu (`api`,
+`http://localhost:8000/api/v1/`, etc.) au lieu du HTML de `index.html`.
+
 ## Patron à suivre pour migrer un module suivant
 
 1. Repérer ses dépendances réelles (services/directives utilisés *et* utilisateurs) avant
