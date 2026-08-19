@@ -1,0 +1,186 @@
+<div
+    class="kanban-table"
+    #kanbanTableRoot
+    cdkDropListGroup
+    (scroll)="onTableScroll($event)"
+    [ngClass]="{
+        'zoom-0': zoomLevel === 0,
+        'zoom-1': zoomLevel === 1,
+        'zoom-2': zoomLevel === 2,
+        'zoom-3': zoomLevel === 3,
+        'kanban-table-swimlane': swimlanesList.size
+    }"
+>
+    <div class="kanban-table-header">
+        <div class="kanban-table-inner" #headerInner>
+            <h2
+                class="task-colum-name"
+                #taskColumnName
+                *ngFor="let s of usStatusList"
+                [title]="s.name"
+                [class.vfold]="folds[s.id]"
+                [class.readonly]="readonly_"
+            >
+                <div class="deco-square" [ngStyle]="{'background-color': s.color}" [class.hidden]="folds[s.id]"></div>
+                <div class="title">
+                    <div class="name">{{ s.name }}</div>
+                </div>
+                <div class="options">
+                    <button
+                        class="btn-board option"
+                        [title]="'KANBAN.TITLE_ACTION_ADD_US' | tgTranslate"
+                        (click)="addNewUs.emit({type: 'standard', statusId: s.id})"
+                        [class.hidden]="!canAddUs"
+                        *ngIf="!s.is_archived"
+                    >
+                        <tg-svg class="add-action" svg-icon="icon-add"></tg-svg>
+                    </button>
+
+                    <button
+                        class="btn-board option"
+                        [title]="'KANBAN.TITLE_ACTION_ADD_BULK' | tgTranslate"
+                        (click)="addNewUs.emit({type: 'bulk', statusId: s.id})"
+                        [class.hidden]="!canAddUs"
+                        *ngIf="!s.is_archived"
+                    >
+                        <tg-svg class="bulk-action" svg-icon="icon-bulk"></tg-svg>
+                    </button>
+
+                    <button class="btn-board option" (click)="foldStatus(s)" [title]="'KANBAN.TITLE_ACTION_FOLD' | tgTranslate" [class.hidden]="folds[s.id]">
+                        <tg-svg svg-icon="icon-fold-column"></tg-svg>
+                    </button>
+
+                    <button
+                        class="btn-board option hunfold"
+                        *ngIf="s.is_archived"
+                        (click)="foldStatus(s); showArchivedColumn(s)"
+                        [title]="'KANBAN.TITLE_ACTION_UNFOLD' | tgTranslate"
+                        [class.hidden]="!folds[s.id]"
+                    >
+                        <tg-svg svg-icon="icon-unfold-column"></tg-svg>
+                    </button>
+
+                    <button
+                        class="btn-board option hunfold"
+                        *ngIf="!s.is_archived"
+                        (click)="foldStatus(s)"
+                        [title]="'KANBAN.TITLE_ACTION_UNFOLD' | tgTranslate"
+                        [class.hidden]="!folds[s.id]"
+                    >
+                        <tg-svg svg-icon="icon-unfold-column"></tg-svg>
+                    </button>
+                </div>
+            </h2>
+        </div>
+    </div>
+
+    <ng-container *ngIf="swimlanesList.size">
+        <div class="kanban-swimlane" *ngFor="let swimlane of swimlanesList.toArray()" [attr.data-swimlane]="swimlane.id">
+            <button
+                class="kanban-swimlane-title"
+                #swimlaneTitle
+                (mouseover)="mouseoverSwimlane($event, swimlane.id)"
+                (mouseleave)="mouseleaveSwimlane()"
+                [class.unclassified-swimlane]="swimlane.id === -1"
+                [class.folded]="isSwimlaneFolded(swimlane.id)"
+                (click)="toggleSwimlane.emit({id: swimlane.id})"
+            >
+                <tg-svg class="unfold-action" *ngIf="!isSwimlaneFolded(swimlane.id)" svg-icon="icon-unfolded-swimlane"></tg-svg>
+                <tg-svg class="fold-action" *ngIf="isSwimlaneFolded(swimlane.id)" svg-icon="icon-folded-swimlane"></tg-svg>
+                <h2 class="title-name" [class.unclassified-us-title]="swimlane.id === -1">{{ swimlane.name }}</h2>
+
+                <div class="unclassified-us-info" *ngIf="swimlane.id === -1">
+                    <tg-svg svg-icon="icon-help-circle"></tg-svg>
+                    <div class="tooltip pop-help">{{ "KANBAN.UNCLASSIFIED_USER_STORIES_TOOLTIP" | tgTranslate }}</div>
+                </div>
+
+                <div class="default-swimlane" *ngIf="swimlane.id === project.default_swimlane && project.swimlanes.length > 1">
+                    <tg-svg class="default-swimlane-icon" svg-icon="icon-star"></tg-svg>
+                    <span class="default-text">{{ "ADMIN.PROJECT_KANBAN_OPTIONS.DEFAULT" | tgTranslate }}</span>
+                </div>
+            </button>
+
+            <div class="kanban-table-body" *ngIf="!isSwimlaneFolded(swimlane.id)">
+                <div class="kanban-table-inner" (scroll)="onBodyScroll($event)">
+                    <tg-kanban-column
+                        *ngFor="let s of statusesForSwimlane(swimlane.id)"
+                        cdkDropList
+                        [cdkDropListDisabled]="sortingDisabled"
+                        [cdkDropListData]="{statusId: s.id, swimlaneId: swimlane.id, cardIds: getCardIds(s, swimlane.id)}"
+                        (cdkDropListDropped)="drop($event)"
+                        [status]="s"
+                        [swimlaneId]="swimlane.id"
+                        [cardIds]="getCardIds(s, swimlane.id)"
+                        [usMap]="usMap"
+                        [project]="project"
+                        [zoom]="zoom"
+                        [zoomLevel]="zoomLevel"
+                        [folded]="!!folds[s.id]"
+                        [justUnfolded]="unfoldStatusId === s.id"
+                        [showPlaceholder]="showPlaceholder(s, swimlane.id)"
+                        [notFoundUserstories]="notFoundUserstories"
+                        [sortingDisabled]="sortingDisabled"
+                        [readonly]="readonly_"
+                        [renderInProgress]="renderInProgress"
+                        [movedUs]="movedUs"
+                        [enableMoveToTop]="true"
+                        [linkParamsFn]="getCardLinkParams"
+                        (toggleFold)="toggleFold.emit($event)"
+                        (editUs)="editUs.emit($event)"
+                        (deleteUs)="deleteUs.emit($event)"
+                        (changeUsAssignedUsers)="changeUsAssignedUsers.emit($event)"
+                        (clickMoveToTop)="clickMoveToTop.emit($event)"
+                        (dragStarted)="isDragging = true"
+                        (dragEnded)="isDragging = false"
+                    ></tg-kanban-column>
+                </div>
+            </div>
+        </div>
+
+        <a
+            class="kanban-swimlane-add"
+            #swimlaneAdd
+            *ngIf="swimlanesList.size && project.i_am_admin && swimlanesList.size <= 1"
+            [tgNav]="'project-admin-project-values-kanban-power-ups'"
+            [tgNavParams]="{project: project.slug}"
+        >
+            <tg-svg class="add-action" svg-icon="icon-add"></tg-svg>
+            <span>{{ "KANBAN.CREATE_SWIMLANE" | tgTranslate }}</span>
+        </a>
+    </ng-container>
+
+    <div class="kanban-table-body" *ngIf="!swimlanesList.size">
+        <div class="kanban-table-inner" (scroll)="onBodyScroll($event)">
+            <tg-kanban-column
+                *ngFor="let s of usStatusList"
+                cdkDropList
+                [cdkDropListDisabled]="sortingDisabled"
+                [cdkDropListData]="{statusId: s.id, swimlaneId: null, cardIds: getCardIds(s, null)}"
+                (cdkDropListDropped)="drop($event)"
+                [status]="s"
+                [swimlaneId]="null"
+                [cardIds]="getCardIds(s, null)"
+                [usMap]="usMap"
+                [project]="project"
+                [zoom]="zoom"
+                [zoomLevel]="zoomLevel"
+                [folded]="!!folds[s.id]"
+                [justUnfolded]="unfoldStatusId === s.id"
+                [showPlaceholder]="showPlaceholder(s, null)"
+                [notFoundUserstories]="notFoundUserstories"
+                [sortingDisabled]="sortingDisabled"
+                [readonly]="readonly_"
+                [renderInProgress]="renderInProgress"
+                [movedUs]="movedUs"
+                [enableMoveToTop]="false"
+                [linkParamsFn]="getCardLinkParams"
+                (toggleFold)="toggleFold.emit($event)"
+                (editUs)="editUs.emit($event)"
+                (deleteUs)="deleteUs.emit($event)"
+                (changeUsAssignedUsers)="changeUsAssignedUsers.emit($event)"
+                (dragStarted)="isDragging = true"
+                (dragEnded)="isDragging = false"
+            ></tg-kanban-column>
+        </div>
+    </div>
+</div>

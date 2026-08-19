@@ -61,7 +61,32 @@ div.wrapper(
                     on-remove-filter="ctrl.removeFilter(filter)"
                 )
 
-            include ../includes/modules/kanban-table
+            tg-kanban-sortable(
+                ng-if="ctrl.initialLoad"
+                bind-project="project"
+                bind-project-id="projectId"
+                bind-zoom="ctrl.zoom"
+                bind-zoom-level="ctrl.zoomLevel"
+                bind-us-status-list="usStatusList"
+                bind-swimlanes-list="swimlanesList"
+                bind-swimlanes-statuses="swimlanesStatuses"
+                bind-us-by-status="usByStatus"
+                bind-us-by-status-swimlanes="usByStatusSwimlanes"
+                bind-us-map="usMap"
+                bind-folded-swimlane="ctrl.foldedSwimlane"
+                bind-not-found-userstories="ctrl.notFoundUserstories"
+                bind-moved-us="ctrl.movedUs"
+                bind-render-in-progress="ctrl.renderInProgress"
+                bind-get-card-link-params="ctrl.getCardLinkParams"
+                on-toggle-fold="ctrl.toggleFold($event.id)"
+                on-edit-us="ctrl.editUs($event.id)"
+                on-delete-us="ctrl.deleteUs($event.id)"
+                on-change-us-assigned-users="ctrl.changeUsAssignedUsers($event.id)"
+                on-click-move-to-top="ctrl.moveToTopDropdown(usMap.get($event.id))"
+                on-add-new-us="ctrl.addNewUs($event.type, $event.statusId)"
+                on-toggle-swimlane="ctrl.toggleSwimlane($event.id)"
+                on-reorder="ctrl.moveUs(null, $event.usList, $event.newStatusId, $event.newSwimlaneId, $event.index, $event.previousCard, $event.nextCard)"
+            )
 
     div.lightbox.lightbox-generic-form.lightbox-create-edit(tg-lb-create-edit)
 

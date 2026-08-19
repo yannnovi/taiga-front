@@ -1,0 +1,13 @@
+<div class="animated-counter-inner" [class.wip-amount]="data?.wip" [class.limit-over]="data?.count > data?.wip">
+    <div class="counter-translator" #counter>
+        <div class="result">
+            <span class="current">{{ nextUp?.current || 0 }}</span><span *ngIf="nextUp?.wip"> / {{ nextUp?.wip }}</span>
+        </div>
+        <div class="result">
+            <span class="current">{{ renderCount?.current || 0 }}</span><span *ngIf="renderCount?.wip"> / {{ renderCount?.wip }}</span>
+        </div>
+        <div class="result">
+            <span class="current">{{ nextDown?.current || 0 }}</span><span *ngIf="nextDown?.wip"> / {{ nextDown?.wip }}</span>
+        </div>
+    </div>
+</div>

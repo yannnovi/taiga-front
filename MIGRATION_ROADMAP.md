@@ -149,11 +149,14 @@ tests), pas un "module de plus". À choisir un par un selon la priorité produit
    `tg-card` fait) ; (3) `tgKanbanSortable` (le plus complexe, croissance dynamique des
    conteneurs) ; (4) `tgBacklogSortable` seulement après avoir levé ses propres blocages
    ambiants (`tg-us-status`, `tg-backlog-us-points`, `tg-us-edit-selector`) ; (5)
-   sous-projet séparé plus tard pour reconstruire `window.dragMultiple`. **Étapes (1) et
-   (2) terminées** (`tg-card` puis tout le tableau taskboard migrés). **Prochaine étape :
-   (3), `tgKanbanSortable`** - réutilise `tg-card` et le motif `cdkDropListGroup` validé
-   par le taskboard, mais ajoute la croissance dynamique des conteneurs par swimlane à
-   vérifier en prototype.
+   sous-projet séparé plus tard pour reconstruire `window.dragMultiple`. **Étapes (1), (2)
+   et (3) terminées** (`tg-card`, tout le tableau taskboard, puis tout le tableau kanban -
+   `KanbanTableComponent`/`KanbanColumnComponent` - migrés). La croissance dynamique des
+   conteneurs par swimlane fonctionne bien avec `cdkDropListGroup`, vérifié en conditions
+   réelles (repli/dépli d'une swimlane suivi d'un drag dans sa colonne fraîchement
+   remontée - voir MIGRATION.md). **Prochaine étape : (4), `tgBacklogSortable`**, après
+   avoir levé ses propres blocages ambiants (`tg-us-status`, `tg-backlog-us-points`,
+   `tg-us-edit-selector`).
 2. **Éditeur WYSIWYG (CKEditor → wrapper `UpgradeComponent` ou remplacement moderne)** —
    débloque `comment`/`comments` et les champs description partout (`tg-item-wysiwyg`).
 3. **Validation de formulaire (checksley → Angular Reactive Forms)** — débloque

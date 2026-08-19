@@ -1315,6 +1315,141 @@ suite logique est soit un vrai sous-projet de Phase 2 (dragula recommandé), soi
 Phase 3 (refactor de scope ambiant) une fois un filet de tests en place, selon la priorité
 produit de l'utilisateur.
 
+### Phase 2, sous-projet 1 (suite) : `tgKanbanSortable` → tout le tableau kanban
+
+Même patron que `tgTaskboardSortable` (internaliser tout le tableau, pas seulement le
+wrapper de drag, à cause de `cdkDropListGroup`), mais un chantier nettement plus gros :
+`kanban-table.jade` (253 lignes, markup inline sur le même `$scope` que le
+`KanbanController` de 981 lignes) portait **quatre** directives sur son élément racine
+(`tgKanban`, `tgKanbanSwimlane`, `tgKanbanSquishColumn`, `tgKanbanSortable`) et **quatre**
+de plus par colonne de statut (`tgKanbanTaskboardColumn`, `tgKanbanWipLimit`,
+`tgKanbanArchivedShowStatusHeader`, `tgKanbanArchivedStatusIntro`). Question de périmètre
+posée explicitement à l'utilisateur (garder tout fidèlement vs. élaguer le cosmétique) —
+réponse : **"Tout porter fidèlement"**. Rien de tout ça n'était mort : limites WIP,
+compteurs collants, révélation de colonne archivée, ouverture auto d'une swimlane repliée
+au survol pendant un drag — tout est resté.
+
+**Découpage en deux composants** plutôt qu'un seul monolithe (contrairement à
+`TaskboardTableComponent`) : `KanbanTableComponent` (sélecteur `tg-kanban-sortable`, le
+plateau — en-tête, liste des swimlanes, état de pli, `cdkDropListGroup`, calcul
+`previousCard`/`nextCard` du drag) délègue chaque cellule statut×swimlane à
+`KanbanColumnComponent` (composant interne, jamais downgradé vers AngularJS — inutile,
+seul `KanbanTableComponent` le référence). Ce découpage n'est pas cosmétique : trois des
+huit directives absorbées (`tgKanbanTaskboardColumn` — compteur collant, `tgKanbanWipLimit`
+— bandeau WIP, la visibilité paresseuse ex-`initBoard()`) sont scoppées **par colonne** dans
+l'original (chacune fait son propre `$el.find(...)`/`IntersectionObserver` local) ; leur
+redonner une frontière de composant réelle était plus fidèle à l'architecture d'origine que
+de tout aplatir dans un seul `ngFor` imbriqué.
+
+**Ce qui est absorbé où :**
+- `tgKanbanSquishColumn` (état de pli des colonnes) → `KanbanTableComponent`, persisté
+  comme avant via `$tgResources.kanban.get/storeStatusColumnModes` (`AJS_TG_RESOURCES`),
+  y compris le repli automatique des statuts archivés au chargement.
+- `tgKanbanSwimlane` → `KanbanTableComponent` : transform de scroll collant pour le titre
+  de swimlane, et l'ouverture automatique d'une swimlane repliée au survol pendant un drag.
+  L'original détectait "un drag est en cours" via
+  `document.querySelectorAll('tg-card.gu-mirror').length` (artefact dragula) ; remplacé par
+  un simple booléen `isDragging` basculé par `(cdkDragStarted)`/`(cdkDragEnded)`, remontés
+  depuis `KanbanColumnComponent`.
+- `tgKanban` : le scroll-sync horizontal en-tête/corps et le `ResizeObserver` posant la
+  variable CSS `--kanban-width` sur `document.body` → `KanbanTableComponent` (oui, toujours
+  posée sur `document.body` globalement, pas re-scopée, pour ne pas changer silencieusement
+  un comportement CSS externe). Sa piste de visibilité par `IntersectionObserver`
+  (`app/js/boards.js`, `initBoard()`, `root: column`) n'est PAS reportée telle quelle : elle
+  vit maintenant dans `KanbanColumnComponent`, un `IntersectionObserver` par instance de
+  colonne rooté sur son propre élément hôte (même `root: column` que l'original), observant
+  ses `tg-card` via `@ViewChildren(CardComponent, {read: ElementRef})` + une souscription à
+  `.changes` pour capter les cartes ajoutées dynamiquement (ouverture d'une swimlane repliée,
+  etc.) — API Angular standard à la place de l'utilitaire jQuery-ish global.
+- `tgKanbanWipLimit` : réimplémenté en déclaratif plutôt qu'en insertion DOM impérative.
+  L'original recalculait la position/classe du bandeau (`one-left`/`reached`/`exceeded`) sur
+  réception de 4 broadcasts (`redraw:wip`, `kanban:us:move`, `usform:new:success`,
+  `usform:bulk:success`) et l'insérait via `angular.element(...).after(...)`. Ici,
+  `wipLimitClass`/`wipLimitAfterIndex` (getters de `KanbanColumnComponent`) recalculent
+  directement depuis `cardIds.length` — la même donnée réactive qui pilote déjà l'affichage
+  des cartes — donc aucun des 4 broadcasts n'est nécessaire : la détection de changement
+  d'Angular refait le calcul à chaque passe, ce qui rend le redraw explicite d'origine
+  redondant. Comportement de positionnement du bandeau (après la dernière carte
+  normalement, entre la Nième et la N+1ième si la limite est dépassée) reproduit à
+  l'identique.
+- `tgKanbanArchivedShowStatusHeader` + `tgKanbanArchivedStatusIntro` (révélation de colonne
+  archivée) → `KanbanTableComponent`, avec `AJS_KANBAN_USERSTORIES_SERVICE` (nouveau token,
+  `tgKanbanUserstories`) injecté directement plutôt que passé en callback. Clic sur
+  "afficher les archivés" : diffuse toujours `kanban:show-userstories-for-status` sur
+  `$rootScope` — le chargement des données reste possédé par `KanbanController`
+  (`loadUserStoriesForStatus`), hors périmètre d'un composant de présentation. La réponse
+  `kanban:shown-userstories-for-status` est maintenant écoutée **une seule fois, pour tout
+  le plateau**, au lieu d'une fois par instance de directive par statut archivé — équivalent
+  fonctionnel puisque chaque broadcast porte déjà son propre `statusId`. Le marqueur
+  `.kanban-column-intro` vide de l'original (aucun contenu visible propre, juste un point
+  d'ancrage pour le listener) est supprimé sans remplacement.
+- `getCardLinkParams`/`isUsInArchivedHiddenStatus` : le premier reste un `@Input()` callback
+  lié directement à `KanbanController.getCardLinkParams` (sûr via `bindMethods`/`_.bindAll`
+  dans le constructeur du contrôleur) puisqu'il est entremêlé avec l'état propre du
+  contrôleur (`lastLoadUserstoriesParams`, son cache de mémoïsation) — pas une pure
+  fonction. Le second délègue juste à `kanbanUserstoriesService.isUsInArchivedHiddenStatus`,
+  donc `KanbanColumnComponent` l'appelle directement via le service injecté, sans callback.
+
+**`tgAnimatedCounter` migré au passage** (`AnimatedCounterComponent`, sélecteur conservé
+`tg-animated-counter`) : petit widget de "compteur qui roule" (transition CSS entre
+l'ancienne et la nouvelle valeur), utilisé uniquement dans `kanban-table.jade` — remis à
+niveau puisque son unique appelant disparaissait avec le fichier. Logique portée à
+l'identique (deux `$watch` d'origine sur `data`/`disabled` fusionnés en un seul
+`ngOnChanges`, comportement strictement équivalent puisque les deux faisaient le même
+calcul).
+
+**`previousCard`/`nextCard` du drag** : contrairement à `tgTaskboardSortable` (dont le
+service `taskboardTasksService.move` ne demande qu'un index brut), `moveUs`/
+`kanbanUserstoriesService.move` a besoin de ces deux indices d'ordonnancement, calculés à
+l'origine en regardant les `tg-card` DOM voisines après le drop
+(`$(item).prevAll('tg-card:not(.gu-transit)')`). Reproduit ici en lisant
+`event.container.data.cardIds` — la liste (pré-drop) des ids de la colonne cible, passée
+via `[cdkDropListData]` — et en retirant l'élément déplacé de cette liste si la colonne
+source et cible sont identiques (réordonnancement dans la même colonne) avant de lire les
+voisins à `currentIndex - 1`/`currentIndex`. Petit écart délibéré : l'original calculait
+`newSwimlaneId` d'un plateau sans swimlanes via `Number(undefined)` (`NaN`, faute
+d'attribut `data-swimlane`) ; ici c'est `null` — évite d'envoyer un `NaN` à l'API sans
+changer le comportement fonctionnel (swimlane absente des deux façons).
+
+**Non repris, dette confirmée plutôt que fonctionnalité coupée** : `ctrl.selectedUss`/
+`toggleSelectedUs` (sélection multiple shift/ctrl-clic) et `window.dragMultiple` (drag de
+plusieurs cartes à la fois) — vestiges déjà identifiés comme un sous-projet séparé et
+différé (voir `MIGRATION_ROADMAP.md`), même décision déjà prise pour taskboard.
+`ctrl.isMaximized`/`isMinimized` (jamais définis nulle part, même famille que le bug
+identique trouvé sur taskboard) omis pour la même raison.
+
+Vérifié en navigateur headless (profil neuf, deux projets de test réels via l'API
+`taiga-back` locale) :
+- Rendu complet variante swimlanes (`project-1`, 5 swimlanes × 6 statuts) ET variante sans
+  swimlane (`project-4`, 6 colonnes) — capture d'écran comparée visuellement à l'app
+  d'origine, rendu pixel pour pixel identique.
+- Bandeau WIP limite avec les bonnes classes dynamiques (`one-left`/`reached`) sur un statut
+  dont `wip_limit` a été positionné via le shell Django pour le test.
+- **Un vrai drag simulé (événements souris CDP) entre deux colonnes de la même swimlane**
+  (changement de statut) : DOM mis à jour, ET appel réseau réel
+  `POST /api/v1/userstories/bulk_update_kanban_order` avec le bon `swimlane_id`.
+- **Un vrai drag entre deux swimlanes différentes** (même statut) : DOM mis à jour des deux
+  côtés, appel réseau avec le nouveau `swimlane_id` et `after_userstory_id` correctement
+  renseigné (calcul `previousCard`/`nextCard` validé en conditions réelles).
+- Pli/dépli d'une colonne de statut (classes `vfold` posées à la fois sur l'en-tête et sur
+  la colonne) et d'une swimlane (le `.kanban-table-body` est bien démonté du DOM au repli,
+  comme l'original).
+- **Repli puis dépli d'une swimlane suivi d'un drag RÉEL dans sa colonne fraîchement
+  remontée** : la carte arrive bien dans la colonne — confirme que `cdkDropListGroup`
+  réenregistre automatiquement les nouvelles `cdkDropList` montées dynamiquement (hypothèse
+  posée dans le plan initial, jamais vérifiée empiriquement avant maintenant).
+- Révélation d'une colonne archivée (clic sur le bouton "déplier" de la colonne Archived).
+- Aucune erreur console sur l'ensemble de ces scénarios. Un bug trouvé et corrigé avant
+  cette passe de vérification finale (pas un bug de prod remonté par l'utilisateur cette
+  fois) : `@ViewChildren('cardWrapper')` sur un sélecteur de **composant** (`<tg-card>`)
+  résout par défaut vers l'instance du composant, pas vers son `ElementRef` — d'où
+  `IntersectionObserver.observe(): parameter 1 is not of type 'Element'` dès qu'une colonne
+  contenait une carte. Corrigé en interrogeant par type
+  (`@ViewChildren(CardComponent, {read: ElementRef})`), le patron Angular correct pour
+  récupérer l'élément hôte natif d'un composant enfant.
+
+Build Angular (`strictTemplates`) et Karma (361 specs) restent verts.
+
 ## Patron à suivre pour migrer un module suivant
 
 1. Repérer ses dépendances réelles (services/directives utilisés *et* utilisateurs) avant

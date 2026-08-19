@@ -1,0 +1,82 @@
+<div class="kanban-task-counter" *ngIf="!folded" [attr.title]="'KANBAN.NUMBER_US' | tgTranslate">
+    <tg-animated-counter #counter [disabled]="renderInProgress" [data]="{count: cardIds.length, wip: status.wip_limit}"></tg-animated-counter>
+</div>
+
+<div class="placeholder-collapsed" *ngIf="folded">
+    <div class="placeholder-collapsed-wrapper">
+        <div class="ammount" *ngIf="!status.is_archived">
+            <tg-animated-counter class="vertical" [disabled]="renderInProgress" [data]="{count: cardIds.length, wip: status.wip_limit}"></tg-animated-counter>
+        </div>
+        <div class="text-holder">
+            <div class="archived" *ngIf="status.is_archived">{{ "KANBAN.ARCHIVED" | tgTranslate }}</div>
+            <div class="name">{{ status.name }}</div>
+        </div>
+        <div class="square-color" [ngStyle]="{'background-color': status.color}"></div>
+    </div>
+</div>
+
+<div class="card-placeholder" *ngIf="showPlaceholder" [class.not-found]="notFoundUserstories">
+    <ng-container *ngIf="!notFoundUserstories">
+        <div class="placeholder-board-card">
+            <div class="placeholder-board-row">
+                <div class="placeholder-board-text small"></div>
+                <div class="placeholder-board-text big"></div>
+            </div>
+            <div class="placeholder-board-row">
+                <div class="placeholder-board-text"></div>
+            </div>
+            <div class="placeholder-board-row avatar">
+                <div class="placeholder-board-avatar"></div>
+                <div class="placeholder-board-user"></div>
+            </div>
+        </div>
+        <div class="placeholder-titles">
+            <div class="text-small"></div>
+            <div class="text-large"></div>
+        </div>
+        <div class="placeholder-avatar">
+            <div class="image"></div>
+            <div class="text"></div>
+        </div>
+
+        <p class="title">{{ "KANBAN.PLACEHOLDER_CARD_TITLE" | tgTranslate }}</p>
+        <p>{{ "KANBAN.PLACEHOLDER_CARD_TEXT" | tgTranslate }}</p>
+    </ng-container>
+    <ng-container *ngIf="notFoundUserstories">
+        <p class="title">{{ "KANBAN.US_NOT_FOUND_TITLE" | tgTranslate }}</p>
+        <p>{{ "KANBAN.US_NOT_FOUND_TEXT_P1" | tgTranslate }}</p>
+        <p>{{ "KANBAN.US_NOT_FOUND_TEXT_P2" | tgTranslate }}</p>
+    </ng-container>
+</div>
+
+<ng-container *ngFor="let usId of cardIds; let i = index">
+    <tg-card
+        class="card ng-animate-disabled"
+        [class.readonly]="readonly"
+        [class.kanban-moved]="enableMoveToTop && isMoved(usId)"
+        [attr.data-id]="usId"
+        cdkDrag
+        [cdkDragData]="usId"
+        [cdkDragDisabled]="sortingDisabled"
+        (cdkDragStarted)="dragStarted.emit()"
+        (cdkDragEnded)="dragEnded.emit()"
+        [project]="project"
+        [item]="usMap.get(usId)"
+        type="us"
+        [zoom]="zoom"
+        [zoomLevel]="zoomLevel"
+        [isFirst]="i === 0"
+        [archived]="isUsInArchivedHiddenStatus(usId)"
+        [inViewPort]="!!cardVisibility[usId]"
+        [linkParams]="linkParamsFn(usMap.get(usId))"
+        (toggleFold)="toggleFold.emit($event)"
+        (clickEdit)="editUs.emit($event)"
+        (clickDelete)="deleteUs.emit($event)"
+        (clickAssignedTo)="changeUsAssignedUsers.emit($event)"
+        (clickMoveToTop)="clickMoveToTop.emit($event)"
+    ></tg-card>
+
+    <div class="kanban-wip-limit" [ngClass]="wipLimitClass" *ngIf="i === wipLimitAfterIndex">
+        <span>WIP Limit</span>
+    </div>
+</ng-container>
