@@ -149,25 +149,38 @@ tests), pas un "module de plus". À choisir un par un selon la priorité produit
    `tg-card` fait) ; (3) `tgKanbanSortable` (le plus complexe, croissance dynamique des
    conteneurs) ; (4) `tgBacklogSortable` seulement après avoir levé ses propres blocages
    ambiants (`tg-us-status`, `tg-backlog-us-points`, `tg-us-edit-selector`) ; (5)
-   sous-projet séparé plus tard pour reconstruire `window.dragMultiple`. **Étapes (1), (2)
-   et (3) terminées** (`tg-card`, tout le tableau taskboard, puis tout le tableau kanban -
-   `KanbanTableComponent`/`KanbanColumnComponent` - migrés). La croissance dynamique des
-   conteneurs par swimlane fonctionne bien avec `cdkDropListGroup`, vérifié en conditions
-   réelles (repli/dépli d'une swimlane suivi d'un drag dans sa colonne fraîchement
-   remontée - voir MIGRATION.md). **Prochaine étape : (4), `tgBacklogSortable`**, après
-   avoir levé ses propres blocages ambiants (`tg-us-status`, `tg-backlog-us-points`,
-   `tg-us-edit-selector`).
-2. **Éditeur WYSIWYG (CKEditor → wrapper `UpgradeComponent` ou remplacement moderne)** —
-   débloque `comment`/`comments` et les champs description partout (`tg-item-wysiwyg`).
-3. **Validation de formulaire (checksley → Angular Reactive Forms)** — débloque
-   `create-epic`, `create-project-form`, `lb-feedback`, et probablement d'autres
-   formulaires de lightbox pas encore audités.
-4. **Listes infinies (`ngInfiniteScroll` → directive Angular à base d'IntersectionObserver)**
-   — débloque `profile-favs`, `wiki-history` (dont les enfants sont déjà migrés et
-   attendent juste ça).
+   sous-projet séparé plus tard pour reconstruire `window.dragMultiple`. **Étapes (1), (2),
+   (3) et (4) terminées** (`tg-card`, tout le tableau taskboard, tout le tableau kanban, puis
+   tout le tableau backlog - `BacklogTableComponent`/`BacklogRowComponent` - migrés). Les 3
+   blocages ambiants du backlog (`tg-us-status`, `tg-backlog-us-points`,
+   `tg-us-edit-selector`, plus `tg-us-role-points-selector` dans l'en-tête) ont tous été
+   absorbés dans les nouveaux composants. **Régression connue et actée avec l'utilisateur** :
+   le drag backlog→sprint ne fonctionne plus (l'ancienne instance dragula unique couvrait les
+   deux tableaux - voir MIGRATION.md pour le détail) - à reconnecter dans un futur sous-projet
+   qui migrera aussi le tableau sprint (bloqué par le même scope ambiant que `tgSprint`/
+   `tg-backlog-sprint-header`). `ngInfiniteScroll` a été remplacé par un `IntersectionObserver`
+   au passage (son seul usage réel restant) - l'item 4 ci-dessous est donc déjà traité.
+   **Prochaine étape : (5), reconstruire `window.dragMultiple`** (sous-projet de conception à
+   part, pas encore démarré), puis les sous-projets 2/3 ci-dessous.
+2. **Éditeur WYSIWYG (CKEditor → wrapper `UpgradeComponent`)** — plus petit que redouté :
+   aucun appel direct à l'API CKEditor dans ce repo, l'éditeur réel est un custom element
+   (`<tg-text-editor>`) livré par un bundle externe (`taiga-html-editor`/`elements.js`).
+   `tgWysiwyg` a déjà un scope isolé propre - un seul wrapper `UpgradeComponent` (pattern déjà
+   utilisé 8 fois dans `src/app/upgraded/`) suffit à le rendre appelable depuis un template
+   Angular. Débloque `comment`/`comments` et les champs description partout
+   (`tg-item-wysiwyg`) une fois ces pages elles-mêmes migrées (Phase 3, scope ambiant).
+3. **Validation de formulaire (checksley → Angular Reactive Forms)** — le plus gros par
+   nombre de fichiers (14 + la config globale des validateurs `linewidth`/`pikaday`/`url`
+   dans `app.coffee`, à porter en premier). Touche `auth.coffee` (login/register, page
+   d'entrée non-authentifiée - à faire en dernier de ce sous-projet, avec le plus de soin) et
+   des formulaires répétés par ligne de tableau (`admin/project-values.coffee` - nécessite un
+   pattern `FormArray`). Débloque `create-epic`, `create-project-form`, `lb-feedback`, et
+   plusieurs pages admin.
+4. ~~Listes infinies (`ngInfiniteScroll`)~~ — fait, voir sous-projet backlog ci-dessus (item 1).
 
-Recommandation : commencer par le drag & drop (impact le plus large), sauf priorité produit
-différente.
+Recommandation : `window.dragMultiple` d'abord (referme complètement le "gros chantier" drag
+& drop), puis WYSIWYG (plus petit, débloque du terrain), puis checksley (le plus gros,
+prendre son temps).
 
 ## Phase 3 — Refactor du scope ambiant (le plus gros bloc, le plus risqué)
 

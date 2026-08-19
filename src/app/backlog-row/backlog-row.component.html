@@ -1,0 +1,86 @@
+<div
+    class="row us-item-row"
+    [class.blocked]="us.is_blocked"
+    [class.new]="us.new"
+    [class.readonly]="!canModify"
+    [attr.data-id]="us.id"
+    cdkDrag
+    [cdkDragData]="us"
+    [cdkDragDisabled]="sortingDisabled"
+>
+    <div class="us-item-row-left">
+        <div class="draggable-us-row" *ngIf="canModify">
+            <tg-svg svg-icon="icon-draggable"></tg-svg>
+        </div>
+    </div>
+
+    <div class="user-stories user-story-main-data">
+        <a class="user-story-link" href="" [tgNav]="'project-userstories-detail'" [tgNavParams]="{project: project.slug, ref: us.ref}" [tgNavGetParams]="linkParams">
+            <span class="user-story-number">{{ "#" + us.ref }}</span>
+            <span class="user-story-name" [innerHTML]="us.subject | tgEmojify"></span>
+        </a>
+        <tg-svg class="due-date" *ngIf="us.due_date" svg-icon="icon-clock" [svgTitle]="dueDateTitle()" [svgFill]="dueDateColor()"></tg-svg>
+        <div class="tag" *ngFor="let tag of showTags ? us.tags : []" [attr.title]="tag[0]" [ngStyle]="{background: tag[1]}">{{ tag[0] }}</div>
+        <div class="belong-to-epic-pill" *ngFor="let epic of us.epics" [ngStyle]="{background: epic.color}" [attr.title]="'#' + epic.ref + ' ' + epic.subject"></div>
+    </div>
+
+    <div class="status">
+        <a class="us-status" href="" [style.color]="statusColor()" [title]="'BACKLOG.STATUS_NAME' | tgTranslate" (click)="openStatusPopover($event); $event.preventDefault()">
+            <span class="us-status-bind">{{ statusName() }}</span>
+            <tg-svg *ngIf="canModify" svg-icon="icon-arrow-down"></tg-svg>
+        </a>
+        <ul class="popover pop-status">
+            <li class="popover-status" *ngFor="let status of project.us_statuses">
+                <a href="" class="status" [class.active-popover]="us.status === status.id" [title]="status.name" (click)="selectStatus(status.id, $event); $event.preventDefault()">
+                    <span class="item-text">{{ status.name }}</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="points">
+        <button class="us-points" [class.not-clickable]="!isEditable || computableRoles.length === 0" (click)="openPointsPopover($event)">
+            <span class="points-value" [innerHTML]="pointsDisplay"></span>
+        </button>
+        <ul class="popover points-popover pop-role" *ngIf="pointsPopoverMode === 'roles'">
+            <li *ngFor="let role of pointsPopoverItems">
+                <a href="" class="role" [title]="role.name" (click)="selectRole(role.id, $event); $event.preventDefault()">
+                    <span class="item-text">{{ role.name }} ({{ role.pointsLabel }})</span>
+                </a>
+            </li>
+        </ul>
+        <ul class="popover points-popover pop-points-open" *ngIf="pointsPopoverMode === 'points'">
+            <li *ngFor="let point of pointsPopoverItems">
+                <a href="" class="point" [class.active]="!point.active" [title]="point.name" (click)="selectPoint(point.id, $event); $event.preventDefault()">
+                    <span class="item-text">{{ point.name }}</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="us-option" *ngIf="canModify">
+        <button class="us-option-popup-button js-popup-button" [class.first]="isFirst" (click)="openOptionsPopover($event)">
+            <tg-svg svg-icon="icon-more-vertical"></tg-svg>
+        </button>
+        <ul class="popover us-option-popup">
+            <li>
+                <button class="e2e-edit edit-story" *ngIf="canModify" (click)="editUs.emit(us)">
+                    <tg-svg svg-icon="icon-edit"></tg-svg>
+                    <span>{{ "COMMON.EDIT" | tgTranslate }}</span>
+                </button>
+            </li>
+            <li>
+                <button class="e2e-delete" *ngIf="canDelete" (click)="deleteUs.emit(us)">
+                    <tg-svg svg-icon="icon-trash"></tg-svg>
+                    <span>{{ "COMMON.DELETE" | tgTranslate }}</span>
+                </button>
+            </li>
+            <li>
+                <button class="e2e-edit move-to-top" *ngIf="canModify" (click)="moveToTop.emit(us)">
+                    <tg-svg svg-icon="icon-move-to-top"></tg-svg>
+                    <span>{{ "COMMON.MOVE_TO_TOP" | tgTranslate }}</span>
+                </button>
+            </li>
+        </ul>
+    </div>
+</div>

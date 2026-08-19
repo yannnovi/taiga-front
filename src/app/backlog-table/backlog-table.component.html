@@ -1,0 +1,53 @@
+<div class="backlog-table-header">
+    <div class="row backlog-table-title">
+        <div class="draggable-us-column"></div>
+        <div class="input"></div>
+        <div class="user-stories">{{ "BACKLOG.TABLE.COLUMN_US" | tgTranslate }}</div>
+        <div class="status">{{ "COMMON.FIELDS.STATUS" | tgTranslate }}</div>
+        <div class="points" [title]="'BACKLOG.TABLE.TITLE_COLUMN_POINTS' | tgTranslate">
+            <div class="inner">
+                <span class="header-points" [class.not-clickable]="!hasMultipleRoles" (click)="hasMultipleRoles && openRoleFilterPopover($event)">{{ "COMMON.FIELDS.POINTS" | tgTranslate }}</span>
+                <tg-svg *ngIf="hasMultipleRoles" svg-icon="icon-filter"></tg-svg>
+                <ul class="popover pop-role" *ngIf="hasMultipleRoles">
+                    <li>
+                        <a href="" class="clear-selection active-popover" [title]="'COMMON.ROLES.ALL' | tgTranslate" (click)="selectRoleFilter(null, $event); $event.preventDefault()">{{ "COMMON.ROLES.ALL" | tgTranslate }}</a>
+                    </li>
+                    <li *ngFor="let role of project.roles">
+                        <a *ngIf="role.computable" href="" class="role" [title]="role.name" (click)="selectRoleFilter(role.id, $event); $event.preventDefault()">
+                            <span class="item-text">{{ role.name }}</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="us-header-options"></div>
+    </div>
+</div>
+
+<div class="backlog-table-body" cdkDropListGroup>
+    <div
+        cdkDropList
+        [cdkDropListDisabled]="sortingDisabled"
+        [cdkDropListData]="{items: displayedUserstories}"
+        (cdkDropListDropped)="drop($event)"
+    >
+        <tg-backlog-row
+            *ngFor="let us of displayedUserstories; let i = index"
+            [project]="project"
+            [us]="us"
+            [isFirst]="us.id === firstUsInBacklog"
+            [showTags]="showTags"
+            [linkParams]="linkParams"
+            [sortingDisabled]="sortingDisabled"
+            [displayRoleId]="selectedDisplayRoleId"
+            (changeStatus)="changeStatus.emit($event)"
+            (editUs)="editUs.emit($event)"
+            (deleteUs)="deleteUs.emit($event)"
+            (moveToTop)="moveToTop.emit($event)"
+        ></tg-backlog-row>
+    </div>
+
+    <div #sentinel class="backlog-pagination-sentinel"></div>
+
+    <img class="loading-spinner" *ngIf="loadingUserstories" [src]="spinnerSrc" alt="loading..." />
+</div>

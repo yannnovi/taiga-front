@@ -7,89 +7,9 @@
 ###
 
 taiga = @.taiga
-bindOnce = @.taiga.bindOnce
 debounce = @.taiga.debounce
 
 module = angular.module("taigaCommon")
-
-#############################################################################
-## UserStory status Directive (popover for change status)
-#############################################################################
-
-UsStatusDirective = ($repo, $template) ->
-    ###
-    Print the status of a US and a popover to change it.
-    - tg-us-status: The user story
-    - on-update: Method call after US is updated
-
-    Example:
-
-      div.status(tg-us-status="us" on-update="ctrl.loadSprintState()")
-        a.us-status(href="", title="Status Name")
-
-    NOTE: This directive need 'usStatusById' and 'project'.
-    ###
-    template = $template.get("common/popover/popover-us-status.html", true)
-
-    link = ($scope, $el, $attrs) ->
-        $ctrl = $el.controller()
-
-        render = (us) ->
-            usStatusDomParent = $el.find(".us-status")
-            usStatusDom = $el.find(".us-status .us-status-bind")
-            usStatusById = $scope.usStatusById
-
-            if usStatusById[us.status]
-                usStatusDom.text(usStatusById[us.status].name)
-                usStatusDomParent.css("color", usStatusById[us.status].color)
-
-        $el.on "click", ".us-status", (event) ->
-            event.preventDefault()
-            event.stopPropagation()
-            $el.find(".pop-status").popover().open()
-
-        $el.on "click", ".popover-status", debounce 2000, (event) ->
-            event.preventDefault()
-            event.stopPropagation()
-
-            statusElement = $(event.currentTarget).find('#js-status-btn')
-
-            target = angular.element(statusElement)
-
-            us = $scope.$eval($attrs.tgUsStatus)
-            us.status = target.data("status-id")
-            render(us)
-
-            $el.find(".pop-status").popover().close()
-
-            $scope.$apply () ->
-                $repo.save(us).then ->
-                    $scope.$eval($attrs.onUpdate)
-
-
-        $scope.$on("userstories:loaded", -> render($scope.$eval($attrs.tgUsStatus)))
-        $scope.$on("$destroy", -> $el.off())
-
-        # Bootstrap
-        us = $scope.$eval($attrs.tgUsStatus)
-        render(us)
-
-        bindOnce $scope, "project", (project) ->
-            html = template({
-                "statuses": project.us_statuses,
-                "currentStatus": us.status
-            })
-            $el.append(html)
-
-            # If the user has not enough permissions the click events are unbinded
-            if $scope.project.my_permissions.indexOf("modify_us") == -1
-                $el.unbind("click")
-                $el.find("a").addClass("not-clickable")
-
-
-    return {link: link}
-
-module.directive("tgUsStatus", ["$tgRepo", "$tgTemplate", UsStatusDirective])
 
 #############################################################################
 ## Related Task Status Directive

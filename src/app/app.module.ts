@@ -123,6 +123,9 @@ import "./animated-counter/register-legacy";
 import { KanbanColumnComponent } from "./kanban-column/kanban-column.component";
 import { KanbanTableComponent } from "./kanban-table/kanban-table.component";
 import "./kanban-table/register-legacy";
+import { BacklogRowComponent } from "./backlog-row/backlog-row.component";
+import { BacklogTableComponent } from "./backlog-table/backlog-table.component";
+import "./backlog-table/register-legacy";
 import { AttachmentsPreviewComponent } from "./attachments-preview/attachments-preview.component";
 import "./attachments-preview/register-legacy";
 import { NoMoreMembershipsExplanationComponent } from "./no-more-memberships-explanation/no-more-memberships-explanation.component";
@@ -199,6 +202,8 @@ import {
     AJS_EPICS_SERVICE,
     AJS_DUE_DATE_SERVICE,
     AJS_KANBAN_USERSTORIES_SERVICE,
+    AJS_REPO,
+    AJS_QUEUE,
     upgradedService,
 } from "./shared/ajs-tokens";
 import { TgTranslatePipe } from "./shared/translate.pipe";
@@ -276,6 +281,8 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         AnimatedCounterComponent,
         KanbanColumnComponent,
         KanbanTableComponent,
+        BacklogRowComponent,
+        BacklogTableComponent,
         AttachmentsPreviewComponent,
         NoMoreMembershipsExplanationComponent,
         DutyComponent,
@@ -345,6 +352,8 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         upgradedService(AJS_EPICS_SERVICE, "tgEpicsService"),
         upgradedService(AJS_DUE_DATE_SERVICE, "tgDueDateService"),
         upgradedService(AJS_KANBAN_USERSTORIES_SERVICE, "tgKanbanUserstories"),
+        upgradedService(AJS_REPO, "$tgRepo"),
+        upgradedService(AJS_QUEUE, "$tgQqueue"),
     ],
 })
 export class AppModule implements DoBootstrap {

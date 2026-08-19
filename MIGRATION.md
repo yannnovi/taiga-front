@@ -1450,6 +1450,105 @@ Vérifié en navigateur headless (profil neuf, deux projets de test réels via l
 
 Build Angular (`strictTemplates`) et Karma (361 specs) restent verts.
 
+### Phase 2, sous-projet 1 (fin) : `tgBacklogSortable` → tout le tableau backlog, et clôture de `ngInfiniteScroll`
+
+Dernier des trois tableaux drag & drop (après taskboard et kanban), suite à la demande de
+l'utilisateur de finir toute la Phase 2. Même patron : `BacklogTableComponent` (sélecteur
+conservé `tg-backlog-sortable`, le plateau - en-tête, `cdkDropListGroup`, pagination) +
+`BacklogRowComponent` (composant interne, jamais downgradé - une ligne US). `backlog-row.jade`
+n'était pas le template d'une directive isolée - un simple `include` Jade inline dans
+`backlog-table.jade`, sur le même `$scope` ambiant que `BacklogController` (714 lignes) -
+`BacklogRowComponent` est donc une frontière entièrement nouvelle, pas un refactor d'une
+existante.
+
+**Trois directives ambiantes absorbées dans `BacklogRowComponent`**, aucune n'avait de
+`scope:` isolé :
+- `tgUsStatus` (`app/coffee/modules/common/popovers.coffee`) - badge de statut + popover de
+  changement. Lisait `$scope.usStatusById`/`project` directement, popover Lodash-templaté
+  ouvert via le plugin jQuery `$.fn.popover` (même fichier - un utilitaire générique
+  d'ouverture/fermeture/fade réutilisé tel quel ici via `declare const $: any`, **pas**
+  `taiga.globalPopover` dont le style `.global-popover` ne correspond pas au CSS existant
+  `.pop-status`/`.pop-role`/`.us-option-popup` de ces widgets précis).
+- `tgBacklogUsPoints` (`backlog/main.coffee`) - délégait à `$tgEstimationsService`
+  (`common/estimation.coffee`), qui fait lui-même de la manipulation DOM indépendamment de
+  la directive appelante (`create()` dé-attache/rattache des handlers de clic,
+  `renderPointsSelector()` injecte un popover Lodash-templaté). `calculateTotalPoints`/
+  `calculateRoles` sont de purs calculs, portés tels quels ; le rendu du popover est
+  réimplémenté en état de template Angular réel (`pointsPopoverMode`/`pointsPopoverItems`)
+  plutôt que de l'injection HTML par chaîne. Sauvegardes via `AJS_REPO`/`AJS_QUEUE` (nouveaux
+  tokens, `$tgRepo`/`$tgQqueue`) directement plutôt que de garder `$tgEstimationsService`
+  dans la boucle - le service lui-même n'est pas touché, toujours utilisé ailleurs
+  (`tgLbUsEstimation`/`tgUsEstimation`), hors périmètre.
+- `tgUsEditSelector` (`backlog/main.coffee`) - menu Edit/Delete/Move-to-top, `$compile`d
+  contre le scope vivant à chaque clic. Actions mappées 1:1 en `@Output()`s, branchées côté
+  appelant vers `ctrl.editUserStory`/`ctrl.deleteUserStory`/`ctrl.moveUsToTopOfBacklog`.
+- (bonus, dans l'en-tête plutôt que la ligne) `tgUsRolePointsSelector` -  filtre par rôle
+  du tableau, absorbé dans `BacklogTableComponent` ; sa sélection est propagée à toutes les
+  lignes via un `@Input() displayRoleId`, reproduisant fidèlement le comportement d'origine
+  où un unique broadcast (`uspoints:select`/`uspoints:clear-selection`) mettait à jour
+  l'affichage des points de **toutes** les lignes en même temps (pas juste celle cliquée).
+
+La checkbox de la ligne (`ng-model="vm.filterMode"` dans l'original) est supprimée, pas
+portée - `vm` ne correspond à aucun alias nulle part dans `BacklogController` ni un scope
+ancêtre (confirmé par un grep sur tout le projet pour `filterMode` : une seule occurrence,
+celle-là) - la checkbox était déjà morte, pas une fonctionnalité réelle.
+
+**`ctrl.getLinkParams()`** avait besoin du même correctif de mémoïsation déjà appliqué une
+fois à `getCardLinkParams` du kanban : l'original n'était lu qu'à travers une interpolation
+`{{ }}`, implicitement stable ; lié directement ici comme `@Input()` objet, un objet
+fraîchement construit à chaque appel envoie le digest AngularJS dans
+`[$rootScope:infdig]`. Corrigé à la source (`BacklogController.getLinkParams`, pas
+seulement dans le nouveau composant) avec le même patron : mise en cache, même référence
+retournée tant que le contenu calculé n'a pas changé.
+
+**`ngInfiniteScroll` remplacé par un `IntersectionObserver`** sur une sentinelle en bas de
+liste (`@Output() loadMore` vers `ctrl.loadUserstories()`) - c'était son unique usage réel
+restant dans toute l'app, donc ce sous-projet referme aussi cet item de la feuille de route
+plutôt que de garder une dépendance tierce pour un seul appelant.
+
+**Régression temporaire actée avec l'utilisateur (voir aussi le plan de ce sous-projet)** :
+`tgBacklogSortable` faisait tourner **une seule instance dragula partagée** entre le corps
+du tableau backlog et tous les `.sprint-table` de la sidebar (détectés dynamiquement via un
+prédicat `isContainer` - `app/partials/backlog/sprint.jade`, un sous-arbre AngularJS séparé,
+bloqué par le même scope ambiant que `tgSprint`/`tg-backlog-sprint-header` déjà noté dans le
+roadmap). Supprimer `sortable.coffee` fait donc disparaître le drag **backlog→sprint**
+entièrement, pas seulement le réordonnancement interne au backlog - confirmé et accepté
+explicitement par l'utilisateur comme régression temporaire (même catégorie que
+`window.dragMultiple`), en attendant un sous-projet séparé qui migrera le tableau sprint et
+reconnectera les deux tableaux sous un `cdkDropListGroup` commun. Les 2 `.js-empty-backlog`
+(qui n'existaient que pour recevoir un drop venant d'un sprint) ne sont pas reproduits - sans
+objet pour ce sous-projet.
+
+**Bug trouvé et corrigé pendant la vérification finale** (pas un bug de prod remonté par
+l'utilisateur - trouvé en testant le sélecteur de points en direct) : sélectionner un rôle
+dans le popover de points (`selectRole()`) fait basculer `*ngIf` d'une liste de rôles vers
+une liste de points - **un tout autre élément DOM**, pas juste un changement de contenu. Le
+nouvel élément n'avait jamais reçu les classes `active`/`fix` du plugin jQuery `.popover()`
+(seul le clic *initial* sur le bouton points les posait), donc il restait à taille nulle
+(`display:none` par défaut). Corrigé en rouvrant explicitement le popover
+(`.popover().open()`) après chaque transition de contenu, pas seulement à l'ouverture
+initiale.
+
+Vérifié en navigateur headless (profil neuf, `project-1` - 11 US en backlog, 4 rôles
+calculables, 12 valeurs de points) :
+- Rendu complet (lignes, tags, epics, statut coloré, points, dates d'échéance) - capture
+  d'écran comparée visuellement à l'app d'origine, identique.
+- **Un vrai drag simulé** réordonnant deux lignes : DOM mis à jour, appel réseau réel
+  `POST /api/v1/userstories/bulk_update_backlog_order` avec le bon `after_userstory_id`.
+- Changement de statut via le popover : `PATCH /api/v1/userstories/<id>` avec le nouveau
+  `status`, texte de la ligne mis à jour.
+- Sélection de points en 2 temps (rôle puis valeur, 4 rôles calculables sur ce projet donc
+  la liste de rôles s'affiche d'abord) : popover de rôles rendu avec le bon format
+  `"nom (valeur)"`, sélection d'un rôle bascule vers la liste de points, sélection d'un
+  point envoie `PATCH /api/v1/userstories/<id>` avec le bon objet `points`, affichage mis à
+  jour au format `"nom du point / total"`.
+- Menu Edit/Delete/Move-to-top : popover rendu avec les 3 actions ; Move-to-top vérifié en
+  conditions réelles (`POST .../bulk_update_backlog_order` avec `before_userstory_id`
+  pointant vers l'ancien premier élément, la ligne déplacée se retrouve bien en tête).
+- Aucune erreur console sur l'ensemble de ces scénarios.
+
+Build Angular (`strictTemplates`) et Karma (361 specs) restent verts.
+
 ## Patron à suivre pour migrer un module suivant
 
 1. Repérer ses dépendances réelles (services/directives utilisés *et* utilisateurs) avant

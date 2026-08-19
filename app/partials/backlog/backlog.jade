@@ -140,7 +140,23 @@ div.wrapper(tg-backlog, ng-controller="BacklogController as ctrl",
                         )
 
                     section.backlog-table(ng-class="{'hidden': !userstories.length}")
-                        include ../includes/modules/backlog-table
+                        tg-backlog-sortable(
+                            bind-project="project"
+                            bind-userstories="userstories"
+                            bind-visible-user-stories="visibleUserStories"
+                            bind-show-tags="ctrl.showTags"
+                            bind-first-us-in-backlog="ctrl.first_us_in_backlog"
+                            bind-disable-pagination="ctrl.disablePagination"
+                            bind-first-load-complete="ctrl.firstLoadComplete"
+                            bind-loading-userstories="ctrl.loadingUserstories"
+                            bind-get-link-params="ctrl.getLinkParams"
+                            on-load-more="ctrl.loadUserstories()"
+                            on-edit-us="ctrl.editUserStory($event.project, $event.ref)"
+                            on-delete-us="ctrl.deleteUserStory($event)"
+                            on-move-to-top="ctrl.moveUsToTopOfBacklog($event)"
+                            on-change-status="ctrl.updateUserStoryStatus()"
+                            on-reorder="ctrl.moveUs('sprint:us:move', $event.usList, $event.index, null, $event.previousUs, $event.nextUs)"
+                        )
                         .forecasting-add-sprint.e2e-velocity-forecasting-add(ng-if="ctrl.displayVelocity")
                             span.forecasting-text(
                                 ng-if="forecastNewSprint"

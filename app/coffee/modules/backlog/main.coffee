@@ -82,6 +82,7 @@ class BacklogController extends mixOf(taiga.Controller, taiga.PageMixin, taiga.F
         @scope.userstories = []
         @.totalUserStories = 0
         @.pendingDrag = []
+        @._linkParamsCache = null
         @scope.noSwimlaneUserStories = false
         @scope.swimlanesList = Immutable.List()
 
@@ -414,6 +415,14 @@ class BacklogController extends mixOf(taiga.Controller, taiga.PageMixin, taiga.F
             @.loadUserstories()
         ]).then(@.calculateForecasting)
 
+    # `bind-get-link-params` on `tg-backlog-sortable` calls this on every AngularJS digest -
+    # unlike the original `getLinkParams()`, which was only ever read through a `{{ }}`
+    # string interpolation in `backlog-row.jade`, implicitly stringified into a stable,
+    # reference-independent value. Bound directly as an object here, a freshly-built object
+    # on every call (even with identical content) never compares equal by reference, which
+    # would send the digest into `[$rootScope:infdig]` - same bug/fix already applied once
+    # to kanban's `getCardLinkParams`. Cached, returning the same reference whenever the
+    # computed content hasn't actually changed.
     getLinkParams: () ->
         lastLoadUserstoriesParams = @.lastLoadUserstoriesParams
 
@@ -427,10 +436,14 @@ class BacklogController extends mixOf(taiga.Controller, taiga.PageMixin, taiga.F
                 ParsedLastLoadUserstoriesParams['backlog-' + key] = lastLoadUserstoriesParams[key]
 
             ParsedLastLoadUserstoriesParams['no-milestone'] = 1
-
-            return ParsedLastLoadUserstoriesParams
         else
-            return {}
+            ParsedLastLoadUserstoriesParams = {}
+
+        if @._linkParamsCache && _.isEqual(@._linkParamsCache, ParsedLastLoadUserstoriesParams)
+            return @._linkParamsCache
+
+        @._linkParamsCache = ParsedLastLoadUserstoriesParams
+        return ParsedLastLoadUserstoriesParams
 
     sprintTotalPoints: (sprint) ->
         points = 0
@@ -958,207 +971,6 @@ BacklogDirective = ($repo, $rootscope, $translate, $rs) ->
 
 
 module.directive("tgBacklog", ["$tgRepo", "$rootScope", "$translate", "$tgResources", BacklogDirective])
-
-#############################################################################
-## User story edit directive
-#############################################################################
-
-UsEditSelector = ($rootscope, $tgTemplate, $compile, $translate) ->
-    mainTemplate = $tgTemplate.get("backlog/us-edit-popover.html", true)
-
-    link = ($scope, $el, $attrs) ->
-        $ctrl = $el.controller()
-
-        removePopupOpenState = () ->
-            $el.find(".js-popup-button").removeClass('popover-open')
-            $(this).remove()
-
-        $el.on "click", (event) ->
-            html = $compile(mainTemplate())($scope)
-            $el.find(".js-popup-button").addClass('popover-open')
-            $el.append(html)
-            $el.find(".us-option-popup").popover().open(() -> removePopupOpenState())
-            if event.target.parentNode.classList.contains('first')
-              $el.find(".us-option-popup").addClass('first')
-
-        $scope.$on "$destroy", ->
-            $el.off()
-
-    return {link: link}
-
-module.directive("tgUsEditSelector", ["$rootScope", "$tgTemplate", "$compile", "$translate", UsEditSelector])
-
-#############################################################################
-## User story points directive
-#############################################################################
-
-UsRolePointsSelectorDirective = ($rootscope, $template, $compile, $translate) ->
-    selectionTemplate = $template.get("backlog/us-role-points-popover.html", true)
-
-    link = ($scope, $el, $attrs) ->
-        removePopupOpenState = () ->
-            $el.removeClass('popover-open')
-
-        # Watchers
-        bindOnce $scope, "project", (project) ->
-            roles = _.filter(project.roles, "computable")
-            numberOfRoles = _.size(roles)
-
-            if numberOfRoles > 1
-                $el.append($compile(selectionTemplate({"roles": roles}))($scope))
-            else
-                $el.find(".icon-arrow-down").remove()
-                $el.find(".header-points").addClass("not-clickable")
-
-        $scope.$on "uspoints:select", (ctx, roleId, roleName) ->
-            $el.find(".popover").popover().close()
-            $el.find(".header-points").html("#{roleName}")
-
-        $scope.$on "uspoints:clear-selection", (ctx, roleId) ->
-            $el.find(".popover").popover().close()
-
-            text = $translate.instant("COMMON.FIELDS.POINTS")
-            $el.find(".header-points").text(text)
-
-        # Dom Event Handlers
-        $el.on "click", (event) ->
-            target = angular.element(event.target)
-
-            if target.is("span") or target.is("div")
-                event.stopPropagation()
-
-            $el.addClass('popover-open')
-            $el.find(".popover").popover().open(() -> removePopupOpenState())
-
-        $el.on "click", ".clear-selection", (event) ->
-            event.preventDefault()
-            event.stopPropagation()
-            $rootscope.$broadcast("uspoints:clear-selection")
-            $el.find('.active-popover').removeClass('active-popover')
-            target.addClass('active-popover')
-
-        $el.on "click", ".role", (event) ->
-            event.preventDefault()
-            event.stopPropagation()
-            target = angular.element(event.currentTarget)
-            $el.find('.active-popover').removeClass('active-popover')
-            target.addClass('active-popover')
-            rolScope = target.scope()
-            $rootscope.$broadcast("uspoints:select", target.data("role-id"), target.text())
-
-        $scope.$on "$destroy", ->
-            $el.off()
-
-    return {link: link}
-
-module.directive("tgUsRolePointsSelector", ["$rootScope", "$tgTemplate", "$compile", "$translate", UsRolePointsSelectorDirective])
-
-
-UsPointsDirective = ($tgEstimationsService, $repo, $tgTemplate) ->
-    rolesTemplate = $tgTemplate.get("common/estimation/us-points-roles-popover.html", true)
-
-    link = ($scope, $el, $attrs) ->
-        $ctrl = $el.controller()
-        updatingSelectedRoleId = null
-        selectedRoleId = null
-        filteringRoleId = null
-        estimationProcess = null
-
-        $scope.$on "uspoints:select", (ctx, roleId, roleName) ->
-            us = $scope.$eval($attrs.tgBacklogUsPoints)
-            selectedRoleId = roleId
-            estimationProcess.render()
-
-        $scope.$on "uspoints:clear-selection", (ctx) ->
-            us = $scope.$eval($attrs.tgBacklogUsPoints)
-            selectedRoleId = null
-            estimationProcess.render()
-
-        $scope.$watch $attrs.tgBacklogUsPoints, (us) ->
-            if us
-                estimationProcess = $tgEstimationsService.create($el, us, $scope.project)
-
-                # Update roles
-                roles = estimationProcess.calculateRoles()
-                if roles.length == 0
-                    $el.find(".icon-arrow-bottom").remove()
-                    $el.find("a.us-points").addClass("not-clickable")
-
-                else if roles.length == 1
-                    # Preselect the role if we have only one
-                    selectedRoleId = _.keys(us.points)[0]
-
-                if estimationProcess.isEditable
-                    bindClickElements()
-
-                estimationProcess.onSelectedPointForRole = (roleId, pointId, points) ->
-                    us.points = points
-                    estimationProcess.render()
-
-                    @save(roleId, pointId).then ->
-                        $ctrl.loadProjectStats()
-
-                estimationProcess.render = () ->
-                    totalPoints = @calculateTotalPoints()
-                    if not selectedRoleId? or roles.length == 1
-                        text = totalPoints
-                        title = totalPoints
-                    else
-                        pointId = @us.points[selectedRoleId]
-                        pointObj = @pointsById[pointId]
-                        text = "#{pointObj.name} / <span>#{totalPoints}</span>"
-                        title = "#{pointObj.name} / #{totalPoints}"
-
-                    ctx = {
-                        totalPoints: totalPoints
-                        roles: @calculateRoles()
-                        editable: @isEditable
-                        text:  text
-                        title: title
-                    }
-                    mainTemplate = "common/estimation/us-estimation-total.html"
-                    template = $tgTemplate.get(mainTemplate, true)
-                    html = template(ctx)
-                    @$el.html(html)
-
-                estimationProcess.render()
-
-        renderRolesSelector = () ->
-            roles = estimationProcess.calculateRoles()
-            html = rolesTemplate({"roles": roles})
-            # Render into DOM and show the new created element
-            $el.append(html)
-            $el.find(".pop-role").popover().open(() -> $(this).remove())
-
-        bindClickElements = () ->
-            $el.on "click", ".us-points", (event) ->
-                event.preventDefault()
-                event.stopPropagation()
-                us = $scope.$eval($attrs.tgBacklogUsPoints)
-                updatingSelectedRoleId = selectedRoleId
-                if selectedRoleId?
-                    estimationProcess.renderPointsSelector(selectedRoleId)
-                else
-                    renderRolesSelector()
-
-            $el.on "click", ".role", (event) ->
-                event.preventDefault()
-                event.stopPropagation()
-                target = angular.element(event.currentTarget)
-                us = $scope.$eval($attrs.tgBacklogUsPoints)
-                updatingSelectedRoleId = target.data("role-id")
-                popRolesDom = $el.find(".pop-role")
-                popRolesDom.find("a").removeClass("active")
-                popRolesDom.find("a[data-role-id='#{updatingSelectedRoleId}']").addClass("active")
-                estimationProcess.renderPointsSelector(updatingSelectedRoleId)
-
-        $scope.$on "$destroy", ->
-            $el.off()
-
-    return {link: link}
-
-module.directive("tgBacklogUsPoints", ["$tgEstimationsService", "$tgRepo", "$tgTemplate", UsPointsDirective])
-
 
 #############################################################################
 ## Burndown graph directive
