@@ -12,6 +12,12 @@
         <div class="draggable-us-row" *ngIf="canModify">
             <tg-svg svg-icon="icon-draggable"></tg-svg>
         </div>
+        <div class="input" *ngIf="canModify">
+            <div class="custom-checkbox">
+                <input type="checkbox" name="filter-mode" [id]="'us-check-' + us.ref" />
+                <label [attr.for]="'us-check-' + us.ref" tabindex="0"></label>
+            </div>
+        </div>
     </div>
 
     <div class="user-stories user-story-main-data">

@@ -1549,6 +1549,37 @@ calculables, 12 valeurs de points) :
 
 Build Angular (`strictTemplates`) et Karma (361 specs) restent verts.
 
+### Régression trouvée après coup dans le backlog : la case à cocher de sélection multiple avait disparu
+
+Pas un bug de rendu/crash - une fonctionnalité entière devenue silencieusement inaccessible,
+trouvée en creusant `window.dragMultiple` pour le sous-projet suivant (sélection multiple),
+pas en la cherchant activement dans le backlog.
+
+`backlog-row.jade`'s case à cocher (`ng-model="vm.filterMode"`) avait été supprimée pendant
+le portage de `BacklogRowComponent` - `vm` ne correspondant à aucun alias nulle part, elle
+semblait être du balisage mort isolément. **Elle ne l'était pas** : `tgBacklog` (la directive
+ambiante racine de toute la page, non touchée par cette migration) pose dans son
+`linkToolbar` un écouteur jQuery brut (`$el.on("change", ".backlog-table-body
+input:checkbox", ...)`) totalement indépendant du binding `ng-model` - il fonctionne sur
+n'importe quelle case à cocher présente dans le DOM, peu importe qui l'a rendue ni si elle a
+un binding Angular. Ce mécanisme pilote la sélection multiple avec support clic-shift pour
+plage (`checkSelected`, `app/coffee/modules/backlog/main.coffee`), qui elle-même contrôle la
+visibilité des boutons "Move to current/latest sprint" (`backlog.jade`) - sans aucune case à
+cocher dans le DOM, `selectedUsDom.length` reste toujours à 0, donc ces boutons restent
+`display:none` en permanence. Régression silencieuse : pas d'erreur, juste une fonctionnalité
+de sélection groupée devenue inaccessible.
+
+Corrigé en remettant le balisage de la case à cocher dans `BacklogRowComponent` (sans le
+`ng-model` mort, inutile - le mécanisme jQuery ne lit que l'état `.checked` du DOM
+directement). Vérifié en navigateur headless : bouton "Move to latest sprint" `display:none`
+avant coche, `display:flex` après ; classe `.is-checked` posée sur la ligne. Cette même case
+à cocher (classe `ui-multisortable-multiple` qu'elle pilote indirectement) est aussi ce que
+`window.dragMultiple` (`app/js/dragula-drag-multiple.js`) utilisait pour détecter une
+sélection multiple au moment de démarrer un drag groupé - à garder en tête pour le
+sous-projet de reconstruction du multi-drag qui suit : la sélection multiple du backlog
+n'est PAS pilotée par `ctrl.selectedUss`/ctrl-clic comme le kanban, mais par ces cases à
+cocher + clic-shift.
+
 ## Patron à suivre pour migrer un module suivant
 
 1. Repérer ses dépendances réelles (services/directives utilisés *et* utilisateurs) avant
