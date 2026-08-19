@@ -59,11 +59,20 @@ import { AJS_KANBAN_USERSTORIES_SERVICE, AJS_PROJECT_SERVICE, AJS_ROOT_SCOPE, AJ
  *   board-wide, instead of once per archived-status-directive-instance as the original did
  *   (functionally identical, since each broadcast already carries its own `statusId`).
  *
- * **Not ported:** `ctrl.selectedUss`/`toggleSelectedUs` (shift/ctrl-click multi-select) and
- * `window.dragMultiple` (multi-card drag) - confirmed vestigial/deferred together as a
- * follow-up sub-project (see MIGRATION_ROADMAP.md), same decision already made for
- * taskboard. `ctrl.isMaximized`/`isMinimized` (referenced in the original's `ng-class` but
- * never defined anywhere) are dropped as dead code, same as taskboard.
+ * **Multi-select drag** (`ctrl.selectedUss`/`toggleSelectedUs`, `window.dragMultiple`):
+ * originally deferred, now ported (see MIGRATION_ROADMAP.md/MIGRATION.md for the
+ * multi-select sub-project writeup) - ctrl/cmd-click toggles `selectedUss[usId]`
+ * (`KanbanColumnComponent.onCardClick`), and `drop()` below builds a multi-item `usList`
+ * whenever the dragged card is part of a selection of more than one card **within the same
+ * source column** (mirrors the original's `isMultiple()` check, scoped to the container).
+ * The original's manual DOM-cloning "N cards visually following the cursor" effect
+ * (`app/js/dragula-drag-multiple.js`) is deliberately NOT reproduced - CDK's native preview
+ * (a clone of the single dragged card) is used as-is, with a small "+N" badge
+ * (`data-multi-count` attribute, styled in `kanban-table.scss`) instead of stacked clones -
+ * a decision made explicitly with the user to avoid reintroducing the kind of manual DOM
+ * hacking this whole migration is meant to eliminate. `ctrl.isMaximized`/`isMinimized`
+ * (referenced in the original's `ng-class` but never defined anywhere) are dropped as dead
+ * code, same as taskboard.
  *
  * **`getCardLinkParams`, `isUsInArchivedHiddenStatus`**: the former stays a callback
  * `@Input()` bound straight to `KanbanController.getCardLinkParams` (verified safe via
@@ -102,6 +111,7 @@ export class KanbanTableComponent implements OnInit, AfterViewInit, OnDestroy {
     @Input() movedUs: any[] = [];
     @Input() renderInProgress: boolean;
     @Input() getCardLinkParams: (item: any) => any;
+    @Input() selectedUss: Record<string, boolean> = {};
 
     @Output() toggleFold = new EventEmitter<{ id: any }>();
     @Output() editUs = new EventEmitter<{ id: any }>();
@@ -110,6 +120,7 @@ export class KanbanTableComponent implements OnInit, AfterViewInit, OnDestroy {
     @Output() clickMoveToTop = new EventEmitter<{ id: any }>();
     @Output() addNewUs = new EventEmitter<{ type: string; statusId: any }>();
     @Output() toggleSwimlane = new EventEmitter<{ id: any }>();
+    @Output() toggleSelectedUs = new EventEmitter<{ id: any }>();
     @Output() reorder = new EventEmitter<{
         usList: Array<{ id: any }>;
         newStatusId: any;
@@ -327,8 +338,20 @@ export class KanbanTableComponent implements OnInit, AfterViewInit, OnDestroy {
         const previousCard = event.currentIndex > 0 ? idsForPositioning[event.currentIndex - 1] : null;
         const nextCard = !previousCard ? (idsForPositioning[event.currentIndex] ?? null) : null;
 
+        let usList: Array<{ id: any }> = [{ id: usId }];
+
+        if (this.selectedUss[usId]) {
+            const selectedInSource = (event.previousContainer.data.cardIds || []).filter(
+                (id: any) => this.selectedUss[id],
+            );
+
+            if (selectedInSource.length > 1) {
+                usList = selectedInSource.map((id: any) => ({ id }));
+            }
+        }
+
         this.reorder.emit({
-            usList: [{ id: usId }],
+            usList,
             newStatusId: event.container.data.statusId,
             newSwimlaneId: event.container.data.swimlaneId,
             index: event.currentIndex,

@@ -4,6 +4,7 @@
     [class.new]="us.new"
     [class.readonly]="!canModify"
     [attr.data-id]="us.id"
+    (mousedown)="prepareMultiCount($event)"
     cdkDrag
     [cdkDragData]="us"
     [cdkDragDisabled]="sortingDisabled"

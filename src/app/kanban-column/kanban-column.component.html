@@ -54,7 +54,11 @@
         class="card ng-animate-disabled"
         [class.readonly]="readonly"
         [class.kanban-moved]="enableMoveToTop && isMoved(usId)"
+        [class.kanban-task-selected]="isSelected(usId)"
+        [class.ui-multisortable-multiple]="isSelected(usId)"
         [attr.data-id]="usId"
+        [attr.data-multi-count]="isSelected(usId) && selectedCount > 1 ? selectedCount - 1 : null"
+        (click)="onCardClick(usId, $event)"
         cdkDrag
         [cdkDragData]="usId"
         [cdkDragDisabled]="sortingDisabled"

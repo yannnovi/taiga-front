@@ -160,8 +160,17 @@ tests), pas un "module de plus". À choisir un par un selon la priorité produit
    qui migrera aussi le tableau sprint (bloqué par le même scope ambiant que `tgSprint`/
    `tg-backlog-sprint-header`). `ngInfiniteScroll` a été remplacé par un `IntersectionObserver`
    au passage (son seul usage réel restant) - l'item 4 ci-dessous est donc déjà traité.
-   **Prochaine étape : (5), reconstruire `window.dragMultiple`** (sous-projet de conception à
-   part, pas encore démarré), puis les sous-projets 2/3 ci-dessous.
+   **Étape (5) terminée aussi** : `window.dragMultiple` reconstruit pour kanban (ctrl-clic,
+   `ctrl.selectedUss` maintenant câblé côté composant - était une dette laissée lors de la
+   migration initiale du tableau) et backlog (case à cocher + clic-shift, sélection lue
+   directement dans le DOM au moment du drop puisque backlog n'a aucun état de sélection
+   côté Angular). Taskboard n'a jamais eu ce mécanisme - confirmé, rien à faire. L'aperçu
+   visuel "plusieurs cartes empilées suivant le curseur" de l'original (hack DOM
+   dragula-spécifique) n'a délibérément pas été reproduit - remplacé par l'aperçu CDK natif
+   + un badge "+N", décision actée avec l'utilisateur. **`app/js/dragula-drag-multiple.js`
+   supprimé.** Détail complet dans `MIGRATION.md`.
+   **Toute la Phase 2 "drag & drop" (kanban/taskboard/backlog + sélection multiple) est
+   maintenant terminée.** Prochaine étape : sous-projet 2 ci-dessous (WYSIWYG).
 2. **Éditeur WYSIWYG (CKEditor → wrapper `UpgradeComponent`)** — plus petit que redouté :
    aucun appel direct à l'API CKEditor dans ce repo, l'éditeur réel est un custom element
    (`<tg-text-editor>`) livré par un bundle externe (`taiga-html-editor`/`elements.js`).

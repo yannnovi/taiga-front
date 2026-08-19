@@ -1580,6 +1580,83 @@ sous-projet de reconstruction du multi-drag qui suit : la sélection multiple du
 n'est PAS pilotée par `ctrl.selectedUss`/ctrl-clic comme le kanban, mais par ces cases à
 cocher + clic-shift.
 
+### Sous-projet 2 : reconstruire la sélection multiple + le drag groupé (`window.dragMultiple`)
+
+`app/js/dragula-drag-multiple.js` (59 lignes, lu en entier) : au démarrage d'un drag sur un
+élément `.ui-multisortable-multiple` (et qu'il y a plus d'un élément sélectionné dans le
+conteneur), clonait manuellement chaque autre élément sélectionné et les positionnait
+par-dessus la carte agrippée (empilés, décalés en hauteur, suivant le curseur via
+`requestAnimationFrame`). Au drop, réinsérait les éléments originaux autour de la position
+finale (`refreshOriginal()`, scindés avant/après l'élément principal pour préserver l'ordre
+relatif). **Décision actée avec l'utilisateur** : ne pas reproduire ce hack DOM - CDK n'a
+pas d'équivalent natif pour "faire suivre plusieurs éléments visuellement", et le
+réimplémenter aurait réintroduit exactement le genre de manipulation DOM fragile que cette
+migration cherche à éliminer. À la place : aperçu de drag CDK natif standard (un seul
+élément, comme partout ailleurs dans l'app) avec un badge "+N" (attribut `data-multi-count`,
+porté automatiquement par le clone que CDK génère comme aperçu par défaut, stylé en
+`::after` dans `kanban-table.scss`/`backlog-table.scss`). Au drop, **tous** les éléments
+sélectionnés se déplacent bien ensemble - seul le rendu visuel pendant le drag est
+simplifié.
+
+**Deux découvertes qui ont réduit la portée par rapport à l'estimation initiale du
+roadmap** :
+- **Taskboard n'a jamais eu ce mécanisme** (confirmé via `git show` sur l'ancien
+  `taskboard/sortable.coffee` avant sa suppression) - rien à faire de ce côté.
+- **Kanban et backlog utilisent deux mécanismes de sélection totalement différents**, pas
+  des variantes d'un seul patron - portés séparément :
+
+**Kanban** (`KanbanColumnComponent`/`KanbanTableComponent`) : `ctrl.selectedUss`/
+`toggleSelectedUs` existaient déjà dans `KanbanController` (dette explicitement notée lors
+de la migration initiale du tableau - jamais câblés côté composant). Nouveau
+`@Input() selectedUss`, `@Output() toggleSelectedUs`, un `(click)` sur `tg-card` gérant
+`ctrlKey`/`metaKey` (reproduit `ng-click="($event.ctrlKey || $event.metaKey) &&
+ctrl.toggleSelectedUs(usId)"` de l'original), classes `kanban-task-selected`/
+`ui-multisortable-multiple` reposées via binding. **Bug de réactivité trouvé et corrigé
+avant la vérification en navigateur** (pas après - repéré en appliquant le même
+raisonnement que pour `getCardLinkParams`/`getLinkParams`) : `toggleSelectedUs`/
+`cleanSelectedUss` mutaient `@.selectedUss` **en place** ; un binding `bind-selected-uss`
+en AngularJS `<` (one-way) ne déclenche `ngOnChanges` côté Angular que si la *référence*
+change, pas son contenu - une mutation en place n'aurait jamais été détectée par le
+composant downgradé. Corrigé en réassignant un nouvel objet dans les deux méthodes
+(`app/coffee/modules/kanban/main.coffee`). `drop()` construit un `usList` multi-éléments
+quand la carte déposée est sélectionnée ET qu'il y a plus d'un élément sélectionné dans le
+**conteneur source** (même périmètre que `isMultiple()` de l'original), triés par leur
+ordre actuel dans `cardIds` - plus simple que le split avant/après de l'original, même
+résultat.
+
+**Backlog** (`BacklogRowComponent`/`BacklogTableComponent`) : contrairement au kanban, la
+sélection backlog n'a **aucun état côté Angular** - `checkSelected` (`tgBacklog`'s
+`linkToolbar`) ne fait que basculer des classes DOM. `drop()` interroge donc directement le
+DOM au moment du drop (`.ui-multisortable-multiple` dans `.backlog-table-body`) plutôt qu'un
+`@Input()`, résout chaque `data-id` vers son objet `us` via `userstories`, et filtre la
+liste (déjà dans l'ordre du backlog) par les ids sélectionnés - même principe que kanban,
+adapté à l'absence totale d'état Angular. Le badge "+N" ne peut pas non plus être un binding
+déclaratif (rien à observer côté Angular) : `prepareMultiCount()`, câblé sur `(mousedown)`
+(avant que CDK ne commence quoi que ce soit), pose l'attribut `data-multi-count`
+directement sur l'élément avant qu'un drag ne démarre, pour qu'il soit déjà présent quand
+CDK clone l'élément pour son aperçu.
+
+`app/js/dragula-drag-multiple.js` supprimé (plus aucun appelant, confirmé par grep), retiré
+de la liste de bundle `gulpfile.js`.
+
+Vérifié en navigateur headless (profil neuf, `project-1`, vrai `taiga-back`) :
+- **Kanban** : ctrl-clic simulé (via `dispatchEvent(new MouseEvent('click', {ctrlKey:
+  true}))` - le champ `modifiers` de `Input.dispatchMouseEvent` du CDP ne se répercutait pas
+  fiablement sur `event.ctrlKey` dans cet environnement Chrome headless, confirmé par un
+  test isolé ; contourné en dispatchant l'événement DOM directement, une méthode de test
+  valide puisque c'est la logique applicative qui est vérifiée, pas la fidélité de
+  simulation d'input du CDP) sur 2 cartes → classe `kanban-task-selected` posée sur les
+  deux. Drag réel d'une carte sélectionnée vers la colonne suivante : les deux cartes se
+  retrouvent dans la même colonne cible, appel réseau
+  `bulk_update_kanban_order` avec `bulk_userstories:[12,13]` (les deux ids). Un drag sur une
+  carte NON sélectionnée reste un drag simple (`bulk_userstories:[2]`) - pas de régression.
+- **Backlog** : clic sur 2 cases à cocher → classe `ui-multisortable-multiple` posée sur les
+  deux lignes (bouton "Move to sprint" visible, comme attendu). Drag réel d'une ligne cochée :
+  appel réseau `bulk_update_backlog_order` avec `bulk_userstories:[5,6]`.
+- Aucune erreur console sur l'ensemble de ces scénarios.
+
+Build Angular (`strictTemplates`) et Karma (361 specs) restent verts.
+
 ## Patron à suivre pour migrer un module suivant
 
 1. Repérer ses dépendances réelles (services/directives utilisés *et* utilisateurs) avant

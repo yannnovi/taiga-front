@@ -103,12 +103,16 @@ class KanbanController extends mixOf(taiga.Controller, taiga.PageMixin, taiga.Fi
         taiga.defineImmutableProperty @.scope, "swimlanesList", () =>
             return @kanbanUserstoriesService.swimlanesList
 
+    # `bind-selected-uss` on `tg-kanban-sortable` is a one-way AngularJS `<` binding, which
+    # only re-reads the bound expression when its *reference* changes - mutating
+    # `@.selectedUss` in place (as the original single-directive version did, back when
+    # nothing downstream needed to react to it) would never propagate into the downgraded
+    # component. Both methods below reassign a new object instead.
     cleanSelectedUss: () ->
-        for key of @.selectedUss
-            @.selectedUss[key] = false
+        @.selectedUss = {}
 
     toggleSelectedUs: (usId) ->
-        @.selectedUss[usId] = !@.selectedUss[usId]
+        @.selectedUss = Object.assign({}, @.selectedUss, {"#{usId}": !@.selectedUss[usId]})
 
     firstLoad: () ->
         promise = @.loadInitialData()

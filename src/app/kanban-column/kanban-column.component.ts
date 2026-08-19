@@ -75,6 +75,7 @@ export class KanbanColumnComponent implements AfterViewInit, OnDestroy {
     @Input() movedUs: any[] = [];
     @Input() enableMoveToTop: boolean;
     @Input() linkParamsFn: (item: any) => any;
+    @Input() selectedUss: Record<string, boolean> = {};
 
     @Output() toggleFold = new EventEmitter<{ id: any }>();
     @Output() editUs = new EventEmitter<{ id: any }>();
@@ -83,6 +84,7 @@ export class KanbanColumnComponent implements AfterViewInit, OnDestroy {
     @Output() clickMoveToTop = new EventEmitter<{ id: any }>();
     @Output() dragStarted = new EventEmitter<void>();
     @Output() dragEnded = new EventEmitter<void>();
+    @Output() toggleSelectedUs = new EventEmitter<{ id: any }>();
 
     @ViewChildren(CardComponent, { read: ElementRef }) cardWrappers: QueryList<ElementRef>;
     @ViewChild("counter") counterRef: ElementRef<HTMLElement>;
@@ -141,6 +143,20 @@ export class KanbanColumnComponent implements AfterViewInit, OnDestroy {
 
     isMoved(usId: any): boolean {
         return this.movedUs.indexOf(usId) !== -1;
+    }
+
+    isSelected(usId: any): boolean {
+        return !!this.selectedUss[usId];
+    }
+
+    get selectedCount(): number {
+        return Object.keys(this.selectedUss).filter((id) => this.selectedUss[id]).length;
+    }
+
+    onCardClick(usId: any, event: MouseEvent): void {
+        if (event.ctrlKey || event.metaKey) {
+            this.toggleSelectedUs.emit({ id: usId });
+        }
     }
 
     get wipLimitClass(): string {

@@ -78,6 +78,7 @@ div.wrapper(
                 bind-moved-us="ctrl.movedUs"
                 bind-render-in-progress="ctrl.renderInProgress"
                 bind-get-card-link-params="ctrl.getCardLinkParams"
+                bind-selected-uss="ctrl.selectedUss"
                 on-toggle-fold="ctrl.toggleFold($event.id)"
                 on-edit-us="ctrl.editUs($event.id)"
                 on-delete-us="ctrl.deleteUs($event.id)"
@@ -85,6 +86,7 @@ div.wrapper(
                 on-click-move-to-top="ctrl.moveToTopDropdown(usMap.get($event.id))"
                 on-add-new-us="ctrl.addNewUs($event.type, $event.statusId)"
                 on-toggle-swimlane="ctrl.toggleSwimlane($event.id)"
+                on-toggle-selected-us="ctrl.toggleSelectedUs($event.id)"
                 on-reorder="ctrl.moveUs(null, $event.usList, $event.newStatusId, $event.newSwimlaneId, $event.index, $event.previousCard, $event.nextCard)"
             )
 

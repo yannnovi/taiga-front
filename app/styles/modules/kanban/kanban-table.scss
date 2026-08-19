@@ -312,6 +312,29 @@ body {
     }
 }
 
+// CDK's default drag preview is a clone of the dragged card, so it carries the
+// `data-multi-count` attribute along with it - shown as a "+N" badge to indicate the drag
+// will move N other selected cards along with this one (see KanbanColumnComponent).
+.cdk-drag-preview[data-multi-count] {
+    &::after {
+        align-items: center;
+        background-color: $primary-light;
+        border-radius: 999px;
+        color: $whitish;
+        content: '+' attr(data-multi-count);
+        display: flex;
+        font-weight: bold;
+        height: 22px;
+        justify-content: center;
+        min-width: 22px;
+        padding: 0 6px;
+        position: absolute;
+        right: -8px;
+        top: -8px;
+        z-index: 1;
+    }
+}
+
 .kanban-table-inner {
     display: flex;
     flex-wrap: nowrap;

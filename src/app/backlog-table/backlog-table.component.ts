@@ -125,6 +125,31 @@ export class BacklogTableComponent implements OnChanges, AfterViewInit, OnDestro
         const previousUs = event.currentIndex > 0 ? idsForPositioning[event.currentIndex - 1]?.id ?? null : null;
         const nextUs = !previousUs ? idsForPositioning[event.currentIndex]?.id ?? null : null;
 
-        this.reorder.emit({ usList: [us], index: event.currentIndex, previousUs, nextUs });
+        this.reorder.emit({ usList: this.buildDropUsList(us, event), index: event.currentIndex, previousUs, nextUs });
+    }
+
+    /** Backlog's multi-select has no Angular-side state at all (`checkSelected` in
+     *  `BacklogController`'s `linkToolbar` only ever toggles DOM classes) - the only way to
+     *  know which rows are checked at drop time is to ask the DOM, mirroring what the
+     *  original `dragula-drag-multiple.js` itself did (`$(container).find('.' +
+     *  multipleSortableClass)`). */
+    private buildDropUsList(draggedUs: any, event: CdkDragDrop<{ items: any[] }>): any[] {
+        const draggedEl = event.item.element.nativeElement as HTMLElement;
+
+        if (!draggedEl.classList.contains("ui-multisortable-multiple")) {
+            return [draggedUs];
+        }
+
+        const selectedIds = Array.from(
+            draggedEl.closest(".backlog-table-body")?.querySelectorAll(".ui-multisortable-multiple") ?? [],
+        ).map((el) => Number((el as HTMLElement).dataset["id"]));
+
+        if (selectedIds.length <= 1) {
+            return [draggedUs];
+        }
+
+        const selectedUsList = this.userstories.filter((it) => selectedIds.includes(it.id));
+
+        return selectedUsList.length > 1 ? selectedUsList : [draggedUs];
     }
 }

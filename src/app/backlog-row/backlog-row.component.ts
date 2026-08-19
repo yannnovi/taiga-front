@@ -31,10 +31,24 @@ declare const $: any;
  *   `@Output()`s here, bridged by the caller to `ctrl.editUserStory`/`ctrl.deleteUserStory`/
  *   `ctrl.moveUsToTopOfBacklog`.
  *
- * The row's checkbox (`ng-model="vm.filterMode"` in the original) is dropped, not ported -
- * `vm` matches no alias anywhere in `BacklogController` or any ancestor scope (confirmed by
- * a project-wide grep for `filterMode`, only this one reference exists) - the checkbox was
- * already inert dead markup, not a working feature.
+ * The row's checkbox is kept, but without its original `ng-model="vm.filterMode"` (`vm`
+ * matches no alias anywhere in `BacklogController` or any ancestor scope - that specific
+ * binding was dead). The checkbox itself is very much alive: `tgBacklog`'s ambient
+ * `linkToolbar` (`app/coffee/modules/backlog/main.coffee`, untouched by this migration)
+ * listens for raw `change` events on any `.backlog-table-body input:checkbox`, entirely
+ * independent of Angular - it drives both the "move to sprint" bulk-action buttons AND
+ * (via the `ui-multisortable-multiple` class it toggles) the multi-select drag rebuilt
+ * below. Dropping the checkbox markup silently broke both until this was caught and fixed
+ * (see MIGRATION.md).
+ *
+ * `prepareMultiCount` (bound to `(mousedown)`, i.e. before any drag gesture can begin) sets
+ * a `data-multi-count` attribute that CDK's default drag preview - a DOM clone of the
+ * dragged row - carries along automatically, styled into a "+N" badge (`backlog.scss`).
+ * Mirrors the same mechanism used for kanban's multi-select drag (see
+ * `KanbanColumnComponent`/`kanban-table.scss`) - see `BacklogTableComponent.drop()` for how
+ * the actual grouped reorder is built from the DOM's `ui-multisortable-multiple` rows at
+ * drop time (backlog's selection has no Angular-side state to read at all, unlike kanban's
+ * `selectedUss`).
  */
 @Component({
     selector: "tg-backlog-row",
@@ -245,5 +259,22 @@ export class BacklogRowComponent implements OnChanges {
         });
 
         button.classList.add("popover-open");
+    }
+
+    prepareMultiCount(event: MouseEvent): void {
+        const row = event.currentTarget as HTMLElement;
+
+        if (!row.classList.contains("ui-multisortable-multiple")) {
+            row.removeAttribute("data-multi-count");
+            return;
+        }
+
+        const selectedCount = row.closest(".backlog-table-body")?.querySelectorAll(".ui-multisortable-multiple").length ?? 0;
+
+        if (selectedCount > 1) {
+            row.setAttribute("data-multi-count", `${selectedCount - 1}`);
+        } else {
+            row.removeAttribute("data-multi-count");
+        }
     }
 }

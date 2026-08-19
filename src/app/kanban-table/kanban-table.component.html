@@ -125,6 +125,7 @@
                         [movedUs]="movedUs"
                         [enableMoveToTop]="true"
                         [linkParamsFn]="getCardLinkParams"
+                        [selectedUss]="selectedUss"
                         (toggleFold)="toggleFold.emit($event)"
                         (editUs)="editUs.emit($event)"
                         (deleteUs)="deleteUs.emit($event)"
@@ -132,6 +133,7 @@
                         (clickMoveToTop)="clickMoveToTop.emit($event)"
                         (dragStarted)="isDragging = true"
                         (dragEnded)="isDragging = false"
+                        (toggleSelectedUs)="toggleSelectedUs.emit($event)"
                     ></tg-kanban-column>
                 </div>
             </div>
@@ -174,12 +176,14 @@
                 [movedUs]="movedUs"
                 [enableMoveToTop]="false"
                 [linkParamsFn]="getCardLinkParams"
+                [selectedUss]="selectedUss"
                 (toggleFold)="toggleFold.emit($event)"
                 (editUs)="editUs.emit($event)"
                 (deleteUs)="deleteUs.emit($event)"
                 (changeUsAssignedUsers)="changeUsAssignedUsers.emit($event)"
                 (dragStarted)="isDragging = true"
                 (dragEnded)="isDragging = false"
+                (toggleSelectedUs)="toggleSelectedUs.emit($event)"
             ></tg-kanban-column>
         </div>
     </div>
