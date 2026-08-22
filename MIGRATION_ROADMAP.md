@@ -186,12 +186,12 @@ tests), pas un "module de plus". À choisir un par un selon la priorité produit
    globale portée** (`src/app/shared/checksley-validators.ts` +
    `form-error-message.service.ts`, `linewidth`/`pikaday`/`url` + le registre de messages
    traduits `%s` - checksley lui-même reste actif pour tout ce qui n'est pas encore migré).
-   **Trois formulaires migrés : `tgLbFeedback`, `tgLbCreateBulkIssues`, `tgLbCreateBulkTasks`**
-   (les plus simples, scope isolé ou broadcast-driven) - vérifiés en navigateur réel
-   (validation + soumission + fermeture). Au passage, deux bugs de production trouvés et
-   traités (un corrigé - `MoveToSprintComponent`, un préexistant et hors périmètre juste
-   documenté - `TaskboardTableComponent` sur navigation directe vers le taskboard) - détail
-   dans `MIGRATION.md`. 11 fichiers restants, dans l'ordre déjà scopé : `tgSearchBox` →
+   **Quatre formulaires migrés : `tgLbFeedback`, `tgLbCreateBulkIssues`, `tgLbCreateBulkTasks`,
+   `tgSearchBox`** (les plus simples, scope isolé ou broadcast-driven) - vérifiés en
+   navigateur réel (validation + soumission + fermeture). Au passage, deux bugs de
+   production trouvés et traités (un corrigé - `MoveToSprintComponent`, un préexistant et
+   hors périmètre juste documenté - `TaskboardTableComponent` sur navigation directe vers le
+   taskboard) - détail dans `MIGRATION.md`. 10 fichiers restants, dans l'ordre déjà scopé :
    `tgLbCreateEditSprint` → `tgLbCreateBulkUserstories`/`tgLbRelatetoepic` →
    `tgCustomAttributeValue` (bon test d'intégration pour `pikaday`/`url`) → `tgLbCreateEdit`
    (lightbox générique US/Task/Issue, son propre mini-projet) → pages admin

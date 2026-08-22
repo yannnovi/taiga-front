@@ -1813,6 +1813,36 @@ soumission → `POST /api/v1/tasks/bulk_create` avec le bon corps
 
 Build Angular (`strictTemplates`) et Karma (361 specs) restent verts.
 
+### Sous-projet 4, partie 4 : `tgSearchBox`
+
+Encore plus simple que les deux précédentes : l'original (`app/coffee/modules/search.coffee`)
+avait un scope isolé implicite via `link` mais ne recevait rien via `create()` -
+`project-menu.controller.coffee` fait juste `lightboxFactory.create("tg-search-box", {"class":
+"lightbox lightbox-search"})`, sans `scopeAttrs`. `LightboxSearchBoxComponent` lit le projet
+directement sur `tgProjectService` (`AJS_PROJECT_SERVICE`), comme l'original le faisait avec
+`projectService.project`.
+
+Contrairement aux lightboxes précédentes, la soumission ne fait pas d'appel réseau : elle
+navigue vers la route "project-search" avec le texte saisi en paramètre de requête puis
+recharge la route (`$route.reload()`, `AJS_ROUTE` - nouveau token ajouté à `ajs-tokens.ts`,
+`$route` n'avait encore aucun token). Le double appel `$location.path(url)` puis
+`.search(text).path(url)` de l'original (redondant - le premier `path()` est immédiatement
+écrasé par le second) est simplifié en un seul `location.search(text).path(url)`, même
+résultat final. Le focus automatique du champ à l'ouverture
+(`$el.find("#search-text").focus()`) est repris via `.then()` sur `lightboxService.open(...)`.
+
+`search/lightbox-search.jade` supprimé (contenu inliné dans le `.html` du composant, même
+patron que les lightboxes précédentes). Le reste de `search.coffee` (`SearchController`,
+`tgSearch` - la page de résultats elle-même) n'est pas touché, hors périmètre checksley.
+
+Vérifié en navigateur headless : lightbox ouverte via `tgLightboxFactory.create(...)` (même
+appel que `project-menu.controller.coffee`), champ auto-focus confirmé, soumission vide →
+message "This value is required.", soumission valide → navigation vers
+`/project/project-1/search?text=...`, lightbox fermée, page de résultats affichée sans
+erreur console.
+
+Build Angular (`strictTemplates`) et Karma (361 specs) restent verts.
+
 ## Patron à suivre pour migrer un module suivant
 
 1. Repérer ses dépendances réelles (services/directives utilisés *et* utilisateurs) avant

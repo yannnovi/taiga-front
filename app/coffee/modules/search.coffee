@@ -13,7 +13,6 @@ bindOnce = @.taiga.bindOnce
 mixOf = @.taiga.mixOf
 debounceLeading = @.taiga.debounceLeading
 trim = @.taiga.trim
-debounce = @.taiga.debounce
 
 module = angular.module("taigaSearch", [])
 
@@ -102,59 +101,6 @@ class SearchController extends mixOf(taiga.Controller, taiga.PageMixin)
         @.fillUsersAndRoles(project.members, project.roles)
 
 module.controller("SearchController", SearchController)
-
-
-#############################################################################
-## Search box directive
-#############################################################################
-
-SearchBoxDirective = (projectService, $lightboxService, $navurls, $location, $route)->
-    link = ($scope, $el, $attrs) ->
-        project = null
-
-        submit = debounce 2000, (event) =>
-            event.preventDefault()
-
-            form = $el.find("form").checksley()
-            if not form.validate()
-                return
-
-            text = $el.find("#search-text").val()
-
-            url = $navurls.resolve("project-search", {project: project.get("slug")})
-
-            $scope.$apply ->
-                $lightboxService.close($el)
-
-                $location.path(url)
-                $location.search("text", text).path(url)
-                $route.reload()
-
-
-        openLightbox = () ->
-            project = projectService.project
-
-            $lightboxService.open($el).then () ->
-                $el.find("#search-text").focus()
-
-        $el.on "submit", "form", submit
-
-        openLightbox()
-
-    return {
-        templateUrl: "search/lightbox-search.html",
-        link:link
-    }
-
-SearchBoxDirective.$inject = [
-    "tgProjectService",
-    "lightboxService",
-    "$tgNavUrls",
-    "$tgLocation",
-    "$route"
-]
-
-module.directive("tgSearchBox", SearchBoxDirective)
 
 
 #############################################################################

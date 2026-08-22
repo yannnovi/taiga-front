@@ -1,0 +1,18 @@
+<a class="close" href="" [title]="'COMMON.CLOSE' | tgTranslate" (click)="close(); $event.preventDefault()">
+    <tg-svg svg-icon="icon-close"></tg-svg>
+</a>
+
+<form [formGroup]="form" (ngSubmit)="submit()">
+    <h2 class="title">{{ "LIGHTBOX.SEARCH.TITLE" | tgTranslate }}</h2>
+    <fieldset>
+        <input type="text" id="search-text" formControlName="text" [attr.placeholder]="'LIGHTBOX.SEARCH.PLACEHOLDER_SEARCH' | tgTranslate" />
+        <p class="field-error" *ngIf="form.get('text').invalid && form.get('text').touched">
+            {{ errors.getMessage(form.get('text').errors) }}
+        </p>
+    </fieldset>
+    <fieldset>
+        <button class="btn-big" type="submit" [disabled]="submitting" [title]="'LIGHTBOX.SEARCH.TITLE' | tgTranslate">
+            {{ "LIGHTBOX.SEARCH.TITLE" | tgTranslate }}
+        </button>
+    </fieldset>
+</form>

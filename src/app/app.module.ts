@@ -169,6 +169,8 @@ import { LightboxCreateBulkIssuesComponent } from "./lightbox-create-bulk-issues
 import "./lightbox-create-bulk-issues/register-legacy";
 import { LightboxCreateBulkTasksComponent } from "./lightbox-create-bulk-tasks/lightbox-create-bulk-tasks.component";
 import "./lightbox-create-bulk-tasks/register-legacy";
+import { LightboxSearchBoxComponent } from "./lightbox-search-box/lightbox-search-box.component";
+import "./lightbox-search-box/register-legacy";
 import {
     AJS_APP_META_SERVICE,
     AJS_AVATAR_SERVICE,
@@ -212,6 +214,7 @@ import {
     AJS_REPO,
     AJS_QUEUE,
     AJS_MODEL,
+    AJS_ROUTE,
     upgradedService,
 } from "./shared/ajs-tokens";
 import { TgTranslatePipe } from "./shared/translate.pipe";
@@ -317,6 +320,7 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         LightboxFeedbackComponent,
         LightboxCreateBulkIssuesComponent,
         LightboxCreateBulkTasksComponent,
+        LightboxSearchBoxComponent,
         TgTranslatePipe,
         TgEmojifyPipe,
         TgMomentFormatPipe,
@@ -367,6 +371,7 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         upgradedService(AJS_REPO, "$tgRepo"),
         upgradedService(AJS_QUEUE, "$tgQqueue"),
         upgradedService(AJS_MODEL, "$tgModel"),
+        upgradedService(AJS_ROUTE, "$route"),
     ],
 })
 export class AppModule implements DoBootstrap {
