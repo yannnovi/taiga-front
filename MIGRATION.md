@@ -1688,6 +1688,62 @@ Karma (361 specs, vert) confirment que le wrapper compile et ne casse rien. À v
 conditions réelles la première fois qu'un composant Angular voudra effectivement intégrer
 `<tg-wysiwyg>`.
 
+### Sous-projet 4 (checksley → Reactive Forms), partie 1 : config globale + `tgLbFeedback`
+
+Dernier sous-projet de la Phase 2 (le plus gros par nombre de fichiers - 14 + la config
+globale). Ordre retenu : la config globale d'abord (validateurs custom + messages
+traduits), puis les lightboxes simples une par une en commençant par la plus isolée.
+
+**Config globale** (`app/coffee/app.coffee` : `i18nInit`'s `messages`/`checksley.updateMessages`
+et `init`'s `validators`/`checksley.updateValidators`) - **non touchée**, checksley reste
+enregistré et actif pour tous les formulaires pas encore migrés. Équivalents Angular créés
+en parallèle, pour les formulaires déjà convertis :
+- `src/app/shared/checksley-validators.ts` : `linewidthValidator(width)` (repris à
+  l'identique - découpe par ligne via `taiga.nl2br`, chaque ligne doit faire moins de
+  `width` caractères), `pikadayValidator(prettyDateFormat)` (validation via `moment`, le
+  format traduit `COMMON.PICKERDATE.FORMAT` est résolu une fois par l'appelant et passé en
+  paramètre - une fabrique de `ValidatorFn` n'a pas d'injection de dépendances),
+  `strictUrlValidator()` (la regex stricte de l'original, verbatim - différente du
+  `type=url` standard de checksley), `equalToValidator(a, b)` (cross-champ, ex. confirmation
+  de mot de passe).
+- `src/app/shared/form-error-message.service.ts` : `FormErrorMessageService.getMessage(errors)`
+  reproduit le registre de messages de checksley - mêmes clés de traduction
+  (`COMMON.FORM_ERRORS.*`), même convention de substitution positionnelle `%s`
+  (`interpolate()`). Ne montre qu'une seule erreur à la fois par champ, comme le
+  comportement par défaut de la plupart des formulaires d'origine.
+
+**`tgLbFeedback` → `LightboxFeedbackComponent`** (`src/app/lightbox-feedback/`) - la plus
+simple des lightboxes concernées (scope isolé dans l'original, un seul champ). Invoquée
+dynamiquement via `lightboxFactory.create("tg-lb-feedback", {...})`
+(`feedback.service.coffee`, inchangé), pas depuis un template statique - même patron que
+`NewsletterEmailLightboxComponent` (`this.lightboxService.open(...)` dans le constructeur).
+`tgLightboxClose`'s balisage (`<a class="close" ng-click="onClose()">`) inliné directement,
+comme les autres lightboxes déjà migrées. Le garde anti-double-soumission `debounce 2000`
+de l'original (`taiga.debounce`, pas lodash) simplifié en un simple booléen `submitting` -
+même effet, sans dépendance à un utilitaire global pour un formulaire à un champ ;
+`$tgLoading`'s overlay à template compilé simplifié en `[disabled]="submitting"`, même
+précédent déjà posé pour le spinner de `BacklogTableComponent`.
+
+`feedback.coffee` gardé (pas supprimé) mais réduit à sa seule déclaration de module
+(`angular.module("taigaFeedback", [])`) - c'est une dépendance listée de `app.coffee`, et
+`feedback.service.coffee` la référence par la forme "getter" (`angular.module("taigaFeedback")`),
+donc la déclaration doit continuer d'exister quelque part.
+
+Vérifié en navigateur headless (profil neuf) : lightbox ouverte via
+`injector.get('tgFeedbackService').sendFeedback()` (le déclencheur réel dans la barre de
+navigation est caché derrière `vm.customSupportUrl`, une config d'instance non activée dans
+cet environnement de dev local - orthogonal à ce qui est vérifié ici). Soumission vide →
+message traduit "This value is required." affiché sous le champ (confirme
+`FormErrorMessageService` bout en bout). Soumission valide → `POST /api/v1/feedback` avec
+le bon corps (`{"comment": "..."}`), réponse 200, lightbox fermée (élément retiré du DOM).
+**Piège de test rencontré, pas un bug applicatif** : simuler la saisie via
+`Input.dispatchMouseEvent`/`dispatchKeyEvent` du CDP, ou même fixer `textarea.value` via le
+setter natif + un `Event('input')` synthétique, ne déclenchait pas la mise à jour du
+`FormControl` dans cet environnement Chrome headless - contourné avec la commande CDP
+dédiée `Input.insertText`, qui simule une vraie saisie et fonctionne de façon fiable.
+
+Build Angular (`strictTemplates`) et Karma (361 specs) restent verts.
+
 ## Patron à suivre pour migrer un module suivant
 
 1. Repérer ses dépendances réelles (services/directives utilisés *et* utilisateurs) avant

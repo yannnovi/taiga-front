@@ -1,7 +1,7 @@
 import { DoBootstrap, NgModule } from "@angular/core";
 import { BrowserModule } from "@angular/platform-browser";
 import { UpgradeModule } from "@angular/upgrade/static";
-import { FormsModule } from "@angular/forms";
+import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { DragDropModule } from "@angular/cdk/drag-drop";
 
 import { HomeComponent } from "./home/home.component";
@@ -163,6 +163,8 @@ import { TgMostActiveUpgradedDirective } from "./upgraded/tg-most-active.upgrade
 import { TgSvgUpgradedDirective } from "./upgraded/tg-svg.upgraded-directive";
 import { TgNotificationsListUpgradedDirective } from "./upgraded/tg-notifications-list.upgraded-directive";
 import { TgWysiwygUpgradedDirective } from "./upgraded/tg-wysiwyg.upgraded-directive";
+import { LightboxFeedbackComponent } from "./lightbox-feedback/lightbox-feedback.component";
+import "./lightbox-feedback/register-legacy";
 import {
     AJS_APP_META_SERVICE,
     AJS_AVATAR_SERVICE,
@@ -220,7 +222,7 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
  * are added incrementally via upgrade/downgrade. Nothing here replaces AngularJS yet.
  */
 @NgModule({
-    imports: [BrowserModule, UpgradeModule, FormsModule, DragDropModule],
+    imports: [BrowserModule, UpgradeModule, FormsModule, ReactiveFormsModule, DragDropModule],
     declarations: [
         HomeComponent,
         DiscoverHomeComponent,
@@ -307,6 +309,7 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         TgSvgUpgradedDirective,
         TgNotificationsListUpgradedDirective,
         TgWysiwygUpgradedDirective,
+        LightboxFeedbackComponent,
         TgTranslatePipe,
         TgEmojifyPipe,
         TgMomentFormatPipe,

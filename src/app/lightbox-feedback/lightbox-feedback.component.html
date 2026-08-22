@@ -1,0 +1,34 @@
+<a class="close" href="" [title]="'COMMON.CLOSE' | tgTranslate" (click)="close(); $event.preventDefault()">
+    <tg-svg svg-icon="icon-close"></tg-svg>
+</a>
+
+<form [formGroup]="form" (ngSubmit)="submit()">
+    <h2 class="title">{{ "LIGHTBOX.FEEDBACK.TITLE" | tgTranslate }}</h2>
+    <label>{{ "LIGHTBOX.FEEDBACK.COMMENT" | tgTranslate }}</label>
+    <fieldset>
+        <textarea formControlName="comment"></textarea>
+        <p class="field-error" *ngIf="form.get('comment').invalid && form.get('comment').touched">
+            {{ errors.getMessage(form.get('comment').errors) }}
+        </p>
+    </fieldset>
+    <fieldset class="actions">
+        <button class="btn-big" variant="destructive" type="submit" [disabled]="submitting" [title]="'LIGHTBOX.FEEDBACK.ACTION_SEND' | tgTranslate">
+            {{ "LIGHTBOX.FEEDBACK.ACTION_SEND" | tgTranslate }}
+        </button>
+    </fieldset>
+    <div class="can-also">
+        <h3>{{ "LIGHTBOX.FEEDBACK.YOU_CAN_ALSO" | tgTranslate }}</h3>
+        <div class="text">
+            <span>{{ "LIGHTBOX.FEEDBACK.VISIT" | tgTranslate }}</span>
+            <a href="https://community.taiga.io/c/faq/21" target="_blank">{{ "LIGHTBOX.FEEDBACK.FAQ" | tgTranslate }}</a>
+        </div>
+        <div class="text">
+            <span>{{ "LIGHTBOX.FEEDBACK.CREATE" | tgTranslate }}</span>
+            <a href="https://tree.taiga.io/project/taiga/issues">{{ "LIGHTBOX.FEEDBACK.PUBLIC" | tgTranslate }}</a>
+        </div>
+        <div class="text">
+            <span>{{ "LIGHTBOX.FEEDBACK.EMAIL" | tgTranslate }}</span>
+            <a href="mailto:support@taiga.io">{{ "LIGHTBOX.FEEDBACK.SUPPORT" | tgTranslate }}</a>
+        </div>
+    </div>
+</form>

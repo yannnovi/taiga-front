@@ -181,13 +181,19 @@ tests), pas un "module de plus". À choisir un par un selon la priorité produit
    navigateur possible pour ce sous-projet (build + Karma verts seulement, voir
    MIGRATION.md). **Prochaine étape : sous-projet 3 ci-dessous (checksley), le dernier de
    cette liste.**
-3. **Validation de formulaire (checksley → Angular Reactive Forms)** — le plus gros par
-   nombre de fichiers (14 + la config globale des validateurs `linewidth`/`pikaday`/`url`
-   dans `app.coffee`, à porter en premier). Touche `auth.coffee` (login/register, page
-   d'entrée non-authentifiée - à faire en dernier de ce sous-projet, avec le plus de soin) et
-   des formulaires répétés par ligne de tableau (`admin/project-values.coffee` - nécessite un
-   pattern `FormArray`). Débloque `create-epic`, `create-project-form`, `lb-feedback`, et
-   plusieurs pages admin.
+3. **Validation de formulaire (checksley → Angular Reactive Forms)** — 🚧 **en cours**, le
+   plus gros par nombre de fichiers (14 + la config globale des validateurs). **Config
+   globale portée** (`src/app/shared/checksley-validators.ts` +
+   `form-error-message.service.ts`, `linewidth`/`pikaday`/`url` + le registre de messages
+   traduits `%s` - checksley lui-même reste actif pour tout ce qui n'est pas encore migré).
+   **Premier formulaire migré : `tgLbFeedback`** (le plus simple, scope isolé) - vérifié en
+   navigateur réel (validation + soumission + fermeture). 13 fichiers restants, dans l'ordre
+   déjà scopé : lightboxes simples restantes → `tgCustomAttributeValue` (bon test
+   d'intégration pour `pikaday`/`url`) → `tgLbCreateEdit` (lightbox générique US/Task/Issue,
+   son propre mini-projet) → pages admin (`admin/project-values.coffee` nécessite un
+   pattern `FormArray`, formulaires répétés par ligne) → `user-settings` → `auth.coffee`
+   (login/register, page d'entrée non-authentifiée - en tout dernier, avec le plus de soin).
+   Détail complet dans `MIGRATION.md`.
 4. ~~Listes infinies (`ngInfiniteScroll`)~~ — fait, voir sous-projet backlog ci-dessus (item 1).
 
 Recommandation : `window.dragMultiple` d'abord (referme complètement le "gros chantier" drag
