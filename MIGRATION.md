@@ -1843,6 +1843,63 @@ erreur console.
 
 Build Angular (`strictTemplates`) et Karma (361 specs) restent verts.
 
+### Sous-projet 4, partie 5 : `tgLbCreateEditSprint`, premier vrai test de Pikaday
+
+Nettement plus gros que les lightboxes précédentes : deux modes (créer/éditer un sprint),
+confirmation de suppression, mapping d'erreurs backend sur le formulaire, et surtout deux
+champs de date pilotés par **Pikaday** - la première vraie confrontation de cette migration
+avec un widget tiers manipulant directement le DOM d'un champ (`tgDateSelector`,
+`app/coffee/modules/common/components.coffee` : `new Pikaday({field: $el[0], ...})`, sans
+scope isolé, donc pas wrappable en `UpgradeComponent` - même situation que les popovers du
+backlog déjà réécrits nativement). `LightboxCreateEditSprintComponent` instancie Pikaday
+lui-même (`new Pikaday({...datePickerConfigService.get(), field, onSelect: () => ...})`)
+et synchronise la valeur affichée vers le `FormControl` correspondant dans le callback
+`onSelect` - `pikadayValidator` (`checksley-validators.ts`, jusqu'ici jamais exercé en
+dehors de son propre fichier) valide le texte résultant exactement comme le validateur
+`pikaday` de checksley le faisait. Nouveaux tokens : `AJS_ROUTE` (`$route,` en fait ajouté
+au sous-projet précédent pour `tgSearchBox`) et `AJS_DATE_PICKER_CONFIG_SERVICE`
+(`tgDatePickerConfigService`, une factory pure sans DOM - triviale à injecter).
+
+**Simplification actée, pas une régression** : l'original (`{link: link}`, aucun scope
+isolé, posé statiquement dans `backlog.jade` à l'intérieur du sous-arbre de
+`BacklogController`) lisait `$scope.sprints`/`$scope.sprintsCounter`/
+`$scope.milestonesCounter` directement (scope partagé) et les mettait à jour en place après
+chaque succès. Mais `BacklogController` écoute déjà les mêmes broadcasts
+(`sprintform:create/edit/remove:success`) que cette directive émettait aussi, et fait un
+rechargement complet (`loadSprints()`/`loadProjectStats()`) juste après - rendant la
+mise à jour locale de la directive strictement redondante, y compris dans l'original.
+`LightboxCreateEditSprintComponent` ne porte donc qu'un seul `@Input() sprints`
+(`bind-sprints="sprints"`, lecture seule - uniquement pour `getLastSprint()`, le calcul des
+dates par défaut d'un nouveau sprint) et laisse `BacklogController` gérer la suite via les
+broadcasts, sans réintroduire la double mise à jour.
+
+**Piège rencontré, pas un bug applicatif** : les tout premiers tests, déclenchant
+`sprintform:create`/`sprintform:edit` via `$rootScope.$broadcast(...)` directement depuis
+`Runtime.evaluate` (CDP), montraient un `open` correct côté instance du composant
+(confirmé via `ng.getComponent(el)`) mais un DOM non mis à jour (`*ngIf` resté à `false`
+dans les attributs `ng-reflect-*`) - un appel synchrone via CDP ne passe par aucun point
+d'entrée patché par zone.js, donc Angular ne déclenche pas de détection de changement après
+coup. Un clic réel (`Input.dispatchMouseEvent` sur le lien "Add" de la sidebar, ou sur
+`.edit-sprint`) passe par un vrai gestionnaire d'événement DOM patché par zone.js et
+fonctionne parfaitement à chaque fois - confirmé en re-testant avec de vrais clics.
+
+**Bug trouvé et corrigé avant vérification finale** : l'indice "last sprint is X" utilise
+une clé de traduction contenant du HTML (`<strong>...</strong>`,
+`LIGHTBOX.ADD_EDIT_SPRINT.LAST_SPRINT_NAME`) - l'interpolation Angular (`{{ }}`) échappe le
+HTML par défaut, affichant les balises en texte brut. Corrigé en liant via `[innerHTML]`
+plutôt que `{{ }}`, comme l'original le faisait déjà via `.html(text)` (pas `.text(text)`).
+
+Vérifié en navigateur headless avec de vrais clics : création (bouton "Add" de la sidebar,
+dates par défaut = fin du dernier sprint + 2 semaines, soumission vide → erreur, soumission
+valide → `POST /api/v1/milestones` avec le bon corps, y compris le `slug: null` de
+l'original préservé tel quel, 201, fermeture), édition (clic sur `.edit-sprint`, champs
+pré-remplis, nom auto-sélectionné, `PATCH /api/v1/milestones/:id` avec uniquement les champs
+modifiés - diff du modèle géré par `realClone()`/`$repo.save`, comme avant), suppression
+(confirmation avec le bon nom de sprint, `DELETE /api/v1/milestones/:id`, 204, sprint retiré
+de la sidebar). Zéro erreur console sur les trois flux.
+
+Build Angular (`strictTemplates`) et Karma (361 specs) restent verts.
+
 ## Patron à suivre pour migrer un module suivant
 
 1. Repérer ses dépendances réelles (services/directives utilisés *et* utilisateurs) avant

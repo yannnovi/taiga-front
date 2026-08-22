@@ -171,6 +171,8 @@ import { LightboxCreateBulkTasksComponent } from "./lightbox-create-bulk-tasks/l
 import "./lightbox-create-bulk-tasks/register-legacy";
 import { LightboxSearchBoxComponent } from "./lightbox-search-box/lightbox-search-box.component";
 import "./lightbox-search-box/register-legacy";
+import { LightboxCreateEditSprintComponent } from "./lightbox-create-edit-sprint/lightbox-create-edit-sprint.component";
+import "./lightbox-create-edit-sprint/register-legacy";
 import {
     AJS_APP_META_SERVICE,
     AJS_AVATAR_SERVICE,
@@ -215,6 +217,7 @@ import {
     AJS_QUEUE,
     AJS_MODEL,
     AJS_ROUTE,
+    AJS_DATE_PICKER_CONFIG_SERVICE,
     upgradedService,
 } from "./shared/ajs-tokens";
 import { TgTranslatePipe } from "./shared/translate.pipe";
@@ -321,6 +324,7 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         LightboxCreateBulkIssuesComponent,
         LightboxCreateBulkTasksComponent,
         LightboxSearchBoxComponent,
+        LightboxCreateEditSprintComponent,
         TgTranslatePipe,
         TgEmojifyPipe,
         TgMomentFormatPipe,
@@ -372,6 +376,7 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         upgradedService(AJS_QUEUE, "$tgQqueue"),
         upgradedService(AJS_MODEL, "$tgModel"),
         upgradedService(AJS_ROUTE, "$route"),
+        upgradedService(AJS_DATE_PICKER_CONFIG_SERVICE, "tgDatePickerConfigService"),
     ],
 })
 export class AppModule implements DoBootstrap {

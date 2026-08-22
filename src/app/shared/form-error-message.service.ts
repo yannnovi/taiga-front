@@ -54,6 +54,12 @@ export class FormErrorMessageService {
                 return this.translate.instant("COMMON.FORM_ERRORS.EQUAL_TO");
             case "pattern":
                 return this.translate.instant("COMMON.FORM_ERRORS.REGEXP");
+            case "server":
+                // Backend-supplied error message (e.g. from a failed create/save), already
+                // human-readable text - not a translation key, shown as-is. Mirrors
+                // checksley's `form.setErrors(data)`, which mapped API field errors onto the
+                // form the same way.
+                return errorValue;
             default:
                 return this.translate.instant("COMMON.FORM_ERRORS.DEFAULT_MESSAGE");
         }

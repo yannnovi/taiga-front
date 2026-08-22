@@ -1,0 +1,66 @@
+<a class="close" href="" [title]="'COMMON.CLOSE' | tgTranslate" (click)="close(); $event.preventDefault()">
+    <tg-svg svg-icon="icon-close"></tg-svg>
+</a>
+
+<form *ngIf="open" [formGroup]="form" (ngSubmit)="submit()">
+    <h2 class="title">{{ (createSprint ? "LIGHTBOX.ADD_EDIT_SPRINT.TITLE" : "BACKLOG.EDIT_SPRINT") | tgTranslate }}</h2>
+    <fieldset>
+        <input
+            class="sprint-name e2e-sprint-name"
+            type="text"
+            formControlName="name"
+            [attr.placeholder]="'LIGHTBOX.ADD_EDIT_SPRINT.PLACEHOLDER_SPRINT_NAME' | tgTranslate"
+        />
+        <label
+            class="last-sprint-name"
+            [class.disappear]="!createSprint || form.get('name').value?.length > 0 || hasErrors"
+            [innerHTML]="lastSprintName ? ('LIGHTBOX.ADD_EDIT_SPRINT.LAST_SPRINT_NAME' | tgTranslate:{lastSprint: lastSprintName}) : ''"
+        ></label>
+        <p class="field-error" *ngIf="form.get('name').invalid && form.get('name').touched">
+            {{ errors.getMessage(form.get('name').errors) }}
+        </p>
+    </fieldset>
+
+    <fieldset class="dates">
+        <div>
+            <input
+                class="date-start"
+                type="text"
+                [attr.placeholder]="'LIGHTBOX.ADD_EDIT_SPRINT.PLACEHOLDER_SPRINT_START' | tgTranslate"
+            />
+            <p class="field-error" *ngIf="form.get('estimated_start').invalid && form.get('estimated_start').touched">
+                {{ errors.getMessage(form.get('estimated_start').errors) }}
+            </p>
+        </div>
+        <div>
+            <input
+                class="date-end"
+                type="text"
+                [attr.placeholder]="'LIGHTBOX.ADD_EDIT_SPRINT.PLACEHOLDER_SPRINT_END' | tgTranslate"
+            />
+            <p class="field-error" *ngIf="form.get('estimated_finish').invalid && form.get('estimated_finish').touched">
+                {{ errors.getMessage(form.get('estimated_finish').errors) }}
+            </p>
+        </div>
+    </fieldset>
+
+    <div class="sprint-add-edit-actions">
+        <button
+            class="btn-big button-large button-block"
+            type="submit"
+            [disabled]="submitting"
+            [title]="'COMMON.SAVE' | tgTranslate"
+        >{{ (createSprint ? "COMMON.CREATE" : "COMMON.SAVE") | tgTranslate }}</button>
+
+        <button
+            *ngIf="canDelete"
+            class="btn-link delete-sprint"
+            type="button"
+            [title]="'LIGHTBOX.ADD_EDIT_SPRINT.TITLE_ACTION_DELETE_SPRINT' | tgTranslate"
+            (click)="remove()"
+        >
+            <tg-svg svg-icon="icon-trash"></tg-svg>
+            <span class="delete-sprint-text">{{ "LIGHTBOX.ADD_EDIT_SPRINT.ACTION_DELETE_SPRINT" | tgTranslate }}</span>
+        </button>
+    </div>
+</form>
