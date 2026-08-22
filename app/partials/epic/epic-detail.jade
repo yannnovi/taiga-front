@@ -54,10 +54,10 @@ div.wrapper(
 
             // Custom Fields
             tg-custom-attributes-values(
-                ng-model="epic"
-                type="epic"
-                project="project"
-                required-edition-perm="modify_epic"
+                bind-object="epic"
+                bind-type="'epic'"
+                bind-project="project"
+                bind-required-edition-perm="'modify_epic'"
             )
 
             tg-attachments-full(

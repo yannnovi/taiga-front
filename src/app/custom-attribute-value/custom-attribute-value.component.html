@@ -1,0 +1,134 @@
+<div
+    *ngIf="!editing"
+    class="custom-field-single"
+    [class.custom-field-checkbox]="attributeValue.type === 'checkbox'"
+>
+    <div class="custom-field-data">
+        <span class="custom-field-name">{{ attributeValue.name }}</span>
+        <span class="custom-field-description" *ngIf="attributeValue.description">{{ attributeValue.description }}</span>
+    </div>
+
+    <div class="custom-field-value-container">
+        <div class="custom-field-value" *ngIf="attributeValue.type === 'url'; else notUrl">
+            <span>
+                <a [href]="attributeValue.value" (click)="$event.stopPropagation()">{{ attributeValue.value }}</a>
+            </span>
+        </div>
+        <ng-template #notUrl>
+            <div class="custom-field-value wysiwyg" *ngIf="attributeValue.type === 'richtext'; else notRichtext">
+                <span [innerHTML]="attributeValue.value | tgMarkdownToHtml"></span>
+            </div>
+        </ng-template>
+        <ng-template #notRichtext>
+            <div class="custom-field-value js-value-view-mode" *ngIf="attributeValue.type === 'checkbox'; else defaultValue" (click)="onViewClick()">
+                <span *ngIf="attributeValue.value">{{ "COMMON.YES" | tgTranslate }}</span>
+                <span *ngIf="!attributeValue.value">{{ "COMMON.NO" | tgTranslate }}</span>
+            </div>
+        </ng-template>
+        <ng-template #defaultValue>
+            <div class="custom-field-value js-value-view-mode" (click)="onViewClick()">
+                <span [innerHTML]="displayValue | tgMarkdownToHtml"></span>
+            </div>
+        </ng-template>
+
+        <div class="custom-field-options" *ngIf="isEditable">
+            <a class="js-edit-description" href="" [title]="'COMMON.CUSTOM_ATTRIBUTES.EDIT' | tgTranslate" (click)="startEdit(); $event.preventDefault()">
+                <tg-svg svg-icon="icon-edit"></tg-svg>
+            </a>
+        </div>
+    </div>
+</div>
+
+<form
+    *ngIf="editing"
+    class="custom-field-single editable"
+    autocomplete="off"
+    [class.custom-field-checkbox]="attributeValue.type === 'checkbox'"
+    [formGroup]="form"
+    (ngSubmit)="submit()"
+>
+    <div class="custom-field-data">
+        <label class="custom-field-name" for="custom-field-value">{{ attributeValue.name }}</label>
+        <span class="custom-field-description" *ngIf="attributeValue.description">{{ attributeValue.description }}</span>
+    </div>
+
+    <div class="custom-field-value-container">
+        <div class="custom-field-value rich-text" *ngIf="attributeValue.type === 'richtext'">
+            <tg-wysiwyg
+                class="custom-field"
+                [editonly]="!!attributeValue.value?.length"
+                [project]="project"
+                [content]="attributeValue.value"
+                [onUploadFile]="uploadFile"
+                (onSave)="saveRichText($event)"
+                (onCancel)="cancelRichText()"
+            ></tg-wysiwyg>
+        </div>
+
+        <div class="custom-field-value" *ngIf="attributeValue.type !== 'richtext'">
+            <input
+                *ngIf="attributeValue.type === 'text'"
+                id="custom-field-value"
+                name="value"
+                type="text"
+                formControlName="value"
+                (keyup.enter)="submit()"
+                (keyup.escape)="cancel()"
+            />
+            <textarea
+                *ngIf="attributeValue.type === 'multiline'"
+                id="custom-field-value"
+                name="value"
+                formControlName="value"
+                (keyup.escape)="cancel()"
+            ></textarea>
+            <input
+                *ngIf="attributeValue.type === 'date'"
+                id="custom-field-value"
+                name="value"
+                type="text"
+                formControlName="value"
+                (keyup.enter)="submit()"
+                (keyup.escape)="cancel()"
+            />
+            <input
+                *ngIf="attributeValue.type === 'url'"
+                id="custom-field-value"
+                name="value"
+                type="url"
+                formControlName="value"
+                (keyup.enter)="submit()"
+                (keyup.escape)="cancel()"
+            />
+            <select *ngIf="attributeValue.type === 'dropdown'" id="custom-field-value" name="value" formControlName="value">
+                <option value=""></option>
+                <option *ngFor="let option of attributeValue.extra" [value]="option">{{ option }}</option>
+            </select>
+            <input
+                *ngIf="attributeValue.type === 'number'"
+                id="custom-field-value"
+                name="value"
+                type="number"
+                formControlName="value"
+                (keyup.enter)="submit()"
+                (keyup.escape)="cancel()"
+            />
+            <div class="check" *ngIf="attributeValue.type === 'checkbox'">
+                <input name="value" type="checkbox" formControlName="value" />
+                <div></div>
+                <span class="check-text check-yes">{{ "COMMON.YES" | tgTranslate }}</span>
+                <span class="check-text check-no">{{ "COMMON.NO" | tgTranslate }}</span>
+            </div>
+
+            <p class="field-error" *ngIf="form.get('value').invalid && form.get('value').touched">
+                {{ errors.getMessage(form.get('value').errors) }}
+            </p>
+        </div>
+
+        <div class="custom-field-options" *ngIf="attributeValue.type !== 'richtext'">
+            <a class="js-save-description" href="" [title]="'COMMON.CUSTOM_ATTRIBUTES.SAVE' | tgTranslate" (click)="submit(); $event.preventDefault()">
+                <tg-svg svg-icon="icon-save"></tg-svg>
+            </a>
+        </div>
+    </div>
+</form>

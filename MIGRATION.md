@@ -1981,6 +1981,93 @@ correctifs ci-dessus.
 
 Build Angular (`strictTemplates`) et Karma (361 specs) restent verts.
 
+### Sous-projet 4c : `tgCustomAttributeValue` (et `tgCustomAttributesValues`), premier vrai test de `strictUrlValidator`
+
+Le widget le plus complexe migré jusqu'ici dans ce sous-projet checksley : la section
+"Custom Fields" repliable des pages de détail (US/epic/issue/task), 8 types de champ
+(texte, multiligne, date, url, richtext, dropdown, checkbox, nombre), bascule
+vue/édition par champ. Migré en PAIRE de composants, même patron que
+`KanbanTableComponent`/`KanbanColumnComponent` ou `BacklogTableComponent`/
+`BacklogRowComponent` :
+
+- **`CustomAttributesValuesComponent`** (`tg-custom-attributes-values`) - possède l'état
+  partagé (`customAttributesValues.attributes_values`, un objet unique où TOUTES les
+  lignes lisent/écrivent) et l'appel de sauvegarde réel (`$tgRepo.save(...)` +
+  `$rootScope.$broadcast("custom-attributes-values:edit")`). L'original exigeait `ngModel`
+  uniquement pour un `bindOnce` sur `.id` - remplacé par `@Input() object` + `ngOnChanges`
+  (pas de binding bidirectionnel nécessaire, l'original n'écrivait jamais dedans non plus).
+- **`CustomAttributeValueComponent`** (`tg-custom-attribute-value`) - une ligne, reçoit
+  `updateValue` (une référence de fonction, pas un `@Output()` - le parent possède
+  vraiment cette logique, ce n'est pas juste un événement à faire remonter). Chaque type
+  autre que `richtext` passe par un unique `FormGroup` à un champ (`value`) ; **aucun type
+  n'a de validation `required` dans l'original** (`custom-attribute-value-edit.jade` n'a
+  aucun attribut `data-required` - seuls `date`/`url` ont `data-pikaday`/`data-type="url"`)
+  - reproduit tel quel, pas de `Validators.required` ajouté. `date` réutilise
+  `pikadayValidator` (déjà exercé au sous-projet sprint), `url` est le premier vrai test de
+  `strictUrlValidator` en dehors du fichier des validateurs.
+
+**`richtext` ne passe pas par le formulaire générique**, comme dans l'original - il rend
+`<tg-wysiwyg>` (déjà enveloppé, `TgWysiwygUpgradedDirective`) directement avec ses propres
+`save`/`cancel`, répliquant ce que `tgCustomFieldEditWysiwyg` (directive composite `scope:
+true`, non enveloppable individuellement) faisait contre son scope ambiant - `uploadFiles`
+est reporté à l'identique, avec l'objet/type de CE composant plutôt qu'un scope partagé.
+**C'est la toute première vérification en navigateur réel de `TgWysiwygUpgradedDirective`**
+(le sous-projet WYSIWYG l'avait explicitement laissée non testée, faute d'appelant Angular
+à l'époque) - trois bugs trouvés et corrigés au passage :
+1. `wysiwyg.directive.coffee` lisait `$attrs.$attr.editonly`/`.notPersist`/`.required` sans
+   garde - `$attrs.$attr` n'est pas peuplé de la même façon quand la directive est montée
+   via `UpgradeComponent` plutôt que par compilation de template normale. Corrigé par une
+   garde (`$attrs.$attr && ...`), sans changer le comportement des appelants AngularJS
+   existants (`$scope.editonly` reste prioritaire quand il est fourni, inchangé).
+2. `tg-wysiwyg` plante sur un `content` `null` (`$scope.markdown.length || content.length`)
+   - l'original normalisait `null`/`undefined` en `""` une fois au bootstrap de la
+   directive ; porté comme un `ngOnChanges` sur `CustomAttributeValueComponent`.
+3. Après une sauvegarde richtext réussie, l'original repasse en mode vue
+   (`render(attributeValue, false)` dans `saveCustomRichText`) - oublié dans le premier
+   jet (`editing` restait `true`), corrigé pour repasser `editing = false`, comme tous les
+   autres types le font déjà dans `submit()`.
+
+Callers (`us-detail.jade`/`epic-detail.jade`/`issues-detail.jade`/`task-detail.jade`,
+toujours AngularJS/scope ambiant) : `ng-model="x"` → `bind-object="x"`, `type="userstory"`
+(litéral) → `bind-type="'userstory'"` (expression AngularJS, guillemets simples à
+l'intérieur - un attribut `bind-x` est toujours évalué comme une expression, jamais une
+chaîne littérale implicite).
+
+`app/coffee/modules/common/custom-field-values.coffee` supprimé en entier (ne contenait
+que ces deux directives - les constantes `TYPE_CHOICES`/`TEXT_TYPE`/etc. n'étaient
+utilisées nulle part ailleurs, confirmé par recherche : `admin/project-values.coffee`
+définit sa propre copie indépendante, coïncidence de nommage, pas un import partagé -
+CoffeeScript compilé sans `bare: true` scope chaque fichier séparément).
+
+**Piège de build rencontré, pas un bug applicatif** : après suppression des 3 fichiers
+`.jade`, les anciens templates compilés (`custom-attribute-value(-edit).html`,
+`custom-attributes-values.html`) restaient référencés dans le bundle - `gulp-cached`
+(utilisé par la tâche `jade`) ne purge pas les fichiers de sortie déjà compilés dans
+`tmp/partials/` quand leur source est supprimée (contrairement au bundle JS explicite, où
+une suppression de fichier avait forcé un redémarrage complet de gulp plus tôt dans cette
+session - ici la source est globée, donc gulp lui-même n'a pas planté, mais la sortie
+compilée restait orpheline sur disque). Corrigé en supprimant directement
+`tmp/partials/custom-attributes/` (artefact de build régénérable, pas du code source).
+
+**Bug préexistant trouvé en vérifiant les autres pages appelantes (epic/issue/task),
+non corrigé, hors périmètre** : `VoteButtonComponent` (migré bien avant cette session)
+plante avec `Cannot read properties of undefined (reading 'total_voters')` sur navigation
+directe vers une page de détail d'issue - même famille que le bug
+`TaskboardTableComponent` déjà documenté plus haut (`@Input() item` pas encore peuplé au
+premier rendu). N'affecte pas le rendu de `tg-custom-attributes-values` sur la même page
+(vérifié : la section s'affiche correctement, 5 champs, malgré ce bruit console).
+
+Vérifié en navigateur réel sur `/us/1` (les 4 types présents dans les données de seed) :
+url (validation + sauvegarde), date (vrai calendrier Pikaday, sélection d'un jour, `PATCH
+.../custom-attributes-values/:id`), checkbox (bascule + sauvegarde), richtext (frappe réelle
+dans le CKEditor, sauvegarde, retour en mode vue, HTML rendu via `tgMarkdownToHtml`) - et
+sur les pages epic/issue/task (rendu de la section, 5 champs, sans erreur propre à ce
+composant). text/multiline/dropdown/number n'étaient pas présents dans les données de test
+disponibles - non exercés en direct, mais suivent le même patron que url/checkbox déjà
+vérifiés (champ simple, pas de widget tiers).
+
+Build Angular (`strictTemplates`) et Karma (361 specs) restent verts.
+
 ## Patron à suivre pour migrer un module suivant
 
 1. Repérer ses dépendances réelles (services/directives utilisés *et* utilisateurs) avant

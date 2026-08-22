@@ -115,10 +115,10 @@ div.wrapper(
 
             // Custom Fields
             tg-custom-attributes-values(
-                ng-model="us"
-                type="userstory"
-                project="project"
-                required-edition-perm="modify_us"
+                bind-object="us"
+                bind-type="'userstory'"
+                bind-project="project"
+                bind-required-edition-perm="'modify_us'"
             )
 
             tg-attachments-full(

@@ -1,0 +1,21 @@
+<section class="duty-custom-fields" *ngIf="customAttributes.length">
+    <div class="custom-fields-header">
+        <span>{{ "COMMON.CUSTOM_ATTRIBUTES.CUSTOM_FIELDS" | tgTranslate }}</span>
+        <a class="collapse" href="" [class.open]="!collapsed" (click)="toggleCollapse(); $event.preventDefault()">
+            <tg-svg svg-icon="icon-arrow-down"></tg-svg>
+        </a>
+    </div>
+
+    <div class="custom-fields-body" *ngIf="!collapsed">
+        <tg-custom-attribute-value
+            class="custom-attribute"
+            *ngFor="let attr of customAttributes"
+            [attributeValue]="getAttributeValue(attr)"
+            [project]="project"
+            [requiredEditionPerm]="requiredEditionPerm"
+            [objectType]="type"
+            [objectId]="object.id"
+            [updateValue]="updateAttributeValue"
+        ></tg-custom-attribute-value>
+    </div>
+</section>

@@ -84,10 +84,10 @@ div.wrapper(
 
             // Custom Fields
             tg-custom-attributes-values(
-                ng-model="task"
-                type="task"
-                project="project"
-                required-edition-perm="modify_task"
+                bind-object="task"
+                bind-type="'task'"
+                bind-project="project"
+                bind-required-edition-perm="'modify_task'"
             )
 
             tg-attachments-full(

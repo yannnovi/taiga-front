@@ -63,6 +63,8 @@ export const AJS_MODEL = new InjectionToken<any>("$tgModel");
 export const AJS_ROUTE = new InjectionToken<any>("$route");
 export const AJS_DATE_PICKER_CONFIG_SERVICE = new InjectionToken<any>("tgDatePickerConfigService");
 export const AJS_ANALYTICS = new InjectionToken<any>("$tgAnalytics");
+export const AJS_ATTACHMENTS_FULL_SERVICE = new InjectionToken<any>("tgAttachmentsFullService");
+export const AJS_SELECTED_TEXT = new InjectionToken<any>("$selectedText");
 
 export function upgradedService(token: InjectionToken<any>, ajsName: string): Provider {
     return {

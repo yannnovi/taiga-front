@@ -177,6 +177,10 @@ import { LightboxCreateBulkUserstoriesComponent } from "./lightbox-create-bulk-u
 import "./lightbox-create-bulk-userstories/register-legacy";
 import { LightboxRelateToEpicComponent } from "./lightbox-relate-to-epic/lightbox-relate-to-epic.component";
 import "./lightbox-relate-to-epic/register-legacy";
+import { CustomAttributesValuesComponent } from "./custom-attributes-values/custom-attributes-values.component";
+import "./custom-attributes-values/register-legacy";
+import { CustomAttributeValueComponent } from "./custom-attribute-value/custom-attribute-value.component";
+import "./custom-attribute-value/register-legacy";
 import {
     AJS_APP_META_SERVICE,
     AJS_AVATAR_SERVICE,
@@ -223,6 +227,8 @@ import {
     AJS_ROUTE,
     AJS_DATE_PICKER_CONFIG_SERVICE,
     AJS_ANALYTICS,
+    AJS_ATTACHMENTS_FULL_SERVICE,
+    AJS_SELECTED_TEXT,
     upgradedService,
 } from "./shared/ajs-tokens";
 import { TgTranslatePipe } from "./shared/translate.pipe";
@@ -332,6 +338,8 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         LightboxCreateEditSprintComponent,
         LightboxCreateBulkUserstoriesComponent,
         LightboxRelateToEpicComponent,
+        CustomAttributesValuesComponent,
+        CustomAttributeValueComponent,
         TgTranslatePipe,
         TgEmojifyPipe,
         TgMomentFormatPipe,
@@ -385,6 +393,8 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         upgradedService(AJS_ROUTE, "$route"),
         upgradedService(AJS_DATE_PICKER_CONFIG_SERVICE, "tgDatePickerConfigService"),
         upgradedService(AJS_ANALYTICS, "$tgAnalytics"),
+        upgradedService(AJS_ATTACHMENTS_FULL_SERVICE, "tgAttachmentsFullService"),
+        upgradedService(AJS_SELECTED_TEXT, "$selectedText"),
     ],
 })
 export class AppModule implements DoBootstrap {

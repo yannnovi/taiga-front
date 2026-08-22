@@ -12,13 +12,17 @@ taiga = @.taiga
 
 Wysiwyg = ($translate, $confirm, $storage, wysiwygService, animationFrame, tgLoader, analytics, $location, $attachmentsFullService) ->
     link = ($scope, $el, $attrs) ->
-        isEditOnly = !!$attrs.$attr.editonly
-        notPersist = !!$attrs.$attr.notPersist
+        # `$attrs.$attr` isn't populated the same way when this directive is mounted via
+        # `UpgradeComponent` (src/app/upgraded/tg-wysiwyg.upgraded-directive.ts) instead of
+        # normal template compilation - guarded here rather than assumed present.
+        # `$scope.editonly` (checked below) already takes precedence when it's bound anyway.
+        isEditOnly = !!($attrs.$attr && $attrs.$attr.editonly)
+        notPersist = !!($attrs.$attr && $attrs.$attr.notPersist)
 
         if $scope.editonly != undefined
             isEditOnly = $scope.editonly
 
-        $scope.required = !!$attrs.$attr.required
+        $scope.required = !!($attrs.$attr && $attrs.$attr.required)
         $scope.editMode = isEditOnly || false
         $scope.mode = localStorage.getItem('editor-mode') || 'html'
 
