@@ -1771,6 +1771,48 @@ suppression).
 
 Build Angular (`strictTemplates`) et Karma (361 specs) restent verts.
 
+### Sous-projet 4, partie 3 : `tgLbCreateBulkTasks`, et deux bugs trouvés au passage
+
+Même famille que `tgLbCreateBulkIssues` (`app/coffee/modules/taskboard/lightboxes.coffee`,
+`{link: link}` ambiant, posé statiquement dans `taskboard.jade`, ouvert sur un broadcast
+`taskform:bulk`) avec une différence : l'original lisait vraiment `$scope.projectId` (posé
+nu par `TaskboardController`, `main.coffee:502`) - `LightboxCreateBulkTasksComponent` a donc
+un vrai `@Input() projectId`, câblé via `bind-project-id="projectId"` sur l'élément
+(`tg-lb-create-bulk-tasks.lightbox.lightbox-generic-bulk.lightbox-task-bulk`). Le `# TODO:
+error handling` de l'original (aucune action en cas d'échec de `bulkCreate`, juste
+`submitting = false`) est conservé tel quel, pas "corrigé" - même précédent que pour les
+quirks de permission déjà rencontrés (taskboard, backlog).
+
+`taskboard/lightboxes.coffee` supprimé en entier (ne contenait que cette directive - le
+module `taigaTaskboard` est déclaré ailleurs, dans `taskboard.coffee`).
+
+Vérifié en navigateur headless contre le vrai backend : broadcast `taskform:bulk` → lightbox
+ouverte, saisie via `Input.insertText` (même contournement CDP que pour `tgLbFeedback`),
+soumission → `POST /api/v1/tasks/bulk_create` avec le bon corps
+(`{"project_id":1,"milestone_id":1,"us_id":1,"bulk_tasks":"..."}`), 200, lightbox fermée.
+
+**Deux bugs trouvés incidemment pendant cette vérification, sans rapport avec checksley :**
+
+1. **`MoveToSprintComponent.getOpenUss` plantait** (`Cannot read properties of undefined
+   (reading 'indexOf')`) au moment où le broadcast `taskform:bulk:success` déclenchait un
+   changement de `uss`. Cause : `ngOnChanges` peut s'exécuter avant `ngOnInit` lors du tout
+   premier changement d'un composant (ordre documenté d'Angular) - `this.permissions`
+   n'était donc pas encore résolu. **Corrigé** (`src/app/move-to-sprint/move-to-sprint.component.ts`) :
+   `ngOnChanges` re-résout `this.permissions` défensivement si `ngOnInit` n'est pas encore
+   passé. Build + Karma revérifiés verts après ce correctif.
+2. **`TaskboardTableComponent.ngOnInit` plante** (`Cannot read properties of undefined
+   (reading 'my_permissions')` sur `this.project.my_permissions...`) en cas de navigation
+   directe/fraîche vers une URL de taskboard (lien profond) - confirmé via un test dédié
+   isolé (navigation seule, sans aucune interaction) que `this.project` n'est pas encore
+   peuplé quand `ngOnInit` s'exécute dans ce cas précis. **Bug préexistant, sans rapport
+   avec le travail checksley de cette session** (`TaskboardTableComponent` a été migré bien
+   avant, cf. plus haut) - **non corrigé ici**, car hors périmètre de ce sous-projet ; noté
+   ici pour ne pas le perdre. Il n'empêche pas le fonctionnement de
+   `tgLbCreateBulkTasks` lui-même (le flux lightbox → POST → fermeture fonctionne
+   correctement malgré ce bruit console).
+
+Build Angular (`strictTemplates`) et Karma (361 specs) restent verts.
+
 ## Patron à suivre pour migrer un module suivant
 
 1. Repérer ses dépendances réelles (services/directives utilisés *et* utilisateurs) avant

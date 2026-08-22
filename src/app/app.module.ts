@@ -167,6 +167,8 @@ import { LightboxFeedbackComponent } from "./lightbox-feedback/lightbox-feedback
 import "./lightbox-feedback/register-legacy";
 import { LightboxCreateBulkIssuesComponent } from "./lightbox-create-bulk-issues/lightbox-create-bulk-issues.component";
 import "./lightbox-create-bulk-issues/register-legacy";
+import { LightboxCreateBulkTasksComponent } from "./lightbox-create-bulk-tasks/lightbox-create-bulk-tasks.component";
+import "./lightbox-create-bulk-tasks/register-legacy";
 import {
     AJS_APP_META_SERVICE,
     AJS_AVATAR_SERVICE,
@@ -314,6 +316,7 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         TgWysiwygUpgradedDirective,
         LightboxFeedbackComponent,
         LightboxCreateBulkIssuesComponent,
+        LightboxCreateBulkTasksComponent,
         TgTranslatePipe,
         TgEmojifyPipe,
         TgMomentFormatPipe,

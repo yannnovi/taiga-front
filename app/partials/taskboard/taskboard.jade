@@ -118,7 +118,6 @@ div.wrapper(
 
     div.lightbox.lightbox-generic-form.lightbox-create-edit(tg-lb-create-edit)
 
-    div.lightbox.lightbox-generic-bulk.lightbox-task-bulk(tg-lb-create-bulk-tasks)
-        include ../includes/modules/lightbox-task-bulk
+    tg-lb-create-bulk-tasks.lightbox.lightbox-generic-bulk.lightbox-task-bulk(bind-project-id="projectId")
 
     tg-lb-create-bulk-issues.lightbox.lightbox-generic-bulk

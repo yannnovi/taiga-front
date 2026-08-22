@@ -35,10 +35,19 @@ export class MoveToSprintComponent implements OnInit, OnChanges {
     ) {}
 
     ngOnInit(): void {
-        this.permissions = this.projectService.project.get("my_permissions");
+        this.permissions = this.projectService.project?.get("my_permissions");
     }
 
     ngOnChanges(changes: SimpleChanges): void {
+        // `ngOnChanges` can fire before `ngOnInit` sets `this.permissions` (Angular's
+        // documented lifecycle order for a component's very first change), and
+        // `projectService.project` itself isn't always populated yet the first time this
+        // fires either - re-resolve here defensively rather than assume `ngOnInit` already
+        // ran with a loaded project.
+        if (!this.permissions) {
+            this.permissions = this.projectService.project?.get("my_permissions") || [];
+        }
+
         if (changes["uss"]) {
             this.getOpenUss();
         }
