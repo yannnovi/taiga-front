@@ -1,0 +1,101 @@
+<div class="assigned-inline">
+    <div *ngIf="isAssigned">
+        <div class="user-list" *ngIf="assignedUsers.length > 1">
+            <div class="user-list-item" *ngFor="let assignedUser of assignedUsers">
+                <img [src]="assignedUser.avatar?.url" [title]="assignedUser.full_name_display" [alt]="assignedUser.full_name_display" />
+            </div>
+            <div class="user-list-item counter" *ngIf="hiddenUsers">
+                <span>+{{ hiddenUsers }}</span>
+            </div>
+        </div>
+
+        <div class="ticket-user-list" *ngIf="assignedUsers.length === 1">
+            <div class="user-list-single">
+                <div class="user-list-avatar">
+                    <img [src]="assignedUsers[0].avatar?.url" [title]="assignedUsers[0].full_name_display" [alt]="assignedUsers[0].full_name_display" />
+                </div>
+                <div class="user-list-name">
+                    <span>{{ assignedUsers[0].full_name_display }}</span>
+                </div>
+                <tg-svg
+                    class="remove-user"
+                    svg-icon="icon-close"
+                    [title]="'COMMON.ASSIGNED_TO.DELETE_ASSIGNMENT' | tgTranslate"
+                    (click)="unassign(assignedUsers[0])"
+                ></tg-svg>
+            </div>
+        </div>
+
+        <div class="add-assigned">
+            <a class="users-dropdown tg-add-assigned" href="" (click)="openUsersDropdown($event)">
+                <tg-svg class="add-assigned" svg-icon="icon-add" [title]="'COMMON.ASSIGNED_USERS.ADD_ASSIGNED' | tgTranslate"></tg-svg>
+                <span>{{ "COMMON.ASSIGNED_USERS.ADD_ASSIGNED" | tgTranslate }}</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="ticket-user-list" *ngIf="!isAssigned">
+        <div class="user-list-single">
+            <div class="user-list-avatar">
+                <img [alt]="'COMMON.ASSIGNED_TO.ASSIGN' | tgTranslate" />
+            </div>
+            <div class="user-list-name">
+                <a
+                    class="users-dropdown user-assigned"
+                    href=""
+                    [title]="'COMMON.ASSIGNED_TO.TITLE_ACTION_EDIT_ASSIGNMENT' | tgTranslate"
+                    (click)="openUsersDropdown($event)"
+                >
+                    <span class="assigned-name">{{ "COMMON.ASSIGNED_TO.ASSIGN" | tgTranslate }}</span>
+                </a>
+                &nbsp;
+                <span class="read-only">{{ "COMMON.OR" | tgTranslate }}</span>
+                &nbsp;
+                <a class="self-assign" href="#" [title]="'COMMON.ASSIGNED_TO.SELF' | tgTranslate" (click)="selfAssign(); $event.preventDefault()">
+                    <span>{{ "COMMON.ASSIGNED_TO.SELF" | tgTranslate }}</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="pop-users popover" [class.multiple]="assignedUsers.length > 0" (click)="$event.stopPropagation()">
+        <input
+            class="users-search"
+            type="text"
+            [attr.placeholder]="'LIGHTBOX.ASSIGNED_TO.SEARCH' | tgTranslate"
+            [(ngModel)]="usersSearch"
+            (ngModelChange)="onSearchChange()"
+        />
+        <a
+            class="user-list-single selected"
+            *ngFor="let user of selected"
+            href=""
+            [title]="user.full_name_display"
+            (click)="$event.preventDefault()"
+        >
+            <img class="user-list-avatar" [style.background]="user.avatar?.bg" [src]="user.avatar?.url" />
+            <span class="user-list-name" [title]="user.full_name_display">{{ user.full_name_display }}</span>
+            <tg-svg
+                class="remove"
+                svg-icon="icon-close"
+                [title]="'COMMON.ASSIGNED_TO.DELETE_ASSIGNMENT' | tgTranslate"
+                (click)="unassign(user); $event.stopPropagation()"
+            ></tg-svg>
+        </a>
+
+        <a
+            class="user-list-single"
+            *ngFor="let user of users"
+            href=""
+            [title]="user.full_name_display"
+            (click)="assign(user); $event.preventDefault()"
+        >
+            <img class="user-list-avatar" [style.background]="user.avatar?.bg" [src]="user.avatar?.url" />
+            <span class="user-list-name" [title]="user.full_name_display">{{ user.full_name_display }}</span>
+        </a>
+
+        <div class="show-more" *ngIf="showMore">
+            <span>{{ "COMMON.ASSIGNED_TO.TOO_MANY" | tgTranslate }}</span>
+        </div>
+    </div>
+</div>

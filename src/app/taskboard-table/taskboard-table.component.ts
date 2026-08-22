@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Inject, Input, OnInit, Output } from "@angular/core";
+import { Component, EventEmitter, Inject, Input, OnChanges, OnInit, Output } from "@angular/core";
 import { CdkDragDrop } from "@angular/cdk/drag-drop";
 import { AJS_DUE_DATE_SERVICE, AJS_PROJECT_SERVICE, AJS_TG_RESOURCES } from "../shared/ajs-tokens";
 
@@ -48,12 +48,24 @@ import { AJS_DUE_DATE_SERVICE, AJS_PROJECT_SERVICE, AJS_TG_RESOURCES } from "../
  * which in effect enables dragging whenever either condition doesn't hold. Replicated
  * exactly (via `sortingDisabled`), not "fixed" - a pre-existing quirk, not this
  * migration's to correct.
+ *
+ * **Bug fixed (found while migrating `tgLbCreateEdit`, unrelated to it):** `ngOnInit` used
+ * to read `this.project.my_permissions` unconditionally, but `TaskboardController`'s own
+ * project load hasn't always resolved yet the first time this component initializes -
+ * throwing before `project`/`userstories`/`usTasks`/`taskStatusList` ever arrive. Worse:
+ * since that exception aborted the surrounding change-detection pass, it was also breaking
+ * rendering of *sibling* Angular components on the same page (e.g. a newly-opened
+ * `tg-lb-create-edit` lightbox never showing its content). Fixed with a top-level
+ * `*ngIf="project"` in the template (nothing renders until the real data exists) plus
+ * defensive re-resolution (`initFromProject`, from both `ngOnInit` and `ngOnChanges`) and
+ * null-tolerant width/task-lookup helpers, in case the various `@Input()`s arrive on
+ * different digest cycles.
  */
 @Component({
     selector: "tg-taskboard-sortable",
     templateUrl: "./taskboard-table.component.html",
 })
-export class TaskboardTableComponent implements OnInit {
+export class TaskboardTableComponent implements OnInit, OnChanges {
     @Input() project: any;
     @Input() projectId: any;
     @Input() sprintId: any;
@@ -79,6 +91,8 @@ export class TaskboardTableComponent implements OnInit {
     statusesFolded: Record<string, boolean> = {};
     sortingDisabled = true;
 
+    private statusColumnModesLoaded = false;
+
     private readonly gridGap = 5;
     private readonly horizontalPadding = 32;
     private readonly avatarWidth = 30;
@@ -94,15 +108,40 @@ export class TaskboardTableComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
+        this.initFromProject();
+    }
+
+    ngOnChanges(): void {
+        // `bind-project="project"` (an AngularJS `<` one-way binding) can still be
+        // `undefined` the first time this component's own `ngOnInit` runs on a fresh/direct
+        // navigation to a taskboard URL - `TaskboardController`'s own project load hasn't
+        // resolved yet at that point. Re-attempt here once it (and `projectId`/`sprintId`)
+        // actually arrive, same defensive-re-resolution pattern as
+        // `MoveToSprintComponent.ngOnChanges`.
+        if (!this.statusColumnModesLoaded) {
+            this.initFromProject();
+        }
+    }
+
+    private initFromProject(): void {
+        if (!this.project || this.projectId === undefined || this.sprintId === undefined) {
+            return;
+        }
+
         this.sortingDisabled = !(
             this.project.my_permissions.indexOf("modify_task") > -1 || !this.project.archived_code
         );
 
         this.statusesFolded = this.rs.tasks.getStatusColumnModes(this.projectId);
         this.usFolded = this.rs.tasks.getUsRowModes(this.projectId, this.sprintId);
+        this.statusColumnModesLoaded = true;
     }
 
     getTasksForColumn(usId: any, statusId: any): any {
+        if (!this.usTasks) {
+            return null;
+        }
+
         if (usId) {
             return this.usTasks.getIn([usId.toString(), statusId.toString()]);
         }
@@ -136,7 +175,7 @@ export class TaskboardTableComponent implements OnInit {
     private getCeilWidth(usId: any, statusId: any): number {
         const isStatusFolded = !!this.statusesFolded[statusId];
         const isUSFolded = this.isUsFolded(usId);
-        const tasks = this.getTasksForColumn(usId, statusId).size;
+        const tasks = this.getTasksForColumn(usId, statusId)?.size;
 
         if (tasks && (isUSFolded || isStatusFolded)) {
             if (isUSFolded) {
@@ -167,7 +206,7 @@ export class TaskboardTableComponent implements OnInit {
             width = initialWidth;
         }
 
-        this.userstories.forEach((us: any) => {
+        (this.userstories || []).forEach((us: any) => {
             const usWidth = this.getCeilWidth(us.id, statusId);
 
             if (usWidth > width) {
@@ -179,7 +218,10 @@ export class TaskboardTableComponent implements OnInit {
     }
 
     getTaskboardWidth(): number {
-        const total = this.taskStatusList.reduce((acc: number, status: any) => acc + this.getColumnWidth(status.id) + 5, 0);
+        const total = (this.taskStatusList || []).reduce(
+            (acc: number, status: any) => acc + this.getColumnWidth(status.id) + 5,
+            0,
+        );
 
         return this.maxColumnWidth + total;
     }

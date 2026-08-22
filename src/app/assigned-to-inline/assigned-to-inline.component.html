@@ -1,0 +1,67 @@
+<div class="assigned-inline">
+    <div class="ticket-user-list">
+        <div class="user-list-single">
+            <div class="user-list-avatar" [class.is-iocaine]="item?.is_iocaine">
+                <img [style.background-color]="bg" [src]="avatar?.url" [alt]="fullName" />
+                <div class="iocaine-symbol" *ngIf="item?.is_iocaine" [title]="'TASK.TITLE_ACTION_IOCAINE' | tgTranslate">
+                    <tg-svg svg-icon="icon-iocaine"></tg-svg>
+                </div>
+            </div>
+
+            <div class="user-list-name" *ngIf="fullNameVisible">
+                <span class="assigned-name" *ngIf="!isEditable">{{ fullName }}</span>
+
+                <a
+                    class="users-dropdown user-assigned"
+                    [title]="'COMMON.ASSIGNED_TO.TITLE_ACTION_EDIT_ASSIGNMENT' | tgTranslate"
+                    [class.editable]="isEditable"
+                    *ngIf="isEditable"
+                    href=""
+                    (click)="openUsersDropdown($event)"
+                >
+                    <span class="assigned-name">
+                        <span *ngIf="fullNameVisible">{{ fullName }}</span>
+                    </span>
+                </a>
+                <span *ngIf="isEditable && isUnassigned">
+                    <span>&nbsp;</span>
+                    <span class="read-only">{{ "COMMON.OR" | tgTranslate }}</span>
+                    <a class="self-assign" href="#" (click)="selfAssign(); $event.preventDefault()">
+                        <span>{{ "COMMON.ASSIGNED_TO.SELF" | tgTranslate }}</span>
+                    </a>
+                </span>
+            </div>
+
+            <tg-svg
+                class="remove-user"
+                *ngIf="isEditable && !isUnassigned"
+                svg-icon="icon-close"
+                [title]="'COMMON.ASSIGNED_TO.DELETE_ASSIGNMENT' | tgTranslate"
+                (click)="unassign()"
+            ></tg-svg>
+        </div>
+    </div>
+
+    <div class="pop-users popover" (click)="$event.stopPropagation()">
+        <input
+            class="users-search"
+            type="text"
+            [attr.placeholder]="'LIGHTBOX.ASSIGNED_TO.SEARCH' | tgTranslate"
+            [(ngModel)]="usersSearch"
+            (ngModelChange)="onSearchChange()"
+        />
+        <a
+            class="user-list-single"
+            *ngFor="let user of users"
+            href=""
+            [title]="user.full_name_display"
+            (click)="selectUser(user); $event.preventDefault()"
+        >
+            <img class="user-list-avatar" [style.background]="user.avatar?.bg" [src]="user.avatar?.url" />
+            <span class="user-list-name" [title]="user.full_name_display">{{ user.full_name_display }}</span>
+        </a>
+        <div class="show-more" *ngIf="showMore">
+            <span>{{ "COMMON.ASSIGNED_TO.TOO_MANY" | tgTranslate }}</span>
+        </div>
+    </div>
+</div>

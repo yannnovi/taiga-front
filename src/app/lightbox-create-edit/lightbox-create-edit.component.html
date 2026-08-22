@@ -1,0 +1,247 @@
+<a class="close" href="" [title]="'COMMON.CLOSE' | tgTranslate" (click)="checkClose(); $event.preventDefault()">
+    <tg-svg svg-icon="icon-close"></tg-svg>
+</a>
+
+<form *ngIf="lightboxOpen" (ngSubmit)="submit()" (keydown.escape)="checkClose()">
+    <h2 class="title" [ngSwitch]="mode">
+        <span *ngSwitchCase="'new'">{{ ("LIGHTBOX.CREATE_EDIT.NEW_" + translationID) | tgTranslate }}</span>
+        <span *ngSwitchCase="'edit'">{{ ("LIGHTBOX.CREATE_EDIT.EDIT_" + translationID) | tgTranslate }}</span>
+        <span *ngSwitchCase="'add-existing'">{{ ("LIGHTBOX.CREATE_EDIT.ADD_EXISTING_" + translationID) | tgTranslate:{targetName: targetName} }}</span>
+    </h2>
+
+    <div class="button-group" *ngIf="getOrCreate">
+        <div class="button-group-single" (click)="setMode('add-existing')">
+            <input type="radio" name="related-with-selector" id="add-existing" value="add-existing" [(ngModel)]="mode" [ngModelOptions]="{standalone: true}" />
+            <label class="e2e-existing-item-label" for="add-existing">
+                <span class="name">{{ ("LIGHTBOX.CREATE_EDIT.EXISTING_" + translationID) | tgTranslate }}</span>
+            </label>
+        </div>
+
+        <div class="button-group-single" (click)="setMode('new')">
+            <input type="radio" name="related-with-selector" id="new" value="new" [(ngModel)]="mode" [ngModelOptions]="{standalone: true}" />
+            <label class="e2e-new-item-label" for="new">
+                <span class="name">{{ ("LIGHTBOX.CREATE_EDIT.NEW_" + translationID) | tgTranslate }}</span>
+            </label>
+        </div>
+    </div>
+
+    <div *ngIf="mode === 'add-existing'">
+        <div class="existing-item-wrapper">
+            <label>{{ ("LIGHTBOX.CREATE_EDIT.CHOOSE_EXISTING_" + translationID) | tgTranslate }}</label>
+            <input
+                type="text"
+                id="items-filter"
+                [attr.placeholder]="('LIGHTBOX.CREATE_EDIT.FILTER_' + translationIDPlural) | tgTranslate"
+                [(ngModel)]="existingFilterText"
+                [ngModelOptions]="{standalone: true}"
+            />
+            <ul>
+                <li
+                    class="choice"
+                    *ngFor="let item of existingItemsFiltered"
+                    [class.selected]="item === selectedExistingItem"
+                    [class.disabled]="isDisabledExisting(item)"
+                    (click)="selectExistingItem(item)"
+                >
+                    #{{ itemProp(item, "ref") }} {{ itemProp(item, "subject") }}
+                    <span *ngIf="itemProp(item, 'milestone')">{{ milestonesById[itemProp(item, 'milestone')]?.name }}</span>
+                </li>
+                <li *ngIf="!existingItemsFiltered.length" class="no-stories-found">
+                    {{ "COMMON.NO_ITEMS_FOUND" | tgTranslate }}
+                </li>
+            </ul>
+        </div>
+
+        <button
+            class="btn-big add-existing-button"
+            type="button"
+            [disabled]="!selectedExistingItem || isDisabledExisting(selectedExistingItem)"
+            (click)="addExistingToSprint()"
+        >{{ ("LIGHTBOX.CREATE_EDIT.ADD_" + translationID) | tgTranslate }}</button>
+    </div>
+
+    <div *ngIf="mode !== 'add-existing'">
+        <div class="form-wrapper">
+            <div class="main">
+                <fieldset>
+                    <input
+                        type="text"
+                        name="subject"
+                        [(ngModel)]="obj.subject"
+                        [ngModelOptions]="{standalone: true, updateOn: 'blur'}"
+                        tgAutoSelect
+                        [attr.placeholder]="'COMMON.FIELDS.SUBJECT' | tgTranslate"
+                        maxlength="500"
+                    />
+                </fieldset>
+
+                <fieldset>
+                    <tg-tag-line-common
+                        class="tags-block"
+                        *ngIf="project"
+                        [project]="project"
+                        [tags]="obj.tags"
+                        [permissions]="'add_' + objType"
+                        (addTag)="addTag($event)"
+                        (deleteTag)="deleteTag($event)"
+                    ></tg-tag-line-common>
+                </fieldset>
+
+                <fieldset>
+                    <textarea
+                        class="description"
+                        rows="7"
+                        name="description"
+                        [(ngModel)]="obj.description"
+                        [ngModelOptions]="{standalone: true, updateOn: 'blur'}"
+                        [attr.placeholder]="('LIGHTBOX.CREATE_EDIT.' + translationID + '_PLACEHOLDER_DESCRIPTION') | tgTranslate"
+                    ></textarea>
+                </fieldset>
+                <fieldset>
+                    <section></section>
+                    <tg-attachments-simple
+                        [attachments]="attachments"
+                        (add)="addAttachment($event.attachment)"
+                        (delete)="deleteAttachment($event.attachment)"
+                    ></tg-attachments-simple>
+                </fieldset>
+            </div>
+
+            <div class="sidebar ticket-data">
+                <fieldset class="status-button">
+                    <div class="status-dropdown editable" [style.background-color]="selectedStatus?.color" (click)="toggleStatusSelector()">
+                        <span class="status-text">{{ selectedStatus?.name }}</span>
+                        <tg-svg svg-icon="icon-arrow-down"></tg-svg>
+                    </div>
+
+                    <ul class="pop-status popover" [style.display]="displayStatusSelector ? 'block' : 'none'">
+                        <li *ngFor="let s of statusList">
+                            <a href="" [title]="s.name" (click)="selectStatus(s.id); $event.preventDefault()">
+                                <span class="item-text">{{ s.name }}</span>
+                            </a>
+                        </li>
+                    </ul>
+                </fieldset>
+
+                <ng-container [ngSwitch]="objType">
+                    <div *ngSwitchCase="'issue'">
+                        <section class="ticket-assigned-to">
+                            <tg-assigned-to-inline [item]="obj" [usersById]="usersById" [requiredPerm]="'modify_' + objType" [project]="project"></tg-assigned-to-inline>
+                        </section>
+                        <div class="ticket-data-container">
+                            <tg-issue-type-button class="ticket-status" [item]="obj" [typeById]="typeById" [typeList]="typeList" [project]="project"></tg-issue-type-button>
+                            <tg-issue-severity-button class="ticket-status" [item]="obj" [severityById]="severityById" [severityList]="severityList" [project]="project"></tg-issue-severity-button>
+                            <tg-issue-priority-button class="ticket-status" [item]="obj" [priorityById]="priorityById" [priorityList]="priorityList" [project]="project"></tg-issue-priority-button>
+                        </div>
+                        <div class="ticket-detail-settings">
+                            <tg-due-date-popover [(dueDate)]="obj.due_date" [isClosed]="obj.is_closed" [item]="obj" objType="issue" format="button"></tg-due-date-popover>
+                            <button
+                                type="button"
+                                class="btn-icon is-blocked"
+                                [class.item-unblock]="obj.is_blocked"
+                                [class.item-block]="!obj.is_blocked"
+                                [title]="'COMMON.BLOCK_TITLE' | tgTranslate"
+                                (click)="toggleIsBlocked()"
+                            >
+                                <tg-svg svg-icon="icon-lock"></tg-svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div *ngSwitchCase="'task'">
+                        <section class="ticket-assigned-to">
+                            <tg-assigned-to-inline [item]="obj" [usersById]="usersById" [requiredPerm]="'modify_' + objType" [project]="project"></tg-assigned-to-inline>
+                        </section>
+                        <div class="ticket-detail-settings">
+                            <tg-due-date-popover [(dueDate)]="obj.due_date" [isClosed]="obj.is_closed" [item]="obj" objType="task" format="button"></tg-due-date-popover>
+                            <button type="button" class="iocaine" [class.active]="obj.is_iocaine" (click)="toggleIocaine()">
+                                <tg-svg svg-icon="icon-iocaine"></tg-svg>
+                            </button>
+                            <button
+                                type="button"
+                                class="btn-icon is-blocked"
+                                [class.item-unblock]="obj.is_blocked"
+                                [class.item-block]="!obj.is_blocked"
+                                [title]="'COMMON.BLOCK_TITLE' | tgTranslate"
+                                (click)="toggleIsBlocked()"
+                            >
+                                <tg-svg svg-icon="icon-lock"></tg-svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div *ngSwitchCase="'us'">
+                        <section class="creation-position" *ngIf="mode === 'new'">
+                            <label class="custom-radio">
+                                <input type="radio" [(ngModel)]="obj.us_position" [ngModelOptions]="{standalone: true}" value="bottom" />
+                                <span class="radio-control"></span>
+                                <span class="radio-label">{{ "LIGHTBOX.CREATE_EDIT.CREATE_BOTTOM" | tgTranslate }}</span>
+                            </label>
+                            <label class="custom-radio">
+                                <input type="radio" [(ngModel)]="obj.us_position" [ngModelOptions]="{standalone: true}" value="top" />
+                                <span class="radio-control"></span>
+                                <span class="radio-label">{{ "LIGHTBOX.CREATE_EDIT.CREATE_TOP" | tgTranslate }}</span>
+                            </label>
+                        </section>
+
+                        <section class="ticket-assigned-to multiple-assign">
+                            <tg-assigned-users-inline [item]="obj" [usersById]="usersById"></tg-assigned-users-inline>
+                        </section>
+
+                        <div class="ticket-estimation">
+                            <tg-lb-us-estimation [item]="obj" [project]="project"></tg-lb-us-estimation>
+                        </div>
+
+                        <div class="ticket-detail-settings">
+                            <tg-due-date-popover [(dueDate)]="obj.due_date" [isClosed]="obj.is_closed" [item]="obj" objType="us" format="button"></tg-due-date-popover>
+                            <button
+                                type="button"
+                                class="btn-icon team-requirement"
+                                [class.active]="isTeamRequirement()"
+                                [title]="'COMMON.TEAM_REQUIREMENT' | tgTranslate"
+                                (click)="toggleTeamRequirement()"
+                            >
+                                <tg-svg svg-icon="icon-team-requirement"></tg-svg>
+                            </button>
+                            <button
+                                type="button"
+                                class="btn-icon client-requirement"
+                                [class.active]="isClientRequirement()"
+                                [title]="'COMMON.CLIENT_REQUIREMENT' | tgTranslate"
+                                (click)="toggleClientRequirement()"
+                            >
+                                <tg-svg svg-icon="icon-client-requirement"></tg-svg>
+                            </button>
+                            <button
+                                type="button"
+                                class="btn-icon is-blocked"
+                                [class.item-unblock]="obj.is_blocked"
+                                [class.item-block]="!obj.is_blocked"
+                                [title]="'COMMON.BLOCK_TITLE' | tgTranslate"
+                                (click)="toggleIsBlocked()"
+                            >
+                                <tg-svg svg-icon="icon-lock"></tg-svg>
+                            </button>
+                        </div>
+                    </div>
+                </ng-container>
+
+                <fieldset class="blocked-note" [class.hidden]="!obj.is_blocked">
+                    <input
+                        type="text"
+                        name="blocked_note"
+                        [(ngModel)]="obj.blocked_note"
+                        [ngModelOptions]="{standalone: true}"
+                        [attr.placeholder]="'COMMON.BLOCKED_NOTE' | tgTranslate"
+                    />
+                </fieldset>
+            </div>
+        </div>
+        <div class="btn-container">
+            <button id="submitButton" class="btn-big add-item" variant="primary" type="submit" [disabled]="submitting">
+                <span *ngIf="mode === 'new'">{{ "COMMON.CREATE" | tgTranslate }}</span>
+                <span *ngIf="mode === 'edit'">{{ "COMMON.SAVE" | tgTranslate }}</span>
+            </button>
+        </div>
+    </div>
+</form>

@@ -181,6 +181,23 @@ import { CustomAttributesValuesComponent } from "./custom-attributes-values/cust
 import "./custom-attributes-values/register-legacy";
 import { CustomAttributeValueComponent } from "./custom-attribute-value/custom-attribute-value.component";
 import "./custom-attribute-value/register-legacy";
+import { AssignedToInlineComponent } from "./assigned-to-inline/assigned-to-inline.component";
+import "./assigned-to-inline/register-legacy";
+import { AssignedUsersInlineComponent } from "./assigned-users-inline/assigned-users-inline.component";
+import "./assigned-users-inline/register-legacy";
+import { IssueTypeButtonComponent } from "./issue-type-button/issue-type-button.component";
+import "./issue-type-button/register-legacy";
+import { IssueSeverityButtonComponent } from "./issue-severity-button/issue-severity-button.component";
+import "./issue-severity-button/register-legacy";
+import { IssuePriorityButtonComponent } from "./issue-priority-button/issue-priority-button.component";
+import "./issue-priority-button/register-legacy";
+import { DueDatePopoverComponent } from "./due-date-popover/due-date-popover.component";
+import "./due-date-popover/register-legacy";
+import { LbUsEstimationComponent } from "./lb-us-estimation/lb-us-estimation.component";
+import "./lb-us-estimation/register-legacy";
+import { AutoSelectDirective } from "./auto-select/auto-select.directive";
+import { LightboxCreateEditComponent } from "./lightbox-create-edit/lightbox-create-edit.component";
+import "./lightbox-create-edit/register-legacy";
 import {
     AJS_APP_META_SERVICE,
     AJS_AVATAR_SERVICE,
@@ -229,6 +246,7 @@ import {
     AJS_ANALYTICS,
     AJS_ATTACHMENTS_FULL_SERVICE,
     AJS_SELECTED_TEXT,
+    AJS_USER_LIST_SERVICE,
     upgradedService,
 } from "./shared/ajs-tokens";
 import { TgTranslatePipe } from "./shared/translate.pipe";
@@ -340,6 +358,15 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         LightboxRelateToEpicComponent,
         CustomAttributesValuesComponent,
         CustomAttributeValueComponent,
+        AssignedToInlineComponent,
+        AssignedUsersInlineComponent,
+        IssueTypeButtonComponent,
+        IssueSeverityButtonComponent,
+        IssuePriorityButtonComponent,
+        DueDatePopoverComponent,
+        LbUsEstimationComponent,
+        AutoSelectDirective,
+        LightboxCreateEditComponent,
         TgTranslatePipe,
         TgEmojifyPipe,
         TgMomentFormatPipe,
@@ -395,6 +422,7 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         upgradedService(AJS_ANALYTICS, "$tgAnalytics"),
         upgradedService(AJS_ATTACHMENTS_FULL_SERVICE, "tgAttachmentsFullService"),
         upgradedService(AJS_SELECTED_TEXT, "$selectedText"),
+        upgradedService(AJS_USER_LIST_SERVICE, "tgUserListService"),
     ],
 })
 export class AppModule implements DoBootstrap {

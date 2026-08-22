@@ -12,58 +12,6 @@ groupBy = @.taiga.groupBy
 module = angular.module("taigaCommon")
 
 #############################################################################
-## User story estimation directive (for Lightboxes)
-#############################################################################
-
-LbUsEstimationDirective = ($tgEstimationsService, $rootScope, $repo, $template, $compile) ->
-    # Display the points of a US and you can edit it.
-    #
-    # Example:
-    #     tg-lb-us-estimation-progress-bar(ng-model="us")
-    #
-    # Requirements:
-    #   - Us object (ng-model)
-    #   - scope.project object
-
-    link = ($scope, $el, $attrs, $model) ->
-        $scope.$watch $attrs.ngModel, (us) ->
-            if us
-                estimationProcess = $tgEstimationsService.create($el, us, $scope.project)
-                estimationProcess.onSelectedPointForRole = (roleId, pointId, points) ->
-                    us.points = points
-                    estimationProcess.render()
-
-                    $scope.$apply ->
-                        $model.$setViewValue(us)
-
-                estimationProcess.render = () ->
-                    ctx = {
-                        totalPoints: @calculateTotalPoints()
-                        roles: @calculateRoles()
-                        editable: @isEditable
-                        loading: false
-                    }
-                    mainTemplate = "common/estimation/us-estimation-points-per-role.html"
-                    template = $template.get(mainTemplate, true)
-                    html = template(ctx)
-                    html = $compile(html)($scope)
-                    @$el.html(html)
-
-                estimationProcess.render()
-        $scope.$on "$destroy", ->
-            $el.off()
-
-    return {
-        link: link
-        restrict: "EA"
-        require: "ngModel"
-    }
-
-module.directive("tgLbUsEstimation", ["$tgEstimationsService", "$rootScope", "$tgRepo", "$tgTemplate",
-                                      "$compile", LbUsEstimationDirective])
-
-
-#############################################################################
 ## User story estimation directive
 #############################################################################
 

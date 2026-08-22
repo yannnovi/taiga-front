@@ -1,0 +1,13 @@
+<div class="priority-data" [class.clickable]="editable" (click)="openPopover($event)">
+    <div class="label level-name">{{ "COMMON.FIELDS.PRIORITY" | tgTranslate }}</div>
+    <div class="level-data">
+        <span class="label priority-priority">{{ priority?.name }}</span>
+        <span class="level-color" [style.background-color]="priority?.color"></span>
+    </div>
+
+    <ul class="popover pop-priority">
+        <li *ngFor="let pr of priorityList">
+            <a class="priority" href="" [title]="pr.name" (click)="save(pr.id, $event)">{{ pr.name }}</a>
+        </li>
+    </ul>
+</div>

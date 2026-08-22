@@ -90,7 +90,7 @@ div.wrapper(
                 on-reorder="ctrl.moveUs(null, $event.usList, $event.newStatusId, $event.newSwimlaneId, $event.index, $event.previousCard, $event.nextCard)"
             )
 
-    div.lightbox.lightbox-generic-form.lightbox-create-edit(tg-lb-create-edit)
+    tg-lb-create-edit.lightbox.lightbox-generic-form.lightbox-create-edit(bind-users-by-id="usersById" bind-project="project")
 
     tg-lb-create-bulk-userstories.lightbox.lightbox-generic-bulk(
         bind-project="project"

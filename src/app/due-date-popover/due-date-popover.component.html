@@ -1,0 +1,25 @@
+<div class="due-date-button-wrapper" *ngIf="visible()">
+    <button
+        class="btn-icon due-date-button is-editable date-picker-popover-trigger"
+        [class.date-set]="color()"
+        [disabled]="disabled()"
+        [style.background]="color()"
+        [attr.title]="title()"
+        (click)="toggle($event)"
+    >
+        <tg-svg svg-icon="icon-clock"></tg-svg>
+    </button>
+    <div class="date-picker-popover" [hidden]="!open">
+        <div class="date-picker-container"></div>
+        <div class="date-picker-popover-footer" *ngIf="dueDate">
+            <a
+                class="date-picker-clean"
+                href=""
+                [title]="'LIGHTBOX.SET_DUE_DATE.TITLE_ACTION_DELETE_DUE_DATE' | tgTranslate"
+                (click)="clean($event)"
+            >
+                <tg-svg svg-icon="icon-trash"></tg-svg>
+            </a>
+        </div>
+    </div>
+</div>

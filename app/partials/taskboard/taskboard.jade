@@ -116,7 +116,7 @@ div.wrapper(
                         on-toggle-tags="ctrl.toggleTags(tags)"
                     )
 
-    div.lightbox.lightbox-generic-form.lightbox-create-edit(tg-lb-create-edit)
+    tg-lb-create-edit.lightbox.lightbox-generic-form.lightbox-create-edit(bind-users-by-id="usersById" bind-project="project")
 
     tg-lb-create-bulk-tasks.lightbox.lightbox-generic-bulk.lightbox-task-bulk(bind-project-id="projectId")
 

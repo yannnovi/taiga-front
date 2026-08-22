@@ -1,0 +1,35 @@
+<div class="ticket-section-label">
+    <span>{{ "COMMON.FIELDS.POINTS" | tgTranslate }}</span>
+</div>
+
+<ul class="points-per-role">
+    <li
+        class="ticket-role-points total"
+        *ngFor="let role of roles; trackBy: trackByRoleId"
+        [class.clickable]="isEditable"
+        [attr.data-role-id]="role.id"
+        [title]="role.name"
+        (click)="openRolePopover($event)"
+    >
+        <span class="role">{{ role.name }}</span>
+        <span class="points">{{ role.points }}</span>
+
+        <ul class="popover pop-points-open" *ngIf="popoverMode === 'points' && popoverRoleId == role.id">
+            <li *ngFor="let point of pointsForRole; trackBy: trackByPointId">
+                <a
+                    class="point"
+                    [class.active]="!point.selected"
+                    href=""
+                    [title]="point.name"
+                    (click)="selectPoint(point.id, $event)"
+                >
+                    <span class="item-text">{{ point.name }}</span>
+                </a>
+            </li>
+        </ul>
+    </li>
+    <li class="ticket-role-points total">
+        <span class="role">{{ "US.TOTAL_POINTS" | tgTranslate }}</span>
+        <span class="points">{{ totalPoints }}</span>
+    </li>
+</ul>

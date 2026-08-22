@@ -2068,6 +2068,103 @@ vérifiés (champ simple, pas de widget tiers).
 
 Build Angular (`strictTemplates`) et Karma (361 specs) restent verts.
 
+### Sous-projet 4d : `tgLbCreateEdit`, le plus gros de tout le sous-projet checksley
+
+La lightbox générique de création/édition US/Task/Issue, partagée par 4 pages (backlog,
+taskboard, issues, kanban), avec 3 modes (`new`/`edit`/`add-existing`) et 3 schémas d'objet
+différents. Explicitement traité comme son propre mini-projet dans la feuille de route -
+confirmé à raison : au-delà de la lightbox elle-même, elle dépendait de **7 autres
+directives AngularJS ambiantes** sans équivalent Angular, dont une seule
+(`tgDueDatePopover`) avait un vrai scope isolé. Décision actée avec l'utilisateur : les
+réécrire nativement plutôt que les envelopper (`UpgradeComponent` ne fonctionne que sur un
+scope isolé - 6 des 7 n'en avaient pas, certaines n'avaient même pas de template
+déclaratif). Composants créés, chacun sous son propre nom original :
+
+- **`AssignedToInlineComponent`** (`tg-assigned-to-inline`) et **`AssignedUsersInlineComponent`**
+  (`tg-assigned-users-inline`) - avatar(s) assigné(s) + popover de recherche/sélection.
+  Aucun des deux ne persiste quoi que ce soit lui-même dans l'original (mutation directe du
+  `ngModel`, sauvegarde laissée à l'appelant) - reproduit à l'identique, pas de save
+  ajouté. Un quirk de l'original preservé tel quel dans `AssignedUsersInlineComponent` :
+  une variable locale `assigned_to` lue depuis `item.assigned_to` au watch n'était jamais
+  réellement utilisée (`currentAssignedTo`, la vraie variable lue par `applyToModel`,
+  n'était jamais initialisée depuis elle) - un bug préexistant, pas une conception
+  délibérée, mais reproduit puisqu'il ne casse rien d'observable en pratique.
+- **`IssueTypeButtonComponent`/`IssueSeverityButtonComponent`/`IssuePriorityButtonComponent`**
+  (`tg-issue-type-button`/`tg-issue-severity-button`/`tg-issue-priority-button`) - popovers
+  de sélection, structurellement identiques dans l'original (3 directives dupliquées, pas
+  factorisées là non plus). Seul le mode `not-auto-save` (celui utilisé par `tg-lb-create-edit`)
+  est porté - l'autre mode de l'original persiste directement via `$tgQueueModelTransformation`,
+  un service à état partagé qui exige qu'un contrôleur de page appelle `setObject(scope,
+  prop)` au préalable (fait par `IssueDetailController`, hors périmètre) ; ce mode n'a
+  aucun appelant après ce sous-projet, donc pas porté à l'aveugle. **`issues-detail.jade`**
+  (page encore AngularJS, seul autre appelant de ces 3 directives) mis à jour vers la
+  convention `bind-x` en conséquence (pas migré dans son ensemble, juste ces 3 sites
+  d'appel).
+- **`DueDatePopoverComponent`** (`tg-due-date-popover`) - Pikaday lié en mode `bound` +
+  popover. `notAutoSave` (un binding de l'original) abandonné : aucune méthode de
+  `tgDueDateService` ne le lit, et le gestionnaire de clic de l'original n'appelle jamais
+  `DueDateCtrl.setDueDate()` (le seul endroit où ce binding aurait compté, puisque c'est ce
+  qui est transmis à la lightbox imbriquée `tg-lb-set-due-date`) - cette popover ne fait que
+  basculer son propre Pikaday, elle n'ouvre jamais cette lightbox. `tg-lb-set-due-date`
+  reste donc entièrement hors périmètre, rien ici ne l'atteint.
+- **`LbUsEstimationComponent`** (`tg-lb-us-estimation`) - variante "pour lightbox" (pas de
+  sauvegarde automatique) du même patron popover rôles→points déjà réutilisé pour
+  `BacklogRowComponent`. **Bug trouvé et corrigé** : le `*ngFor` sur `roles` n'avait pas de
+  `trackBy`, et le getter `roles` retourne un tableau d'objets neufs à chaque cycle de
+  détection de changement - Angular détruisait/recréait les `<li>` à CHAQUE clic (identité
+  d'objet différente), rendant la référence DOM capturée par le gestionnaire de clic
+  périmée avant que `requestAnimationFrame` n'ouvre le popover (`$el.offset()` sur une
+  sélection jQuery vide renvoie `undefined`, d'où `Cannot read properties of undefined
+  (reading 'top')`). Corrigé avec `trackBy: trackByRoleId`/`trackByPointId`.
+- **`tg-auto-select`** : pas une directive AngularJS enveloppée, mais une TOUTE NOUVELLE
+  directive Angular du même nom (`AutoSelectDirective`, `[tgAutoSelect]`) - l'originale
+  AngularJS reste active et inchangée pour ses deux autres appelants non migrés
+  (`create-epic.jade`, `admin/project-tags.jade`).
+- **`LightboxCreateEditComponent`** (`tg-lb-create-edit`) lui-même - `@Input() usersById`/
+  `project` (l'original les lisait sur le scope ambiant partagé avec
+  `BacklogController`/etc. ; `genericform:edit` en particulier ne transmet jamais `project`
+  dans son broadcast, contrairement à `:new`/`:new-or-existing` - sans ce binding, l'édition
+  plantait). `tg-search-list` (le sélecteur "épingler une issue existante") n'est **pas**
+  reporté comme composant réutilisable séparé : il sert aussi `assign-sprint-to-issue-button.jade`
+  avec un `itemType` différent ("sprint"), hors périmètre - seul le cas "issue existante"
+  est réimplémenté ici, directement dans ce composant. `tg-blocking-message-input` (utilisé
+  une seule fois) est inliné directement dans le template plutôt que porté en composant à
+  part.
+
+**Bug trouvé lors de la vérification du mode "épingler une issue existante"** : les objets
+retournés par `$tgResources.issues.listInAllProjects(...)` ne sont **pas** des Immutable
+Records (`.get()` inexistant) - contrairement à `tgResources.epics.listInAllProjects(...)`
+(sans `$`, utilisé par `tgLbRelatetoepic`) qui EN sont. Confirmé par l'original lui-même :
+`isDisabledExisting`/`tg-search-list` utilisaient déjà l'accès par propriété brute
+(`item[relatedField]`), jamais `.get()`. Corrigé avec un helper `itemProp(item, key)`
+tolérant les deux formes.
+
+**Bug préexistant trouvé et corrigé (hors périmètre direct, mais bloquait la vérification)** :
+`TaskboardTableComponent.ngOnInit` (composant migré bien avant cette session) lisait
+`this.project.my_permissions` sans garde - `project` n'est pas toujours prêt au premier
+rendu. Pire que le bruit console déjà documenté pour `VoteButtonComponent`/
+`TaskboardTableComponent` plus haut : cette exception avortait le cycle de détection de
+changement en cours, ce qui empêchait aussi les composants Angular **frères** sur la même
+page de terminer leur rendu (une nouvelle lightbox `tg-lb-create-edit` ouverte restait
+invisible). Corrigé avec un garde `*ngIf="project"` au niveau racine du template plus une
+ré-résolution défensive (`initFromProject`, retentée depuis `ngOnChanges`) et des méthodes
+de calcul de largeur tolérantes aux `@Input()` pas encore peuplés.
+
+Vérifié en navigateur réel avec de vrais clics (le seul moyen fiable de déclencher les
+broadcasts `genericform:*` dans cet environnement de test - un `$rootScope.$broadcast(...)`
+direct via CDP contourne la zone Angular, laissant le composant à jour en interne mais le
+template non re-rendu, même piège déjà rencontré pour `tgLbCreateEditSprint`) :
+création US complète (statut, tags, description, pièce jointe, position backlog,
+assignation multiple, estimation par rôle avec vrai popover de points, échéance,
+team/client-requirement, blocage), création task (assignation simple, iocaine, échéance),
+création issue (type/sévérité/priorité avec popovers, assignation, échéance), édition US
+(pré-remplissage complet vérifié : sujet, tags, description, pièce jointe, statut,
+assignation, points par rôle, sauvegarde partielle via `PATCH` avec uniquement les champs
+modifiés), et le mode "issue existante" (liste, sélection, `PATCH` avec le bon
+`milestone`). Zéro erreur console sur tous les flux après les correctifs ci-dessus.
+
+Build Angular (`strictTemplates`) et Karma (361 specs) restent verts.
+
 ## Patron à suivre pour migrer un module suivant
 
 1. Repérer ses dépendances réelles (services/directives utilisés *et* utilisateurs) avant

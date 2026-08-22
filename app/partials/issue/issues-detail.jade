@@ -113,18 +113,27 @@ div.wrapper(
             )
 
         section.ticket-section.ticket-data-container
-            div.ticket-status(
-                tg-issue-type-button
-                ng-model="issue"
-            )
-            div.ticket-status(
-                tg-issue-severity-button
-                ng-model="issue"
-            )
-            div.ticket-status(
-                tg-issue-priority-button
-                ng-model="issue"
-            )
+            div.ticket-status
+                tg-issue-type-button(
+                    bind-item="issue"
+                    bind-type-by-id="typeById"
+                    bind-type-list="typeList"
+                    bind-project="project"
+                )
+            div.ticket-status
+                tg-issue-severity-button(
+                    bind-item="issue"
+                    bind-severity-by-id="severityById"
+                    bind-severity-list="severityList"
+                    bind-project="project"
+                )
+            div.ticket-status
+                tg-issue-priority-button(
+                    bind-item="issue"
+                    bind-priority-by-id="priorityById"
+                    bind-priority-list="priorityList"
+                    bind-project="project"
+                )
 
         section.ticket-section(
             tg-assigned-to

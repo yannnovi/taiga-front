@@ -186,22 +186,27 @@ tests), pas un "module de plus". À choisir un par un selon la priorité produit
    globale portée** (`src/app/shared/checksley-validators.ts` +
    `form-error-message.service.ts`, `linewidth`/`pikaday`/`url` + le registre de messages
    traduits `%s` - checksley lui-même reste actif pour tout ce qui n'est pas encore migré).
-   **Huit formulaires/widgets migrés : `tgLbFeedback`, `tgLbCreateBulkIssues`,
+   **Neuf formulaires/widgets migrés : `tgLbFeedback`, `tgLbCreateBulkIssues`,
    `tgLbCreateBulkTasks`, `tgSearchBox`, `tgLbCreateEditSprint`, `tgLbCreateBulkUserstories`,
-   `tgLbRelatetoepic`, `tgCustomAttributeValue`/`tgCustomAttributesValues`** - vérifiés en
-   navigateur réel (validation + soumission + fermeture ; sprint : création/édition/
-   suppression avec Pikaday ; relate-to-epic : épique existante et nouvelle épique ;
-   custom-attributes : les 8 types de champ, richtext avec le vrai CKEditor - première
-   vérification navigateur de `TgWysiwygUpgradedDirective`, 3 bugs trouvés et corrigés dans
-   `tgWysiwyg`/le nouveau composant). Bugs de production trouvés et corrigés au passage :
-   `MoveToSprintComponent` (lifecycle), un bug de propagation `$scope.$broadcast` vs
-   `$rootScope.$broadcast` dans `userstories/detail.coffee`, un bug d'accès Immutable.js
-   (`.get('x')` vs `.x`), et les 3 bugs `tgWysiwyg`/`UpgradeComponent` ci-dessus.
-   `TaskboardTableComponent` et `VoteButtonComponent` (préexistants, hors périmètre) restent
-   documentés mais non corrigés. Détail dans `MIGRATION.md`. 6 fichiers restants, dans
-   l'ordre déjà scopé : `tgLbCreateEdit` (lightbox générique US/Task/Issue, son propre
-   mini-projet) → pages admin (`admin/project-values.coffee` nécessite un pattern
-   `FormArray`, formulaires répétés par
+   `tgLbRelatetoepic`, `tgCustomAttributeValue`/`tgCustomAttributesValues`, `tgLbCreateEdit`**
+   - vérifiés en navigateur réel (validation + soumission + fermeture ; sprint :
+   création/édition/suppression avec Pikaday ; relate-to-epic : épique existante et
+   nouvelle épique ; custom-attributes : les 8 types de champ, richtext avec le vrai
+   CKEditor ; **`tgLbCreateEdit`** : création/édition US/Task/Issue avec tous les widgets
+   annexes, mode "épingler une issue existante"). `tgLbCreateEdit`, le plus gros de tout ce
+   sous-projet checksley, dépendait de 7 directives AngularJS ambiantes sans équivalent
+   Angular - toutes réécrites nativement (assigned-to/assigned-users inline, type/severity/
+   priority buttons, due-date popover, estimation par rôle), voir `MIGRATION.md` pour le
+   détail complet. Bugs de production trouvés et corrigés au passage : `MoveToSprintComponent`
+   (lifecycle), un bug de propagation `$scope.$broadcast` vs `$rootScope.$broadcast` dans
+   `userstories/detail.coffee`, un bug d'accès Immutable.js (`.get('x')` vs `.x`, deux fois -
+   custom-attributes et create-edit), 3 bugs `tgWysiwyg`/`UpgradeComponent`, un bug de
+   `trackBy` manquant (estimation par rôle), et **`TaskboardTableComponent`** (préexistant,
+   trouvé et corrigé cette fois - son crash sur `project` non chargé avortait le rendu des
+   composants Angular frères sur la même page, pas juste du bruit console).
+   `VoteButtonComponent` (préexistant, hors périmètre) reste documenté mais non corrigé.
+   Détail dans `MIGRATION.md`. 5 fichiers restants, dans l'ordre déjà scopé : pages admin
+   (`admin/project-values.coffee` nécessite un pattern `FormArray`, formulaires répétés par
    ligne) → `user-settings` → `auth.coffee` (login/register, page d'entrée
    non-authentifiée - en tout dernier, avec le plus de soin). Détail complet dans
    `MIGRATION.md`.

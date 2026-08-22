@@ -41,6 +41,7 @@
 </ng-template>
 
 <div
+    *ngIf="project"
     class="taskboard-table"
     [ngClass]="{'zoom-0': zoomLevel === 0, 'zoom-1': zoomLevel === 1, 'zoom-2': zoomLevel === 2, 'zoom-3': zoomLevel === 3}"
 >
@@ -73,9 +74,9 @@
             <div class="taskboard-table-inner" [style.width.px]="getTaskboardWidth()" cdkDropListGroup>
                 <div
                     class="taskboard-row"
-                    *ngIf="userstories.length === 0"
+                    *ngIf="!userstories?.length"
                     [class.row-fold]="isUsFolded(null)"
-                    [class.empty]="!(tasksByUs.get(null)?.size)"
+                    [class.empty]="!(tasksByUs?.get(null)?.size)"
                 >
                     <div class="taskboard-row-title-box taskboard-column">
                         <div class="card-placeholder" [class.not-found]="notFoundTasks">
@@ -96,7 +97,7 @@
                     *ngFor="let us of userstories"
                     [class.blocked]="us.is_blocked"
                     [class.row-fold]="isUsFolded(us.id)"
-                    [class.empty]="!(tasksByUs.get(us.id)?.size)"
+                    [class.empty]="!(tasksByUs?.get(us.id)?.size)"
                 >
                     <div class="taskboard-row-title-box taskboard-column" [title]="us.blocked_note">
                         <div class="folding-actions" (click)="foldUs(us.id)">
@@ -162,8 +163,8 @@
                         *ngFor="let st of taskStatusList"
                         [class]="'squish-status-' + st.id"
                         [class.column-fold]="statusesFolded[st.id]"
-                        [class.row-max-two]="getTasksForColumn(us.id, st.id).size === 2"
-                        [class.row-max-three]="getTasksForColumn(us.id, st.id).size >= 3"
+                        [class.row-max-two]="getTasksForColumn(us.id, st.id)?.size === 2"
+                        [class.row-max-three]="getTasksForColumn(us.id, st.id)?.size >= 3"
                         cdkDropList
                         [cdkDropListDisabled]="sortingDisabled"
                         [cdkDropListData]="{usId: us.id, statusId: st.id}"
@@ -198,7 +199,7 @@
                 <div
                     class="taskboard-row"
                     [class.row-fold]="isUsFolded(null)"
-                    [class.empty]="!(tasksByUs.get(null)?.size)"
+                    [class.empty]="!(tasksByUs?.get(null)?.size)"
                 >
                     <div class="taskboard-row-title-box taskboard-column">
                         <div class="folding-actions">

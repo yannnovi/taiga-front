@@ -1,0 +1,15 @@
+<div class="severity-data" [class.clickable]="editable" (click)="openPopover($event)">
+    <div class="label level-name">{{ "COMMON.FIELDS.SEVERITY" | tgTranslate }}</div>
+    <div class="level-data">
+        <span class="label">{{ severity?.name }}</span>
+        <span class="level-color" [style.background-color]="severity?.color"></span>
+    </div>
+
+    <ul class="popover pop-severity">
+        <li *ngFor="let sv of severityList">
+            <a class="severity" href="" [title]="sv.name" (click)="save(sv.id, $event)">
+                <span class="item-text">{{ sv.name }}</span>
+            </a>
+        </li>
+    </ul>
+</div>
