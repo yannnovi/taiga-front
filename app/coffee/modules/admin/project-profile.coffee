@@ -48,7 +48,6 @@ class ProjectProfileController extends mixOf(taiga.Controller, taiga.PageMixin)
                   @appMetaService, @translate, @tgAuth, @currentUserService, @errorHandlingService, @projectService, @model) ->
         @scope.project = {}
 
-        @scope.projectTags = []
         promise = @.loadInitialData()
 
         promise.then =>
@@ -90,9 +89,6 @@ class ProjectProfileController extends mixOf(taiga.Controller, taiga.PageMixin)
         scopeDefer @scope, =>
             @scope.$emit('project:loaded', project)
 
-        @scope.projectTags = _.map @scope.project.tags, (it) =>
-            return [it, @scope.project.tags_colors[it]]
-
         return project
 
     loadInitialData: ->
@@ -101,89 +97,7 @@ class ProjectProfileController extends mixOf(taiga.Controller, taiga.PageMixin)
 
         return @tgAuth.refresh()
 
-    openDeleteLightbox: ->
-        @rootscope.$broadcast("deletelightbox:new", @scope.project)
-
-    addTag: (name, color) ->
-        tags = _.clone(@scope.project.tags)
-
-        tags.push(name)
-
-        @scope.projectTags.push([name, null])
-        @scope.project.tags = tags
-
-    deleteTag: (tag) ->
-        tags = _.clone(@scope.project.tags)
-        _.pull(tags, tag[0])
-        _.remove @scope.projectTags, (it) => it[0] == tag[0]
-
-        @scope.project.tags = tags
-
 module.controller("ProjectProfileController", ProjectProfileController)
-
-
-#############################################################################
-## Project Profile Directive
-#############################################################################
-
-ProjectProfileDirective = ($repo, $confirm, $loading, $navurls, $location, projectService, currentUserService, $analytics) ->
-    link = ($scope, $el, $attrs) ->
-        $ctrl = $el.controller()
-
-        submit = debounce 2000, (event) =>
-            event.preventDefault()
-
-            form = $el.find("form").checksley({"onlyOneErrorElement": true})
-
-            return if not form.validate()
-
-            submitButton = $el.find("button[type=submit]")
-            currentLoading = $loading()
-                .target(submitButton)
-                .start()
-
-            privacyChanged = $scope.project.isAttributeModified("is_private")
-            promise = $repo.save($scope.project)
-            promise.then ->
-                currentLoading.finish()
-                if privacyChanged && $scope.project.is_private
-                    $analytics.trackEvent(
-                        "project-privacy-changed",
-                        "from-public-to-private",
-                        "Change project privacy from public to private",
-                        1
-                    )
-                else if privacyChanged && !$scope.project.is_private
-                    $analytics.trackEvent(
-                        "project-privacy-changed",
-                        "from-private-to-public",
-                        "Change project privacy from private to public",
-                        1
-                    )
-                $confirm.notify("success")
-                newUrl = $navurls.resolve("project-admin-project-profile-details", {
-                    project: $scope.project.slug
-                })
-                $location.path(newUrl)
-
-                projectService.fetchProject().then () =>
-                    $ctrl.loadInitialData()
-
-                currentUserService.loadProjects()
-
-            promise.then null, (data) ->
-                currentLoading.finish()
-                form.setErrors(data)
-                if data._error_message
-                    $confirm.notify("error", data._error_message)
-
-        $el.on "submit", "form", submit
-
-    return {link:link}
-
-module.directive("tgProjectProfile", ["$tgRepo", "$tgConfirm", "$tgLoading", "$tgNavUrls", "$tgLocation",
-                                      "tgProjectService", "tgCurrentUserService", "$tgAnalytics",
-                                      ProjectProfileDirective])
 
 
 #############################################################################
@@ -539,67 +453,6 @@ CsvIssueDirective = ($translate) ->
     }
 
 module.directive("tgCsvIssue", ["$translate", CsvIssueDirective])
-
-
-#############################################################################
-## Project Logo Directive
-#############################################################################
-
-ProjectLogoDirective = ($auth, $model, $rs, $confirm) ->
-    link = ($scope, $el, $attrs) ->
-        showSizeInfo = ->
-            $el.find(".size-info").addClass("active")
-
-        onSuccess = (response) ->
-            project = $model.make_model("projects", response.data)
-            $scope.project = project
-
-            $el.find('.loading-overlay').removeClass('active')
-            $confirm.notify('success')
-
-        onError = (response) ->
-            showSizeInfo() if response.status == 413
-            $el.find('.loading-overlay').removeClass('active')
-            $confirm.notify('error', response.data._error_message)
-
-        # Change photo
-        $el.on "click", ".js-change-logo", ->
-            $el.find("#logo-field").click()
-
-        $el.on "change", "#logo-field", (event) ->
-            if $scope.logoAttachment
-                $el.find('.loading-overlay').addClass("active")
-                $rs.projects.changeLogo($scope.project.id, $scope.logoAttachment).then(onSuccess, onError)
-
-        # Use default photo
-        $el.on "click", "a.js-use-default-logo", (event) ->
-            $el.find('.loading-overlay').addClass("active")
-            $rs.projects.removeLogo($scope.project.id).then(onSuccess, onError)
-
-        $scope.$on "$destroy", ->
-            $el.off()
-
-    return {link:link}
-
-module.directive("tgProjectLogo", ["$tgAuth", "$tgModel", "$tgResources", "$tgConfirm", ProjectLogoDirective])
-
-
-#############################################################################
-## Project Logo Model Directive
-#############################################################################
-
-ProjectLogoModelDirective = ($parse) ->
-    link = ($scope, $el, $attrs) ->
-        model = $parse($attrs.tgProjectLogoModel)
-        modelSetter = model.assign
-
-        $el.bind 'change', ->
-            $scope.$apply ->
-                modelSetter($scope, $el[0].files[0])
-
-    return {link:link}
-
-module.directive('tgProjectLogoModel', ['$parse', ProjectLogoModelDirective])
 
 
 AdminProjectRestrictionsDirective = () ->

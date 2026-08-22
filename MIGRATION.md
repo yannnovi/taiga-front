@@ -2165,6 +2165,86 @@ modifiés), et le mode "issue existante" (liste, sélection, `PATCH` avec le bon
 
 Build Angular (`strictTemplates`) et Karma (361 specs) restent verts.
 
+### Sous-projet 4e, partie 1 : `admin/project-profile.coffee` (page "Project details")
+
+Première migration de ce sous-projet touchant une **page de route admin** plutôt qu'une
+lightbox - et première fois qu'un composant downgradé reçoit ses données directement d'un
+template **encore-AngularJS** (jade), pas seulement d'un autre composant Angular. Ça a mis
+au jour un piège qui n'était pas encore apparu jusqu'ici (détail plus bas).
+
+`tgProjectProfile` (directive sans template propre, posée sur le même élément que
+`ng-controller="ProjectProfileController as ctrl"`) a été remplacée par
+**`AdminProjectProfileFormComponent`** (`tg-admin-project-profile-form`), qui prend la place
+du contenu des deux partials inclus (`admin-project-profile.jade` pour le formulaire
+éditable, `admin-project-profile-archived.jade` pour la variante lecture-seule projet
+archivé) - un seul composant, branché en interne via `@Input() archived`. `name`
+(requis, 45 caractères) et `description` (requis) sont les deux seuls champs qui avaient une
+contrainte checksley dans l'original - migrés en `FormGroup`/`Validators` ; le reste
+(recrutement, feedback, confidentialité) reste en `ngModel` simple à même le Model
+`project`, comme dans l'original.
+
+`addTag`/`deleteTag`/`openDeleteLightbox` (auparavant sur `ProjectProfileController`, et
+n'ayant jamais d'autre appelant que ce template) sont absorbés directement dans le nouveau
+composant plutôt que renvoyés au contrôleur - `project`/ses tags sont déjà un `@Input()`
+direct, et la liste `[nom, couleur]` que `tg-tag-line-common` attend est maintenant un
+simple getter dérivé de `project.tags`/`tags_colors`, plus un `$scope.projectTags` séparé à
+maintenir en synchro. Le contrôleur lui-même n'a pas bougé (chargement de données, inchangé).
+
+**`ProjectLogoComponent`** (`tg-project-logo`) remplace 3 directives ambiantes qui ne
+fonctionnaient qu'en partageant ce scope (`tgProjectLogo`, `tgProjectLogoBigSrc`,
+`tgProjectLogoModel`) - absorbées en `logoSrc`/`logoBg` (getters) et un `(change)` simple.
+`tgProjectLogoBigSrc` (la directive, pas son usage ici) reste par ailleurs active et
+inchangée : elle a un autre appelant réel (`modules/projects/project/project.jade`), hors
+périmètre. `showSizeInfo()` de l'original ciblait un `.size-info` qui n'existe nulle part
+(ni dans ce template ni ailleurs) - dette préexistante, pas reproduite.
+
+**3 wrappers `UpgradeComponent`** créés pour `tgAdminProjectRestrictions`/
+`tgAdminProjectRequestOwnership`/`tgAdminProjectChangeOwner` (scopes isolés propres, aucune
+sortie `&`) - même patron que les 8 wrappers déjà existants dans `src/app/upgraded/`, pas
+réécrits nativement puisqu'ils ne bloquaient sur rien.
+
+**Piège découvert (à retenir pour la suite du sous-projet 4e - `project-values.coffee`,
+`third-parties.coffee` auront le même besoin)** : un composant downgradé appelé depuis un
+template **encore-AngularJS** (jade), pas depuis un autre template Angular, ne bénéficie PAS
+du compilateur Angular pour ses bindings - `downgradeComponent` lit les inputs via
+`$attrs` (`app_loader`/`@angular/upgrade/static`'s `PropertyBinding`), qui reconnaît 5 formes
+d'attribut par input/output : le nom nu (`foo="expr"`, traité comme une chaîne littérale
+**non évaluée**, silencieusement faux), `bind-foo="expr"`, `[foo]="expr"`,
+`bindon-foo="expr"`, `[(foo)]="expr"` (ces 4 dernières évaluent bien `expr` comme une
+expression Angular). Écrire `project="project"` (comme pour une directive AngularJS
+classique) compile sans erreur et **passe silencieusement la chaîne littérale `"project"`**
+au lieu de la valeur de `$scope.project` - aucune erreur, juste des champs vides. Deux
+correctifs nécessaires ensemble :
+1. Syntaxe `[foo]`/`(foo)` côté jade. Mais le moteur Jade 1.x de ce repo ne sait PAS parser
+   des noms d'attribut contenant `[`/`(`/`)`/`]` dans sa syntaxe raccourcie `tag(attr=val)`
+   (erreur de parsing `Assigning to rvalue`, son propre compteur de parenthèses se perd) -
+   il faut écrire l'élément en HTML brut sur **une seule ligne** (`<tg-foo [a]="x" (b)="y">
+   </tg-foo>`, repassthrough tel quel par Jade, pas de retour à la ligne à l'intérieur).
+2. Pour un `@Input`/`@Output` **multi-mots** (`canCreatePrivateProjects`, `projectChange`...),
+   aliaser explicitement en kebab-case (`@Input('can-create-private-projects')`) : le HTML
+   étant insensible à la casse, `[canCreatePrivateProjects]` écrit tel quel dans le jade
+   arrive en minuscules (`[cancreateprivateprojects]`) une fois parsé par le navigateur,
+   et ne correspond plus au nom attendu par `downgradeComponent`. Les bindings mono-mot
+   (`project`, `user`, `archived`, `reload`) n'ont pas ce problème, déjà tout en minuscules.
+
+Un deuxième bug lié, trouvé au même endroit : `ngOnChanges` ne re-remplissait le
+`FormGroup` qu'une seule fois (`formInitialized` posé dès le premier appel), mais
+`ProjectProfileController` remplace `$scope.project` par une toute nouvelle instance de
+`Model` de manière asynchrone (`{}` au départ, puis l'objet réel une fois
+`loadInitialData()` résolu) - le formulaire restait vide. Corrigé en re-patchant à chaque
+fois que `project.id` change (pas juste au premier `ngChanges`), ce qui couvre aussi le
+rechargement après une sauvegarde réussie sans re-écraser une saisie en cours sur le même
+projet.
+
+Vérifié en navigateur réel (profil Chrome headless neuf, vrai `taiga-back`) : chargement de
+la page (logo, nom, description, tags, widget propriétaire, recrutement/feedback,
+restrictions, confidentialité), édition + sauvegarde de la description avec confirmation
+que la valeur persiste après un rechargement complet de page (round-trip serveur réel, pas
+juste un état client). Variante projet archivé non testée en direct (aucun projet archivé
+disponible dans les données de démo locales) mais revue de code + build strict couvrent son
+seul vrai risque (branchement `*ngIf` sur les mêmes données). Build Angular
+(`strictTemplates`) et Karma (361 specs) restent verts.
+
 ## Patron à suivre pour migrer un module suivant
 
 1. Repérer ses dépendances réelles (services/directives utilisés *et* utilisateurs) avant
@@ -2185,7 +2265,14 @@ Build Angular (`strictTemplates`) et Karma (361 specs) restent verts.
    préfixe `on` (`change`, pas `onChange`) pour que l'attribut `on-x="..."` existant
    matche, et `$event` (pas des locals arbitraires) dans l'expression appelée par cet
    attribut. Vérifier avec un vrai clic/interaction (CDP), pas juste un dump statique du
-   DOM - un mauvais binding ne lève aucune erreur, il échoue silencieusement.
+   DOM - un mauvais binding ne lève aucune erreur, il échoue silencieusement. **Ceci vaut
+   aussi, et surtout, quand le contenu de tout un partial jade est remplacé par un nouveau
+   composant** (pas juste une directive ponctuelle) - voir sous-projet 4e/`project-profile`
+   dans le détail plus haut pour le piège complet : nom d'attribut nu = chaîne littérale
+   jamais évaluée (silencieux), il faut `[foo]`/`(foo)` (ou `bind-foo`/`bindon-foo`) ; Jade
+   1.x ne sait pas parser `[`/`(` dans sa syntaxe `tag(attr=val)` (repasser en HTML brut sur
+   une seule ligne) ; et tout `@Input`/`@Output` multi-mots doit être aliasé en kebab-case
+   explicite pour survivre à la mise en minuscules des noms d'attribut par le navigateur.
 5. Remplacer la route ngRoute (ou le `templateUrl` du parent) par le tag de l'élément
    downgradé.
 6. Déclarer le nouveau composant/directive/pipe dans `src/app/app.module.ts`.

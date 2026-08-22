@@ -1,0 +1,24 @@
+<div class="project-details-image">
+    <fieldset class="image-container">
+        <img class="image" [src]="logoSrc" [style.background]="logoBg" alt="logo" />
+        <div class="loading-overlay" [class.active]="loading">
+            <img class="loading-spinner" [src]="spinnerSrc" [alt]="'COMMON.LOADING' | tgTranslate" />
+        </div>
+        <input class="hidden" type="file" id="logo-field" (change)="onFileChange($event)" />
+    </fieldset>
+
+    <button
+        class="btn-small button-full change-image js-change-logo"
+        type="button"
+        variant="secondary"
+        [title]="'ADMIN.PROJECT_PROFILE.CHANGE_LOGO' | tgTranslate"
+        (click)="changeLogoClick()"
+    >{{ "ADMIN.PROJECT_PROFILE.CHANGE_LOGO" | tgTranslate }}</button>
+
+    <a
+        class="use-default-image js-use-default-logo"
+        href="#"
+        [title]="'ADMIN.PROJECT_PROFILE.ACTION_USE_DEFAULT_LOGO' | tgTranslate"
+        (click)="useDefaultLogo($event)"
+    >{{ "ADMIN.PROJECT_PROFILE.ACTION_USE_DEFAULT_LOGO" | tgTranslate }}</a>
+</div>

@@ -1,0 +1,173 @@
+<form [formGroup]="form" (ngSubmit)="submit()">
+    <tg-project-logo [project]="project" (projectChange)="onLogoChange($event)"></tg-project-logo>
+
+    <div class="project-details-form-data">
+        <fieldset>
+            <label for="project-name">{{ "ADMIN.PROJECT_PROFILE.PROJECT_NAME" | tgTranslate }}</label>
+            <input
+                type="text"
+                id="project-name"
+                formControlName="name"
+                [attr.placeholder]="'ADMIN.PROJECT_PROFILE.PROJECT_NAME' | tgTranslate"
+                [attr.disabled]="archived ? true : null"
+                maxlength="45"
+            />
+            <p class="field-error" *ngIf="form.get('name').invalid && form.get('name').touched">
+                {{ errors.getMessage(form.get('name').errors) }}
+            </p>
+        </fieldset>
+
+        <fieldset>
+            <label for="project-description">{{ "ADMIN.PROJECT_PROFILE.DESCRIPTION" | tgTranslate }}</label>
+            <textarea
+                id="project-description"
+                formControlName="description"
+                [attr.placeholder]="'ADMIN.PROJECT_PROFILE.DESCRIPTION' | tgTranslate"
+                [attr.disabled]="archived ? true : null"
+            ></textarea>
+            <p class="field-error" *ngIf="form.get('description').invalid && form.get('description').touched">
+                {{ errors.getMessage(form.get('description').errors) }}
+            </p>
+        </fieldset>
+
+        <fieldset>
+            <label for="tags">{{ "ADMIN.PROJECT_PROFILE.TAGS" | tgTranslate }}</label>
+            <tg-tag-line-common
+                class="tags-block"
+                [disableColorSelection]="true"
+                [project]="project"
+                [tags]="projectTags"
+                [permissions]="archived ? '' : 'modify_project'"
+                (addTag)="addTag($event)"
+                (deleteTag)="deleteTag($event)"
+            ></tg-tag-line-common>
+        </fieldset>
+
+        <ng-container *ngIf="!archived">
+            <fieldset *ngIf="!isOwner">
+                <tg-admin-project-request-ownership
+                    class="admin-project-profile-owner-actions"
+                    [class.limit]="!canCreatePrivateProjects"
+                    [canRequest]="canCreatePrivateProjects"
+                    [owner]="project.owner"
+                    [projectId]="project.id"
+                ></tg-admin-project-request-ownership>
+            </fieldset>
+            <fieldset *ngIf="isOwner">
+                <tg-admin-project-change-owner
+                    class="admin-project-profile-owner-actions"
+                    [members]="project.members.length"
+                    [owner]="project.owner"
+                    [projectId]="project.id"
+                    [activeUsers]="activeUsers"
+                ></tg-admin-project-change-owner>
+            </fieldset>
+
+            <fieldset class="looking-for-people">
+                <div class="looking-for-people-selector">
+                    <span>{{ "ADMIN.PROJECT_PROFILE.RECRUITING" | tgTranslate }}</span>
+                    <tg-svg svg-icon="icon-recruit" svg-title-translate="ADMIN.PROJECT_PROFILE.RECRUITING_MESSAGE"></tg-svg>
+                    <div class="check">
+                        <input type="checkbox" [(ngModel)]="project.is_looking_for_people" [ngModelOptions]="{standalone: true}" />
+                        <div></div>
+                        <span class="check-text check-yes">{{ "COMMON.YES" | tgTranslate }}</span>
+                        <span class="check-text check-no">{{ "COMMON.NO" | tgTranslate }}</span>
+                    </div>
+                </div>
+
+                <div class="looking-for-people-reason" *ngIf="project.is_looking_for_people">
+                    <label>{{ "ADMIN.PROJECT_PROFILE.RECRUITING_MESSAGE" | tgTranslate }}</label>
+                    <input
+                        type="text"
+                        maxlength="200"
+                        [(ngModel)]="project.looking_for_people_note"
+                        [ngModelOptions]="{standalone: true}"
+                        [attr.placeholder]="'ADMIN.PROJECT_PROFILE.RECRUITING_PLACEHOLDER' | tgTranslate"
+                    />
+                </div>
+            </fieldset>
+
+            <fieldset class="get-feedback">
+                <div class="get-feedback-inner">
+                    <span>{{ "ADMIN.PROJECT_PROFILE.FEEDBACK" | tgTranslate }}</span>
+                    <div class="check">
+                        <input type="checkbox" [(ngModel)]="project.is_contact_activated" [ngModelOptions]="{standalone: true}" />
+                        <div></div>
+                        <span class="check-text check-yes">{{ "COMMON.YES" | tgTranslate }}</span>
+                        <span class="check-text check-no">{{ "COMMON.NO" | tgTranslate }}</span>
+                    </div>
+                </div>
+            </fieldset>
+
+            <tg-admin-project-restrictions [project]="project"></tg-admin-project-restrictions>
+
+            <fieldset>
+                <div class="project-privacy-settings">
+                    <div class="privacy-option">
+                        <input
+                            class="privacy-project"
+                            [disabled]="project.is_private && !project.is_private_extra_info.can_be_updated"
+                            type="radio"
+                            id="private-project"
+                            name="privacy-project"
+                            [(ngModel)]="project.is_private"
+                            [ngModelOptions]="{standalone: true}"
+                            [value]="false"
+                        />
+                        <label class="trans-button" for="private-project">{{ "ADMIN.PROJECT_PROFILE.PUBLIC_PROJECT" | tgTranslate }}</label>
+                    </div>
+
+                    <div class="privacy-option">
+                        <input
+                            class="privacy-project"
+                            [disabled]="!project.is_private && !project.is_private_extra_info.can_be_updated"
+                            type="radio"
+                            id="public-project"
+                            name="privacy-project"
+                            [(ngModel)]="project.is_private"
+                            [ngModelOptions]="{standalone: true}"
+                            [value]="true"
+                        />
+                        <label class="trans-button" for="public-project">{{ "ADMIN.PROJECT_PROFILE.PRIVATE_PROJECT" | tgTranslate }}</label>
+                    </div>
+                </div>
+
+                <a class="private-or-public" href="https://community.taiga.io/t/whats-the-difference-between-public-and-private-projects/139" target="_blank">
+                    <tg-svg svg-icon="icon-question" svg-title-translate="ADMIN.PROJECT_PROFILE.PRIVATE_OR_PUBLIC"></tg-svg>
+                    <span>{{ "ADMIN.PROJECT_PROFILE.PRIVATE_OR_PUBLIC" | tgTranslate }}</span>
+                </a>
+            </fieldset>
+
+            <button class="btn-small" variant="primary" type="submit" [title]="'COMMON.SAVE' | tgTranslate" [disabled]="submitting">
+                {{ "COMMON.SAVE" | tgTranslate }}
+            </button>
+        </ng-container>
+
+        <ng-container *ngIf="archived">
+            <div class="admin-project-profile-owner-actions">
+                <div class="owner-info">
+                    <div class="owner-info-title">{{ "ADMIN.PROJECT_PROFILE.PROJECT_OWNER" | tgTranslate }}</div>
+                    <div class="owner-name">{{ project.owner.full_name_display }}</div>
+                </div>
+            </div>
+
+            <fieldset>
+                <div class="project-privacy-settings">
+                    <div class="privacy-option" *ngIf="!project.is_private">
+                        <input class="privacy-project" [disabled]="true" type="radio" id="private-project" name="privacy-project" [ngModel]="false" [ngModelOptions]="{standalone: true}" />
+                        <label class="trans-button" for="private-project">{{ "ADMIN.PROJECT_PROFILE.PUBLIC_PROJECT" | tgTranslate }}</label>
+                    </div>
+
+                    <div class="privacy-option" *ngIf="project.is_private">
+                        <input class="privacy-project" [disabled]="true" type="radio" id="public-project" name="privacy-project" [ngModel]="true" [ngModelOptions]="{standalone: true}" />
+                        <label class="trans-button" for="public-project">{{ "ADMIN.PROJECT_PROFILE.PRIVATE_PROJECT" | tgTranslate }}</label>
+                    </div>
+                </div>
+            </fieldset>
+        </ng-container>
+
+        <a class="delete-project" href="" [title]="'ADMIN.PROJECT_PROFILE.DELETE' | tgTranslate" (click)="openDeleteLightbox(); $event.preventDefault()">
+            {{ "ADMIN.PROJECT_PROFILE.DELETE" | tgTranslate }}
+        </a>
+    </div>
+</form>

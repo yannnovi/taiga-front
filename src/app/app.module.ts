@@ -163,6 +163,9 @@ import { TgMostActiveUpgradedDirective } from "./upgraded/tg-most-active.upgrade
 import { TgSvgUpgradedDirective } from "./upgraded/tg-svg.upgraded-directive";
 import { TgNotificationsListUpgradedDirective } from "./upgraded/tg-notifications-list.upgraded-directive";
 import { TgWysiwygUpgradedDirective } from "./upgraded/tg-wysiwyg.upgraded-directive";
+import { TgAdminProjectRestrictionsUpgradedDirective } from "./upgraded/tg-admin-project-restrictions.upgraded-directive";
+import { TgAdminProjectRequestOwnershipUpgradedDirective } from "./upgraded/tg-admin-project-request-ownership.upgraded-directive";
+import { TgAdminProjectChangeOwnerUpgradedDirective } from "./upgraded/tg-admin-project-change-owner.upgraded-directive";
 import { LightboxFeedbackComponent } from "./lightbox-feedback/lightbox-feedback.component";
 import "./lightbox-feedback/register-legacy";
 import { LightboxCreateBulkIssuesComponent } from "./lightbox-create-bulk-issues/lightbox-create-bulk-issues.component";
@@ -198,6 +201,10 @@ import "./lb-us-estimation/register-legacy";
 import { AutoSelectDirective } from "./auto-select/auto-select.directive";
 import { LightboxCreateEditComponent } from "./lightbox-create-edit/lightbox-create-edit.component";
 import "./lightbox-create-edit/register-legacy";
+import { ProjectLogoComponent } from "./project-logo/project-logo.component";
+import "./project-logo/register-legacy";
+import { AdminProjectProfileFormComponent } from "./admin-project-profile-form/admin-project-profile-form.component";
+import "./admin-project-profile-form/register-legacy";
 import {
     AJS_APP_META_SERVICE,
     AJS_AVATAR_SERVICE,
@@ -349,6 +356,9 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         TgSvgUpgradedDirective,
         TgNotificationsListUpgradedDirective,
         TgWysiwygUpgradedDirective,
+        TgAdminProjectRestrictionsUpgradedDirective,
+        TgAdminProjectRequestOwnershipUpgradedDirective,
+        TgAdminProjectChangeOwnerUpgradedDirective,
         LightboxFeedbackComponent,
         LightboxCreateBulkIssuesComponent,
         LightboxCreateBulkTasksComponent,
@@ -367,6 +377,8 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         LbUsEstimationComponent,
         AutoSelectDirective,
         LightboxCreateEditComponent,
+        ProjectLogoComponent,
+        AdminProjectProfileFormComponent,
         TgTranslatePipe,
         TgEmojifyPipe,
         TgMomentFormatPipe,
