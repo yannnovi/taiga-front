@@ -98,7 +98,7 @@ class UserStoryDetailController extends mixOf(taiga.Controller, taiga.PageMixin)
 
     initializeEventHandlers: ->
         @scope.relateToEpic = (us) =>
-            @scope.$broadcast("relate-to-epic:add", us)
+            @rootscope.$broadcast("relate-to-epic:add", us)
 
         @scope.$on "related-tasks:update", =>
             @.loadTasks()

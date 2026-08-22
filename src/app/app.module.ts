@@ -173,6 +173,10 @@ import { LightboxSearchBoxComponent } from "./lightbox-search-box/lightbox-searc
 import "./lightbox-search-box/register-legacy";
 import { LightboxCreateEditSprintComponent } from "./lightbox-create-edit-sprint/lightbox-create-edit-sprint.component";
 import "./lightbox-create-edit-sprint/register-legacy";
+import { LightboxCreateBulkUserstoriesComponent } from "./lightbox-create-bulk-userstories/lightbox-create-bulk-userstories.component";
+import "./lightbox-create-bulk-userstories/register-legacy";
+import { LightboxRelateToEpicComponent } from "./lightbox-relate-to-epic/lightbox-relate-to-epic.component";
+import "./lightbox-relate-to-epic/register-legacy";
 import {
     AJS_APP_META_SERVICE,
     AJS_AVATAR_SERVICE,
@@ -218,6 +222,7 @@ import {
     AJS_MODEL,
     AJS_ROUTE,
     AJS_DATE_PICKER_CONFIG_SERVICE,
+    AJS_ANALYTICS,
     upgradedService,
 } from "./shared/ajs-tokens";
 import { TgTranslatePipe } from "./shared/translate.pipe";
@@ -325,6 +330,8 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         LightboxCreateBulkTasksComponent,
         LightboxSearchBoxComponent,
         LightboxCreateEditSprintComponent,
+        LightboxCreateBulkUserstoriesComponent,
+        LightboxRelateToEpicComponent,
         TgTranslatePipe,
         TgEmojifyPipe,
         TgMomentFormatPipe,
@@ -377,6 +384,7 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         upgradedService(AJS_MODEL, "$tgModel"),
         upgradedService(AJS_ROUTE, "$route"),
         upgradedService(AJS_DATE_PICKER_CONFIG_SERVICE, "tgDatePickerConfigService"),
+        upgradedService(AJS_ANALYTICS, "$tgAnalytics"),
     ],
 })
 export class AppModule implements DoBootstrap {

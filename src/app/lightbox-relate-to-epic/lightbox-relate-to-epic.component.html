@@ -1,0 +1,88 @@
+<a class="close" href="" [title]="'COMMON.CLOSE' | tgTranslate" (click)="close(); $event.preventDefault()">
+    <tg-svg svg-icon="icon-close"></tg-svg>
+</a>
+
+<div class="lightbox-create-related-epic-wrapper">
+    <h2 class="title">{{ "LIGHTBOX.RELATE_TO_EPIC.TITLE" | tgTranslate }}</h2>
+
+    <div class="button-group" *ngIf="project?.my_permissions?.indexOf('add_epic') > -1">
+        <div class="button-group-single">
+            <input type="radio" name="related-with-selector" id="existing-epic" value="existing-epic" [(ngModel)]="relatedWithSelector" />
+            <label class="e2e-existing-epic-label" for="existing-epic">
+                <span class="name">{{ "LIGHTBOX.RELATE_TO_EPIC.EXISTING_EPIC" | tgTranslate }}</span>
+            </label>
+        </div>
+
+        <div class="button-group-single">
+            <input type="radio" name="related-with-selector" id="new-epic" value="new-epic" [(ngModel)]="relatedWithSelector" />
+            <label class="e2e-new-epic-label" for="new-epic">
+                <span class="name">{{ "LIGHTBOX.RELATE_TO_EPIC.NEW_EPIC" | tgTranslate }}</span>
+            </label>
+        </div>
+    </div>
+
+    <fieldset class="project-selector">
+        <label *ngIf="relatedWithSelector === 'new-epic'" for="project-selector-dropdown">
+            {{ "LIGHTBOX.RELATE_TO_EPIC.CHOOSE_PROJECT_FOR_CREATION" | tgTranslate }}
+        </label>
+        <label *ngIf="relatedWithSelector === 'existing-epic'" for="project-selector-dropdown">
+            {{ "LIGHTBOX.RELATE_TO_EPIC.CHOOSE_PROJECT_FROM" | tgTranslate }}
+        </label>
+        <select id="project-selector-dropdown" [ngModel]="selectedProject" (ngModelChange)="selectProject($event)">
+            <option *ngFor="let p of projects?.toArray()" [value]="p.get('id')">{{ p.get('name') }}</option>
+        </select>
+    </fieldset>
+
+    <fieldset *ngIf="relatedWithSelector === 'new-epic'">
+        <div class="new-epic-title">
+            <label>{{ "LIGHTBOX.RELATE_TO_EPIC.SUBJECT" | tgTranslate }}</label>
+        </div>
+        <form [formGroup]="newEpicForm">
+            <div class="single-creation">
+                <input class="e2e-new-epic-input-text" type="text" formControlName="epicSubject" />
+            </div>
+            <p class="field-error" *ngIf="newEpicForm.get('epicSubject').invalid && newEpicForm.get('epicSubject').touched">
+                {{ errors.getMessage(newEpicForm.get('epicSubject').errors) }}
+            </p>
+        </form>
+
+        <button
+            class="btn-big create-epic e2e-create-epic-button"
+            href=""
+            [disabled]="loading"
+            (click)="createEpic(); $event.preventDefault()"
+        >{{ "COMMON.SAVE" | tgTranslate }}</button>
+    </fieldset>
+
+    <fieldset class="existing-epic" *ngIf="relatedWithSelector === 'existing-epic'">
+        <label for="epic-filter">{{ "LIGHTBOX.RELATE_TO_EPIC.CHOOSE_EPIC" | tgTranslate }}</label>
+        <input
+            class="epic-filter e2e-filter-userstories-input"
+            id="epic-filter"
+            type="text"
+            [attr.placeholder]="'LIGHTBOX.RELATE_TO_EPIC.FILTER_EPICS' | tgTranslate"
+            [(ngModel)]="searchEpic"
+            (ngModelChange)="onSearchEpicChange()"
+        />
+
+        <form class="existing-epic-form" [formGroup]="existingEpicForm" *ngIf="projectEpics.size">
+            <select class="epic e2e-userstories-select" size="5" formControlName="selectedEpic">
+                <option class="hidden" value=""></option>
+                <option *ngFor="let epic of projectEpics.toArray()" [value]="epic.get('id')">
+                    #{{ epic.get('ref') }} {{ epic.get('subject') }}
+                </option>
+            </select>
+        </form>
+
+        <p class="no-stories-found" *ngIf="!projectEpics.size">
+            {{ "LIGHTBOX.RELATE_TO_EPIC.NO_EPICS_FOUND" | tgTranslate }}
+        </p>
+
+        <button
+            class="btn-big e2e-select-related-epic-button"
+            href=""
+            [disabled]="loading"
+            (click)="saveRelatedEpic(); $event.preventDefault()"
+        >{{ "COMMON.SAVE" | tgTranslate }}</button>
+    </fieldset>
+</div>

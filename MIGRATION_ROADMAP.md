@@ -186,19 +186,24 @@ tests), pas un "module de plus". À choisir un par un selon la priorité produit
    globale portée** (`src/app/shared/checksley-validators.ts` +
    `form-error-message.service.ts`, `linewidth`/`pikaday`/`url` + le registre de messages
    traduits `%s` - checksley lui-même reste actif pour tout ce qui n'est pas encore migré).
-   **Cinq formulaires migrés : `tgLbFeedback`, `tgLbCreateBulkIssues`, `tgLbCreateBulkTasks`,
-   `tgSearchBox`, `tgLbCreateEditSprint`** - vérifiés en navigateur réel (validation +
-   soumission + fermeture, et pour le dernier : création/édition/suppression de sprint avec
-   Pikaday, premier vrai test de `pikadayValidator`). Au passage, deux bugs de production
-   trouvés et traités (un corrigé - `MoveToSprintComponent`, un préexistant et hors
-   périmètre juste documenté - `TaskboardTableComponent` sur navigation directe vers le
-   taskboard) - détail dans `MIGRATION.md`. 9 fichiers restants, dans l'ordre déjà scopé :
-   `tgLbCreateBulkUserstories`/`tgLbRelatetoepic` → `tgCustomAttributeValue` (bon test
-   d'intégration pour `url`, `pikaday` déjà couvert) → `tgLbCreateEdit` (lightbox générique
-   US/Task/Issue, son propre mini-projet) → pages admin (`admin/project-values.coffee`
-   nécessite un pattern `FormArray`, formulaires répétés par ligne) → `user-settings` →
-   `auth.coffee` (login/register, page d'entrée non-authentifiée - en tout dernier, avec le
-   plus de soin). Détail complet dans `MIGRATION.md`.
+   **Sept formulaires migrés : `tgLbFeedback`, `tgLbCreateBulkIssues`, `tgLbCreateBulkTasks`,
+   `tgSearchBox`, `tgLbCreateEditSprint`, `tgLbCreateBulkUserstories`, `tgLbRelatetoepic`** -
+   vérifiés en navigateur réel (validation + soumission + fermeture ; sprint :
+   création/édition/suppression avec Pikaday, premier vrai test de `pikadayValidator` ;
+   relate-to-epic : épique existante et création d'une nouvelle épique). Bugs de production
+   trouvés et corrigés au passage : `MoveToSprintComponent` (lifecycle), un bug de
+   propagation `$scope.$broadcast` vs `$rootScope.$broadcast` dans
+   `userstories/detail.coffee` (l'ancienne directive partageait le scope ambiant, le nouveau
+   composant Angular ne le peut pas - à surveiller pour tout futur portage similaire), et un
+   bug d'accès Immutable.js (`.get('x')` vs `.x`) trouvé et corrigé avant vérification
+   finale. `TaskboardTableComponent` (préexistant, hors périmètre) reste documenté mais non
+   corrigé. Détail dans `MIGRATION.md`. 7 fichiers restants, dans l'ordre déjà scopé :
+   `tgCustomAttributeValue` (bon test d'intégration pour `url`, `pikaday` déjà couvert) →
+   `tgLbCreateEdit` (lightbox générique US/Task/Issue, son propre mini-projet) → pages admin
+   (`admin/project-values.coffee` nécessite un pattern `FormArray`, formulaires répétés par
+   ligne) → `user-settings` → `auth.coffee` (login/register, page d'entrée
+   non-authentifiée - en tout dernier, avec le plus de soin). Détail complet dans
+   `MIGRATION.md`.
 4. ~~Listes infinies (`ngInfiniteScroll`)~~ — fait, voir sous-projet backlog ci-dessus (item 1).
 
 Recommandation : `window.dragMultiple` d'abord (referme complètement le "gros chantier" drag

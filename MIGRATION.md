@@ -1900,6 +1900,87 @@ de la sidebar). Zéro erreur console sur les trois flux.
 
 Build Angular (`strictTemplates`) et Karma (361 specs) restent verts.
 
+### Sous-projet 4, partie 6 : `tgLbCreateBulkUserstories` et `tgLbRelatetoepic`
+
+Les deux dernières directives de `app/coffee/modules/common/lightboxes.coffee` concernées
+par ce sous-projet (le fichier contient aussi `lightboxService`/`tgLightboxClose`/
+`tgLbBlock`/`tgLbSetDueDate`/`tgLbCreateEdit` - tous hors périmètre : soit foundationnels
+(gardés en AngularJS pur, tout le reste en dépend), soit sans validation checksley, soit
+leur propre sous-projet à part (`tgLbCreateEdit`, sous-projet 4d) - seul le fichier a été
+édité en place, pas supprimé).
+
+**`tgLbCreateBulkUserstories` → `LightboxCreateBulkUserstoriesComponent`** - posée
+statiquement dans `backlog.jade` ET `kanban.jade` (deux points de montage, ambiant dans les
+deux), ouverte sur le broadcast `usform:bulk`. `@Input() project`/`swimlanes`/
+`noSwimlaneUserStories` reprennent les lectures ambiantes de l'original
+(`$scope.project`/`swimlanesList`/`noSwimlaneUserStories`, déjà exposés à l'identique par
+`BacklogController` ET `KanbanController`). `tg-swimlane-selector` étant déjà un composant
+Angular downgradé (`SwimlaneSelectorComponent`, migré plus tôt dans cette session), il est
+utilisé ici directement en syntaxe Angular native (`[(value)]`) - premier cas de cette
+migration où un composant migré en appelle un autre déjà migré, sans passer par le pont
+`bind-x`/`downgradeComponent`. Seul le champ `bulk` est un vrai `FormControl` validé
+(`required` + `linewidthValidator(200)`) - statut/position/swimlane n'étaient pas
+checksley-validés dans l'original non plus, ils restent de l'état de composant simple.
+
+**`tgLbRelatetoepic` → `LightboxRelateToEpicComponent`** - posée dans `us-detail.jade`
+(`@Input() project`), deux modes (épique existante / nouvelle épique) chacun avec son
+propre `FormGroup` (reprend les deux formulaires checksley séparés de l'original,
+`.new-epic-form`/`.existing-epic-form`). Le sélecteur de projet est délibérément **hors des
+deux formulaires** dans le template d'origine - donc jamais validé par aucune des deux
+instances checksley malgré son `data-required="true"` (checksley ne voit que les champs
+`$el.find(".new-epic-form"/".existing-epic-form")`) - reproduit tel quel (pas de validation
+sur ce select ici non plus), pas "corrigé". `$tgResources` était injecté par l'original mais
+jamais appelé dans son corps (seul le `tgResources` sans `$` l'était) - abandonné, comme
+d'autres injections mortes déjà trouvées dans cette migration.
+
+**Deux bugs trouvés en portant, un dans du code neuf, un préexistant dans l'AngularJS
+original :**
+1. Immutable.js : `projects`/`projectEpics` sont des listes d'enregistrements Immutable
+   (confirmé par le filtre `toMutable` que l'original appliquait avant de les itérer en
+   template) - un premier jet de template utilisait l'accès par point (`p.name`,
+   `epic.subject`) au lieu de `.get('name')`/`.get('subject')`, ce qui affichait des options
+   de menu vides et soumettait un id d'épique `"undefined"`. Trouvé et corrigé avant de
+   documenter ce sous-projet comme terminé (vérification en navigateur réel, pas juste
+   Karma - Karma ne rend pas les vraies données Immutable de l'API).
+2. **Bug préexistant dans l'original** (`app/coffee/modules/userstories/detail.coffee`) :
+   `$scope.relateToEpic = (us) -> @scope.$broadcast("relate-to-epic:add", us)` utilisait
+   `$scope.$broadcast` (diffusion **descendante** depuis le scope de
+   `UserStoryDetailController`) - qui fonctionnait avec l'ancienne directive parce qu'elle
+   partageait ce même scope ambiant (descendante directe). Le nouveau composant Angular,
+   n'ayant plus ce partage de scope, écoute via `$rootScope.$on(...)` (seul point d'entrée
+   générique disponible) - qui ne reçoit **que** les diffusions émises depuis `$rootScope`
+   lui-même ou l'un de ses descendants dans le sens de propagation ; un `$broadcast` déclenché
+   depuis un scope descendant ne remonte jamais jusqu'à `$rootScope`. Confirmé en observant
+   qu'aucune requête réseau ni log ne se produisait après un clic réel sur "Link to epic".
+   **Corrigé** : `detail.coffee` diffuse maintenant via `@rootscope.$broadcast(...)` (déjà
+   injecté, déjà utilisé ailleurs dans ce même contrôleur pour d'autres événements) au lieu
+   de `@scope.$broadcast(...)` - strictement équivalent pour tous les autres auditeurs
+   existants (`$broadcast` se propage de toute façon à tous les descendants, `$rootScope`
+   inclus), mais rend l'événement atteignable par un auditeur `$rootScope.$on` comme celui
+   du nouveau composant. **À garder en tête pour tout futur portage d'un directive qui
+   utilise `$scope.$broadcast`/`$emit` (pas `$rootScope.$broadcast`) pour communiquer avec un
+   composant Angular** - la solution generale est de faire émettre l'appelant (encore
+   AngularJS) depuis `$rootScope` plutôt que d'essayer de faire écouter le composant Angular
+   sur un scope AngularJS spécifique auquel il n'a pas d'accès direct.
+
+`form.setErrors(data)` sur échec API abandonné pour `tgLbRelatetoepic` (pas porté) : pour
+`saveRelatedEpic`, le `<select>` cible n'avait pas d'attribut `name` permettant à checksley
+de cibler un champ ; pour `createEpic`, l'équivalent original référençait une variable
+`errors` non définie au lieu de son propre paramètre `data` - un vrai bug (pas une
+convention délibérée), qui aurait fait planter le gestionnaire d'erreur à chaque échec de
+création. Les deux chemins remontent toujours l'échec via `confirm.notify("error")`, comme
+l'original.
+
+Vérifié en navigateur headless avec de vrais clics : bulk US sur backlog ET kanban
+(sélecteur de statut, position, swimlane, validation, `POST
+/api/v1/userstories/bulk_create` avec le bon corps) ; relate-to-epic avec une épique
+existante (`POST /api/v1/epics/:id/related_userstories`) et avec création d'une nouvelle
+épique (`POST /api/v1/epics` puis `POST /api/v1/epics/:id/related_userstories`),
+validations vides sur les deux modes. Zéro erreur console sur tous les flux après les deux
+correctifs ci-dessus.
+
+Build Angular (`strictTemplates`) et Karma (361 specs) restent verts.
+
 ## Patron à suivre pour migrer un module suivant
 
 1. Repérer ses dépendances réelles (services/directives utilisés *et* utilisateurs) avant

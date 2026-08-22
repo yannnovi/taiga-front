@@ -1,0 +1,78 @@
+<a class="close" href="" [title]="'COMMON.CLOSE' | tgTranslate" (click)="close(); $event.preventDefault()">
+    <tg-svg svg-icon="icon-close"></tg-svg>
+</a>
+
+<form [formGroup]="form" (ngSubmit)="submit()">
+    <h2 class="title">{{ "COMMON.NEW_BULK" | tgTranslate }}</h2>
+
+    <fieldset *ngIf="project?.us_statuses">
+        <div class="label">{{ "LIGHTBOX.CREATE_EDIT.SELECT_STATUS" | tgTranslate }}</div>
+        <div class="bulk-status-selector-wrapper">
+            <button
+                class="bulk-status-selector"
+                type="button"
+                (click)="toggleStatus()"
+                [ngStyle]="{ 'background-color': currentStatus?.color }"
+            >
+                <span>{{ currentStatus?.name }}</span>
+                <tg-svg svg-icon="icon-arrow-down"></tg-svg>
+            </button>
+            <div class="bulk-status-option-wrapper" [style.display]="displayStatusSelector ? 'block' : 'none'">
+                <button
+                    *ngFor="let status of project.us_statuses"
+                    class="bulk-status-option"
+                    type="button"
+                    (click)="setStatus(status)"
+                    [class.selected]="status.id === currentStatus?.id"
+                >{{ status.name }}</button>
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset class="creation-position">
+        <div class="label">{{ "LIGHTBOX.CREATE_EDIT.LOCATION" | tgTranslate }}</div>
+
+        <div class="creation-position-fields">
+            <label class="custom-radio">
+                <input type="radio" formControlName="us_position" value="bottom" />
+                <span class="radio-control"></span>
+                <span class="radio-label">{{ "LIGHTBOX.CREATE_EDIT.CREATE_BOTTOM" | tgTranslate }}</span>
+            </label>
+
+            <label class="custom-radio">
+                <input type="radio" formControlName="us_position" value="top" />
+                <span class="radio-control"></span>
+                <span class="radio-label">{{ "LIGHTBOX.CREATE_EDIT.CREATE_TOP" | tgTranslate }}</span>
+            </label>
+        </div>
+    </fieldset>
+
+    <fieldset class="swimlane-select" *ngIf="project?.is_kanban_activated && swimlanes?.size">
+        <div class="label">{{ "LIGHTBOX.CREATE_EDIT.SELECT_SWIMLANE" | tgTranslate }}</div>
+        <tg-swimlane-selector
+            [(value)]="swimlaneValue"
+            [swimlanes]="swimlanes"
+            [defaultSwimlaneId]="project.default_swimlane"
+            [userStory]="draftUserStory"
+            [hasUnclassifiedStories]="noSwimlaneUserStories"
+        ></tg-swimlane-selector>
+    </fieldset>
+
+    <fieldset>
+        <textarea
+            cols="200"
+            wrap="off"
+            formControlName="bulk"
+            [attr.placeholder]="'COMMON.ONE_ITEM_LINE' | tgTranslate"
+        ></textarea>
+        <p class="field-error" *ngIf="form.get('bulk').invalid && form.get('bulk').touched">
+            {{ errors.getMessage(form.get('bulk').errors) }}
+        </p>
+    </fieldset>
+
+    <div class="lb-action-wrapper">
+        <button class="btn-small js-submit-button" variant="primary" type="submit" [disabled]="submitting" [title]="'COMMON.SAVE' | tgTranslate">
+            {{ "COMMON.SAVE" | tgTranslate }}
+        </button>
+    </div>
+</form>

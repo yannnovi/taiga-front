@@ -92,5 +92,8 @@ div.wrapper(
 
     div.lightbox.lightbox-generic-form.lightbox-create-edit(tg-lb-create-edit)
 
-    div.lightbox.lightbox-generic-bulk(tg-lb-create-bulk-userstories)
-        include ../includes/modules/lightbox-us-bulk
+    tg-lb-create-bulk-userstories.lightbox.lightbox-generic-bulk(
+        bind-project="project"
+        bind-swimlanes="swimlanesList"
+        bind-no-swimlane-user-stories="noSwimlaneUserStories"
+    )
