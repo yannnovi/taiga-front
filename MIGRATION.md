@@ -1657,6 +1657,37 @@ Vérifié en navigateur headless (profil neuf, `project-1`, vrai `taiga-back`) :
 
 Build Angular (`strictTemplates`) et Karma (361 specs) restent verts.
 
+### Sous-projet 3 : éditeur WYSIWYG (`tgWysiwyg` → wrapper `UpgradeComponent`)
+
+Contrairement à la crainte initiale ("remplacer CKEditor"), aucun appel direct à l'API
+CKEditor n'existe nulle part dans ce repo - le véritable éditeur est un custom element
+(`<tg-text-editor>`) construit par un fork externe (`taiga-html-editor`, CKEditor5 ~v23,
+compilé en bundle `elements.js` copié tel quel par gulp) et monté impérativement par
+`tgWysiwyg` (`app/modules/components/wysiwyg/wysiwyg.directive.coffee`). `tgWysiwyg` a déjà
+un scope isolé propre (`htmlReadMode`/`editonly`/`project`/`placeholder`/`version`/
+`storageKey`/`content` en `'<'`, `onCancel`/`onSave`/`onChange` en `'&'`) - suivant la
+recommandation déjà écrite dans le roadmap, un seul wrapper `UpgradeComponent`
+(`TgWysiwygUpgradedDirective`, `src/app/upgraded/tg-wysiwyg.upgraded-directive.ts`) suffit à
+le rendre appelable depuis un futur template Angular, sans toucher au widget lui-même -
+même patron que les 8 wrappers déjà présents dans ce dossier (`@Input()` pour chaque
+binding `'<'`, `@Output() EventEmitter` pour chaque `'&'`, exactement comme
+`tg-svg.upgraded-directive.ts`/`tg-discover-search-bar.upgraded-directive.ts`).
+
+Les 4 directives qui composent `tgWysiwyg` aujourd'hui (`tgItemWysiwyg`/
+`tgCommentEditWysiwyg`/`tgCommentWysiwyg`/`tgCustomFieldEditWysiwyg`) restent AngularJS pur
+- elles sont `scope: true` (ambiant) et vivent dans des templates AngularJS
+(`us-detail.jade`, `epic-detail.jade`, markup de commentaires/champs custom) eux-mêmes
+bloqués par d'autres facteurs (Phase 3, scope ambiant), donc aucun appelant Angular réel
+n'existe encore pour ce wrapper. **Ce sous-projet lève le blocage, il ne migre aucun des 7
+fichiers qui passent aujourd'hui par ces 4 directives.**
+
+**Pas de vérification en navigateur pour ce sous-projet** - contrairement à tous les
+précédents, il n'y a délibérément aucun point d'usage réel à tester : `<tg-wysiwyg>` n'est
+appelé depuis aucun template Angular existant. Seuls le build (`strictTemplates`, vert) et
+Karma (361 specs, vert) confirment que le wrapper compile et ne casse rien. À vérifier en
+conditions réelles la première fois qu'un composant Angular voudra effectivement intégrer
+`<tg-wysiwyg>`.
+
 ## Patron à suivre pour migrer un module suivant
 
 1. Repérer ses dépendances réelles (services/directives utilisés *et* utilisateurs) avant

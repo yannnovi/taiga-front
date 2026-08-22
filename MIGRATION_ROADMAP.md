@@ -171,13 +171,16 @@ tests), pas un "module de plus". À choisir un par un selon la priorité produit
    supprimé.** Détail complet dans `MIGRATION.md`.
    **Toute la Phase 2 "drag & drop" (kanban/taskboard/backlog + sélection multiple) est
    maintenant terminée.** Prochaine étape : sous-projet 2 ci-dessous (WYSIWYG).
-2. **Éditeur WYSIWYG (CKEditor → wrapper `UpgradeComponent`)** — plus petit que redouté :
-   aucun appel direct à l'API CKEditor dans ce repo, l'éditeur réel est un custom element
-   (`<tg-text-editor>`) livré par un bundle externe (`taiga-html-editor`/`elements.js`).
-   `tgWysiwyg` a déjà un scope isolé propre - un seul wrapper `UpgradeComponent` (pattern déjà
-   utilisé 8 fois dans `src/app/upgraded/`) suffit à le rendre appelable depuis un template
-   Angular. Débloque `comment`/`comments` et les champs description partout
-   (`tg-item-wysiwyg`) une fois ces pages elles-mêmes migrées (Phase 3, scope ambiant).
+2. **Éditeur WYSIWYG (CKEditor → wrapper `UpgradeComponent`) — ✅ terminé.** Plus petit que
+   redouté : aucun appel direct à l'API CKEditor dans ce repo, l'éditeur réel est un custom
+   element (`<tg-text-editor>`) livré par un bundle externe (`taiga-html-editor`/
+   `elements.js`). `TgWysiwygUpgradedDirective` (`src/app/upgraded/`) créé, même patron que
+   les 8 wrappers déjà en place. Débloque `comment`/`comments` et les champs description
+   partout (`tg-item-wysiwyg`) une fois ces pages elles-mêmes migrées (Phase 3, scope
+   ambiant) - aucun appelant Angular réel n'existe encore, donc pas de vérification
+   navigateur possible pour ce sous-projet (build + Karma verts seulement, voir
+   MIGRATION.md). **Prochaine étape : sous-projet 3 ci-dessous (checksley), le dernier de
+   cette liste.**
 3. **Validation de formulaire (checksley → Angular Reactive Forms)** — le plus gros par
    nombre de fichiers (14 + la config globale des validateurs `linewidth`/`pikaday`/`url`
    dans `app.coffee`, à porter en premier). Touche `auth.coffee` (login/register, page

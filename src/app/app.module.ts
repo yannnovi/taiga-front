@@ -162,6 +162,7 @@ import { TgMostLikedUpgradedDirective } from "./upgraded/tg-most-liked.upgraded-
 import { TgMostActiveUpgradedDirective } from "./upgraded/tg-most-active.upgraded-directive";
 import { TgSvgUpgradedDirective } from "./upgraded/tg-svg.upgraded-directive";
 import { TgNotificationsListUpgradedDirective } from "./upgraded/tg-notifications-list.upgraded-directive";
+import { TgWysiwygUpgradedDirective } from "./upgraded/tg-wysiwyg.upgraded-directive";
 import {
     AJS_APP_META_SERVICE,
     AJS_AVATAR_SERVICE,
@@ -305,6 +306,7 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         TgMostActiveUpgradedDirective,
         TgSvgUpgradedDirective,
         TgNotificationsListUpgradedDirective,
+        TgWysiwygUpgradedDirective,
         TgTranslatePipe,
         TgEmojifyPipe,
         TgMomentFormatPipe,
