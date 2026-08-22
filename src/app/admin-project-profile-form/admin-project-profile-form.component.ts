@@ -58,23 +58,21 @@ import { FormErrorMessageService } from "../shared/form-error-message.service";
     templateUrl: "./admin-project-profile-form.component.html",
 })
 export class AdminProjectProfileFormComponent implements OnChanges {
+    // Called directly from a still-AngularJS jade template (not another Angular template),
+    // so these go through `downgradeComponent`'s `$attrs`-based binding rather than Angular's
+    // own template compiler - see MIGRATION.md for the full binding-syntax explanation.
+    // Multi-word inputs/outputs use the `bind-x`/`bindon-x`/`on-x` attribute forms in jade
+    // (AngularJS's own kebab-case attribute normalization, the same mechanism `ng-click`
+    // etc. rely on) rather than `[x]`/`(x)`, which this Angular version's `$attrs` handling
+    // does not reliably match for multi-word names.
     @Input() project: any;
     @Input() user: any;
-    // Explicit kebab-case aliases: this component is invoked directly from a still-AngularJS
-    // jade template (not another Angular template), so its inputs/outputs go through
-    // `downgradeComponent`'s `$attrs`-based bracket/paren binding (`[foo]="expr"`,
-    // `(foo)="expr"`) rather than Angular's own template compiler. Jade/HTML lowercases
-    // attribute names on parse, so an un-aliased camelCase multi-word name like
-    // `[canCreatePrivateProjects]` would arrive as `[cancreateprivateprojects]` and silently
-    // fail to match - the kebab-case alias keeps the bracket attribute name stable through
-    // that lowercasing (single-word bindings like `project`/`user`/`archived`/`reload` don't
-    // need one, they're already all-lowercase).
-    @Input("can-create-private-projects") canCreatePrivateProjects: any;
-    @Input("active-users") activeUsers: any;
+    @Input() canCreatePrivateProjects: any;
+    @Input() activeUsers: any;
     @Input() archived = false;
 
     @Output() reload = new EventEmitter<void>();
-    @Output("project-change") projectChange = new EventEmitter<any>();
+    @Output() projectChange = new EventEmitter<any>();
 
     form = new FormGroup({
         name: new FormControl("", [Validators.required, Validators.maxLength(45)]),

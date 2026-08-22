@@ -2203,29 +2203,39 @@ périmètre. `showSizeInfo()` de l'original ciblait un `.size-info` qui n'existe
 sortie `&`) - même patron que les 8 wrappers déjà existants dans `src/app/upgraded/`, pas
 réécrits nativement puisqu'ils ne bloquaient sur rien.
 
-**Piège découvert (à retenir pour la suite du sous-projet 4e - `project-values.coffee`,
-`third-parties.coffee` auront le même besoin)** : un composant downgradé appelé depuis un
-template **encore-AngularJS** (jade), pas depuis un autre template Angular, ne bénéficie PAS
-du compilateur Angular pour ses bindings - `downgradeComponent` lit les inputs via
-`$attrs` (`app_loader`/`@angular/upgrade/static`'s `PropertyBinding`), qui reconnaît 5 formes
-d'attribut par input/output : le nom nu (`foo="expr"`, traité comme une chaîne littérale
-**non évaluée**, silencieusement faux), `bind-foo="expr"`, `[foo]="expr"`,
-`bindon-foo="expr"`, `[(foo)]="expr"` (ces 4 dernières évaluent bien `expr` comme une
-expression Angular). Écrire `project="project"` (comme pour une directive AngularJS
-classique) compile sans erreur et **passe silencieusement la chaîne littérale `"project"`**
-au lieu de la valeur de `$scope.project` - aucune erreur, juste des champs vides. Deux
-correctifs nécessaires ensemble :
-1. Syntaxe `[foo]`/`(foo)` côté jade. Mais le moteur Jade 1.x de ce repo ne sait PAS parser
-   des noms d'attribut contenant `[`/`(`/`)`/`]` dans sa syntaxe raccourcie `tag(attr=val)`
-   (erreur de parsing `Assigning to rvalue`, son propre compteur de parenthèses se perd) -
-   il faut écrire l'élément en HTML brut sur **une seule ligne** (`<tg-foo [a]="x" (b)="y">
-   </tg-foo>`, repassthrough tel quel par Jade, pas de retour à la ligne à l'intérieur).
-2. Pour un `@Input`/`@Output` **multi-mots** (`canCreatePrivateProjects`, `projectChange`...),
-   aliaser explicitement en kebab-case (`@Input('can-create-private-projects')`) : le HTML
-   étant insensible à la casse, `[canCreatePrivateProjects]` écrit tel quel dans le jade
-   arrive en minuscules (`[cancreateprivateprojects]`) une fois parsé par le navigateur,
-   et ne correspond plus au nom attendu par `downgradeComponent`. Les bindings mono-mot
-   (`project`, `user`, `archived`, `reload`) n'ont pas ce problème, déjà tout en minuscules.
+**Piège découvert (à retenir pour la suite du sous-projet 4e)** : un composant downgradé
+appelé depuis un template **encore-AngularJS** (jade), pas depuis un autre template Angular,
+ne bénéficie PAS du compilateur Angular pour ses bindings - `downgradeComponent` lit les
+inputs/outputs via `$attrs` (`@angular/upgrade/static`'s `PropertyBinding`), qui reconnaît
+plusieurs formes d'attribut : le nom nu (`foo="expr"`, traité comme une chaîne littérale
+**non évaluée**, silencieusement faux - écrire `project="project"` comme pour une directive
+AngularJS classique compile sans erreur et passe la chaîne `"project"` au lieu de
+`$scope.project`, aucune erreur, juste des champs vides), `bind-foo="expr"`/`on-foo="expr"`
+(évaluent `expr` comme une expression Angular), et la syntaxe Angular `[foo]="expr"`/
+`(foo)="expr"`.
+
+**Première tentative (fausse piste, corrigée après coup)** : `[foo]`/`(foo)` avec un alias
+`@Input('kebab-case')` explicite pour les noms multi-mots - compile et semble marcher pour
+les champs mono-mot (`project`, `archived`...), mais **les champs multi-mots restent
+silencieusement `undefined`** même avec l'alias (vérifié : `canCreatePrivateProjects`,
+`activeUsers`, tous les `*List` de `tgProjectDefaultValues` arrivaient vides) - la
+combinaison bracket + alias ne matche pas dans ce couple de versions AngularJS/`@angular/
+upgrade`. Rester vigilant : ce genre d'échec est **silencieux**, un simple dump statique du
+DOM (attributs présents, tout a l'air bien câblé) ne le révèle pas - il faut inspecter la
+valeur réellement reçue côté composant (`ng.getComponent(el)`, PAS `angular.element(el).
+scope()` - le debug info AngularJS est désactivé dans ce build, `.scope()` renvoie toujours
+`undefined`).
+
+**Correctif qui marche, vérifié en navigateur réel sur les deux composants** : la forme
+`bind-foo`/`on-foo`, entièrement kebab-case (y compris le mot "bind"/"on" lui-même face au
+premier mot du nom, ex. `bind-can-create-private-projects`, `bind-epic-status-list`) - le
+même mécanisme de normalisation kebab→camelCase qu'AngularJS applique déjà à n'importe quel
+attribut ordinaire (`ng-click`, etc.), déjà utilisé ailleurs dans ce repo pour du mono-mot
+(`bind-item`, `bind-project`...) mais jamais testé multi-mots avant ce sous-projet. Pas
+d'alias `@Input()` nécessaire - le nom de propriété reste tel quel, seul l'attribut jade
+change. Bonus : cette syntaxe est composée uniquement de lettres/tirets, donc **la syntaxe
+`tag(attr=val)` normale de Jade la parse sans problème** - pas besoin du contournement HTML
+brut sur une seule ligne qu'exigeait `[foo]`/`(foo)`.
 
 Un deuxième bug lié, trouvé au même endroit : `ngOnChanges` ne re-remplissait le
 `FormGroup` qu'une seule fois (`formInitialized` posé dès le premier appel), mais
@@ -2244,6 +2254,30 @@ juste un état client). Variante projet archivé non testée en direct (aucun pr
 disponible dans les données de démo locales) mais revue de code + build strict couvrent son
 seul vrai risque (branchement `*ngIf` sur les mêmes données). Build Angular
 (`strictTemplates`) et Karma (361 specs) restent verts.
+
+### Sous-projet 4e, partie 2 : `tgProjectDefaultValues` (page "Default Values")
+
+Même famille de route que `project-profile` (`ProjectProfileController` partagé, directive
+sans template sur le wrapper) mais bien plus simple : 8 `<select>` liés à
+`project.default_*`, et le `.checksley(...)` de l'original n'avait **aucun attribut de
+validation sur aucun champ** - `form.validate()` était toujours trivialement vrai. Pas de
+`FormGroup`/`Validators` ici, juste du `ngModel` simple sur `project`, comme les champs
+non-validés de `AdminProjectProfileFormComponent`. `admin:project-default-values:updated`
+(broadcast sur succès, écouté par `tgProjectService.watchSignals()` pour refetch le projet
+partagé) préservé à l'identique.
+
+C'est en vérifiant ce composant en navigateur réel que le piège `[foo]`/`(foo)` documenté
+ci-dessus a été repéré (tous les `*List` arrivaient vides) puis corrigé, sur ce composant ET
+sur `AdminProjectProfileFormComponent` en même temps (son `canCreatePrivateProjects`/
+`activeUsers` avaient exactement le même bug, passé inaperçu à la première vérification -
+`canRequest`/`activeUsers` reçus `undefined` par le widget de propriété imbriqué produisaient
+quand même un rendu plausible visuellement, d'où le risque de faux positif si on ne vérifie
+que visuellement).
+
+Vérifié en navigateur réel : chargement (8 listes déroulantes peuplées avec les vraies
+données du projet), changement + sauvegarde d'une valeur (`default_priority`) avec
+confirmation que la valeur persiste côté composant après soumission, valeur restaurée à
+l'identique ensuite. Build Angular (`strictTemplates`) et Karma (361 specs) restent verts.
 
 ## Patron à suivre pour migrer un module suivant
 
@@ -2268,11 +2302,16 @@ seul vrai risque (branchement `*ngIf` sur les mêmes données). Build Angular
    DOM - un mauvais binding ne lève aucune erreur, il échoue silencieusement. **Ceci vaut
    aussi, et surtout, quand le contenu de tout un partial jade est remplacé par un nouveau
    composant** (pas juste une directive ponctuelle) - voir sous-projet 4e/`project-profile`
-   dans le détail plus haut pour le piège complet : nom d'attribut nu = chaîne littérale
-   jamais évaluée (silencieux), il faut `[foo]`/`(foo)` (ou `bind-foo`/`bindon-foo`) ; Jade
-   1.x ne sait pas parser `[`/`(` dans sa syntaxe `tag(attr=val)` (repasser en HTML brut sur
-   une seule ligne) ; et tout `@Input`/`@Output` multi-mots doit être aliasé en kebab-case
-   explicite pour survivre à la mise en minuscules des noms d'attribut par le navigateur.
+   et `tgProjectDefaultValues` dans le détail plus haut pour le piège complet : nom
+   d'attribut nu = chaîne littérale jamais évaluée (silencieux) ; préférer **`bind-foo`/
+   `on-foo`/`bindon-foo`** (kebab-case sur tout le nom, y compris multi-mots -
+   `bind-can-create-private-projects`) à la syntaxe `[foo]`/`(foo)`, qui échoue
+   silencieusement dès qu'un nom est multi-mots dans ce couple de versions AngularJS/
+   `@angular/upgrade`, alias `@Input()` explicite ou pas - `bind-x`/`on-x` marche à coup sûr
+   et se parse nativement par la syntaxe `tag(attr=val)` de Jade (pas de contournement HTML
+   brut nécessaire). Toujours vérifier la valeur *reçue côté composant*
+   (`ng.getComponent(el)`, pas `angular.element(el).scope()` - debug info désactivé, retourne
+   toujours `undefined`), pas seulement la présence de l'attribut dans le DOM.
 5. Remplacer la route ngRoute (ou le `templateUrl` du parent) par le tag de l'élément
    downgradé.
 6. Déclarer le nouveau composant/directive/pipe dans `src/app/app.module.ts`.

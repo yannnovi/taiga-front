@@ -101,46 +101,6 @@ module.controller("ProjectProfileController", ProjectProfileController)
 
 
 #############################################################################
-## Project Default Values Directive
-#############################################################################
-
-ProjectDefaultValuesDirective = ($rootScope, $repo, $confirm, $loading) ->
-    link = ($scope, $el, $attrs) ->
-        form = $el.find("form").checksley({"onlyOneErrorElement": true})
-        submit = debounce 2000, (event) =>
-            event.preventDefault()
-
-            return if not form.validate()
-
-            currentLoading = $loading()
-                .target(submitButton)
-                .start()
-
-            promise = $repo.save($scope.project)
-            promise.then ->
-                currentLoading.finish()
-                $confirm.notify("success")
-                $rootScope.$broadcast("admin:project-default-values:updated")
-
-            promise.then null, (data) ->
-                currentLoading.finish()
-                form.setErrors(data)
-                if data._error_message
-                    $confirm.notify("error", data._error_message)
-
-        submitButton = $el.find(".submit-button")
-
-        $el.on "submit", "form", submit
-
-        $scope.$on "$destroy", ->
-            $el.off()
-
-    return {link:link}
-
-module.directive("tgProjectDefaultValues", ["$rootScope", "$tgRepo", "$tgConfirm", "$tgLoading",
-                                            ProjectDefaultValuesDirective])
-
-#############################################################################
 ## Project Modules Directive
 #############################################################################
 

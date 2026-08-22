@@ -205,19 +205,21 @@ tests), pas un "module de plus". À choisir un par un selon la priorité produit
    trouvé et corrigé cette fois - son crash sur `project` non chargé avortait le rendu des
    composants Angular frères sur la même page, pas juste du bruit console).
    `VoteButtonComponent` (préexistant, hors périmètre) reste documenté mais non corrigé.
-   Détail dans `MIGRATION.md`. **`admin/project-profile.coffee` (page "Project details")
-   fait** - `AdminProjectProfileFormComponent` (formulaire éditable + variante lecture-seule
-   projet archivé, un seul composant), `ProjectLogoComponent`, 3 wrappers `UpgradeComponent`
-   (restrictions/request-ownership/change-owner). Première migration bridgeant un composant
-   downgradé depuis un template encore-AngularJS (jade) avec de vraies données - a mis au
-   jour un piège de binding silencieux (nom d'attribut nu = chaîne littérale non évaluée ;
-   Jade 1.x incapable de parser `[`/`(` dans sa syntaxe raccourcie ; alias kebab-case requis
-   pour tout binding multi-mots), documenté dans `MIGRATION.md` pour les fichiers restants.
-   4 fichiers restants, dans l'ordre déjà scopé : `tgProjectDefaultValues`/`tgProjectModules`
-   (même fichier `project-profile.coffee`, routes admin séparées) → `project-values.coffee`
-   (nécessite un pattern `FormArray`, formulaires répétés par ligne) → `third-parties.coffee`
-   → `user-settings` → `auth.coffee` (login/register, page d'entrée non-authentifiée - en
-   tout dernier, avec le plus de soin). Détail complet dans `MIGRATION.md`.
+   Détail dans `MIGRATION.md`. **`admin/project-profile.coffee` (pages "Project details" et
+   "Default Values") fait** - `AdminProjectProfileFormComponent` (formulaire éditable +
+   variante lecture-seule projet archivé), `AdminProjectDefaultValuesFormComponent`,
+   `ProjectLogoComponent`, 3 wrappers `UpgradeComponent` (restrictions/request-ownership/
+   change-owner). Première migration bridgeant un composant downgradé depuis un template
+   encore-AngularJS (jade) avec de vraies données - a mis au jour un piège de binding
+   silencieux (nom d'attribut nu = chaîne littérale non évaluée ; `[foo]`/`(foo)` avec alias
+   kebab-case semble marcher pour du mono-mot mais échoue silencieusement en multi-mots -
+   `bind-foo`/`on-foo` entièrement kebab est la forme qui marche à coup sûr, vérifié sur les
+   deux composants), documenté dans `MIGRATION.md` pour les fichiers restants. 3 fichiers
+   restants, dans l'ordre déjà scopé : `tgProjectModules` (même fichier
+   `project-profile.coffee`, route admin séparée) → `project-values.coffee` (nécessite un
+   pattern `FormArray`, formulaires répétés par ligne) → `third-parties.coffee` →
+   `user-settings` → `auth.coffee` (login/register, page d'entrée non-authentifiée - en tout
+   dernier, avec le plus de soin). Détail complet dans `MIGRATION.md`.
 4. ~~Listes infinies (`ngInfiniteScroll`)~~ — fait, voir sous-projet backlog ci-dessus (item 1).
 
 Recommandation : `window.dragMultiple` d'abord (referme complètement le "gros chantier" drag

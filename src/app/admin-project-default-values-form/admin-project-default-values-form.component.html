@@ -1,0 +1,73 @@
+<section class="default-values">
+    <form (ngSubmit)="submit()">
+        <fieldset>
+            <label for="default-value-epic">{{ "ADMIN.DEFAULT_VALUES.LABEL_EPIC_STATUS" | tgTranslate }}</label>
+            <select id="default-value-epic" [(ngModel)]="project.default_epic_status" [ngModelOptions]="{standalone: true}">
+                <option [ngValue]="null"></option>
+                <option *ngFor="let s of epicStatusList" [ngValue]="s.id">{{ s.name }}</option>
+            </select>
+        </fieldset>
+
+        <fieldset>
+            <label for="default-value-us">{{ "ADMIN.DEFAULT_VALUES.LABEL_US_STATUS" | tgTranslate }}</label>
+            <select id="default-value-us" [(ngModel)]="project.default_us_status" [ngModelOptions]="{standalone: true}">
+                <option [ngValue]="null"></option>
+                <option *ngFor="let s of usStatusList" [ngValue]="s.id">{{ s.name }}</option>
+            </select>
+        </fieldset>
+
+        <fieldset>
+            <label for="default-points">{{ "ADMIN.DEFAULT_VALUES.LABEL_POINTS" | tgTranslate }}</label>
+            <select id="default-points" [(ngModel)]="project.default_points" [ngModelOptions]="{standalone: true}">
+                <option [ngValue]="null"></option>
+                <option *ngFor="let s of pointsList" [ngValue]="s.id">{{ s.name }}</option>
+            </select>
+        </fieldset>
+
+        <fieldset>
+            <label for="default-value-task">{{ "ADMIN.DEFAULT_VALUES.LABEL_TASK_STATUS" | tgTranslate }}</label>
+            <select id="default-value-task" [(ngModel)]="project.default_task_status" [ngModelOptions]="{standalone: true}">
+                <option [ngValue]="null"></option>
+                <option *ngFor="let s of taskStatusList" [ngValue]="s.id">{{ s.name }}</option>
+            </select>
+        </fieldset>
+
+        <fieldset>
+            <label for="default-value-issue-type">{{ "ADMIN.DEFAULT_VALUES.LABEL_ISSUE_TYPE" | tgTranslate }}</label>
+            <select id="default-value-issue-type" [(ngModel)]="project.default_issue_type" [ngModelOptions]="{standalone: true}">
+                <option [ngValue]="null"></option>
+                <option *ngFor="let s of issueTypesList" [ngValue]="s.id">{{ s.name }}</option>
+            </select>
+        </fieldset>
+
+        <fieldset>
+            <label for="default-value-issue-status">{{ "ADMIN.DEFAULT_VALUES.LABEL_ISSUE_STATUS" | tgTranslate }}</label>
+            <select id="default-value-issue-status" [(ngModel)]="project.default_issue_status" [ngModelOptions]="{standalone: true}">
+                <option [ngValue]="null"></option>
+                <option *ngFor="let s of issueStatusList" [ngValue]="s.id">{{ s.name }}</option>
+            </select>
+        </fieldset>
+
+        <fieldset>
+            <label for="default-value-priority">{{ "ADMIN.DEFAULT_VALUES.LABEL_PRIORITY" | tgTranslate }}</label>
+            <select id="default-value-priority" [(ngModel)]="project.default_priority" [ngModelOptions]="{standalone: true}">
+                <option [ngValue]="null"></option>
+                <option *ngFor="let s of prioritiesList" [ngValue]="s.id">{{ s.name }}</option>
+            </select>
+        </fieldset>
+
+        <fieldset>
+            <label for="default-value-severity">{{ "ADMIN.DEFAULT_VALUES.LABEL_SEVERITY" | tgTranslate }}</label>
+            <select id="default-value-severity" [(ngModel)]="project.default_severity" [ngModelOptions]="{standalone: true}">
+                <option [ngValue]="null"></option>
+                <option *ngFor="let s of severitiesList" [ngValue]="s.id">{{ s.name }}</option>
+            </select>
+        </fieldset>
+
+        <fieldset>
+            <button class="btn-small" variant="primary" type="submit" [title]="'COMMON.SAVE' | tgTranslate">
+                <span>{{ "COMMON.SAVE" | tgTranslate }}</span>
+            </button>
+        </fieldset>
+    </form>
+</section>

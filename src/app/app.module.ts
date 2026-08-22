@@ -205,6 +205,8 @@ import { ProjectLogoComponent } from "./project-logo/project-logo.component";
 import "./project-logo/register-legacy";
 import { AdminProjectProfileFormComponent } from "./admin-project-profile-form/admin-project-profile-form.component";
 import "./admin-project-profile-form/register-legacy";
+import { AdminProjectDefaultValuesFormComponent } from "./admin-project-default-values-form/admin-project-default-values-form.component";
+import "./admin-project-default-values-form/register-legacy";
 import {
     AJS_APP_META_SERVICE,
     AJS_AVATAR_SERVICE,
@@ -379,6 +381,7 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         LightboxCreateEditComponent,
         ProjectLogoComponent,
         AdminProjectProfileFormComponent,
+        AdminProjectDefaultValuesFormComponent,
         TgTranslatePipe,
         TgEmojifyPipe,
         TgMomentFormatPipe,

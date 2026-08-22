@@ -1,1 +1,9 @@
-<tg-admin-project-profile-form [project]="project" [user]="user" [can-create-private-projects]="canCreatePrivateProjects" [active-users]="activeUsers" [archived]="false" (project-change)="project = $event" (reload)="ctrl.loadInitialData()"></tg-admin-project-profile-form>
+tg-admin-project-profile-form(
+    bind-project="project"
+    bind-user="user"
+    bind-can-create-private-projects="canCreatePrivateProjects"
+    bind-active-users="activeUsers"
+    bind-archived="false"
+    on-project-change="project = $event"
+    on-reload="ctrl.loadInitialData()"
+)
