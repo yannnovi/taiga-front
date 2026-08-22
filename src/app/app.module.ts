@@ -165,6 +165,8 @@ import { TgNotificationsListUpgradedDirective } from "./upgraded/tg-notification
 import { TgWysiwygUpgradedDirective } from "./upgraded/tg-wysiwyg.upgraded-directive";
 import { LightboxFeedbackComponent } from "./lightbox-feedback/lightbox-feedback.component";
 import "./lightbox-feedback/register-legacy";
+import { LightboxCreateBulkIssuesComponent } from "./lightbox-create-bulk-issues/lightbox-create-bulk-issues.component";
+import "./lightbox-create-bulk-issues/register-legacy";
 import {
     AJS_APP_META_SERVICE,
     AJS_AVATAR_SERVICE,
@@ -207,6 +209,7 @@ import {
     AJS_KANBAN_USERSTORIES_SERVICE,
     AJS_REPO,
     AJS_QUEUE,
+    AJS_MODEL,
     upgradedService,
 } from "./shared/ajs-tokens";
 import { TgTranslatePipe } from "./shared/translate.pipe";
@@ -310,6 +313,7 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         TgNotificationsListUpgradedDirective,
         TgWysiwygUpgradedDirective,
         LightboxFeedbackComponent,
+        LightboxCreateBulkIssuesComponent,
         TgTranslatePipe,
         TgEmojifyPipe,
         TgMomentFormatPipe,
@@ -359,6 +363,7 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         upgradedService(AJS_KANBAN_USERSTORIES_SERVICE, "tgKanbanUserstories"),
         upgradedService(AJS_REPO, "$tgRepo"),
         upgradedService(AJS_QUEUE, "$tgQqueue"),
+        upgradedService(AJS_MODEL, "$tgModel"),
     ],
 })
 export class AppModule implements DoBootstrap {

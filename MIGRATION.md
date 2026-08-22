@@ -1744,6 +1744,33 @@ dédiée `Input.insertText`, qui simule une vraie saisie et fonctionne de façon
 
 Build Angular (`strictTemplates`) et Karma (361 specs) restent verts.
 
+### Sous-projet 4, partie 2 : `tgLbCreateBulkIssues`
+
+Contrairement à `tgLbFeedback`, l'original (`app/coffee/modules/issues/lightboxes.coffee`)
+n'avait **aucun scope isolé** (`{link: link}` ambiant) et n'était pas ouvert via
+`lightboxFactory.create` mais posé statiquement dans deux templates route (`issues.jade`,
+`taskboard.jade`), s'ouvrant sur un broadcast (`$scope.$on "issueform:bulk", (ctx,
+projectId, milestoneId) -> ...`). Porté quand même en composant réel (sans aucun
+`@Input()`) : il ne lisait en fait rien d'autre du scope ambiant que ce que le broadcast
+lui-même transporte - `LightboxCreateBulkIssuesComponent` écoute ce même broadcast via
+`AJS_ROOT_SCOPE.$on(...)` pour s'ouvrir et capturer `projectId`/`milestoneId`, posé sans
+attribut dans les deux templates d'origine (`<tg-lb-create-bulk-issues
+class="lightbox lightbox-generic-bulk">`, patron "attribut → élément" déjà utilisé partout
+dans cette migration).
+
+Premier vrai test de `linewidthValidator` en dehors du fichier des validateurs
+(`data-linewidth="200"` sur le textarea original) - vérifié en navigateur headless avec une
+ligne de 250 caractères : message traduit exact affiché ("One or more lines is perhaps too
+long. Try to keep under 200 characters."), substitution `%s` → `200` correcte. Soumission
+valide vérifiée aussi : `POST /api/v1/issues/bulk_create` avec le bon corps, 200, lightbox
+fermée.
+
+`issues/lightboxes.coffee` supprimé en entier (ne contenait que cette directive - la
+déclaration du module `taigaIssues` vit ailleurs, dans `issues.coffee`, confirmé avant
+suppression).
+
+Build Angular (`strictTemplates`) et Karma (361 specs) restent verts.
+
 ## Patron à suivre pour migrer un module suivant
 
 1. Repérer ses dépendances réelles (services/directives utilisés *et* utilisateurs) avant

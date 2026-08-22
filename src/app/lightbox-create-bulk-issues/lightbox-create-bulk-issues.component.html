@@ -1,0 +1,18 @@
+<a class="close" href="" [title]="'COMMON.CLOSE' | tgTranslate" (click)="close(); $event.preventDefault()">
+    <tg-svg svg-icon="icon-close"></tg-svg>
+</a>
+
+<form [formGroup]="form" (ngSubmit)="submit()">
+    <h2 class="title">{{ "COMMON.NEW_BULK" | tgTranslate }}</h2>
+    <fieldset>
+        <textarea cols="200" wrap="off" formControlName="bulk" [attr.placeholder]="'COMMON.ONE_ITEM_LINE' | tgTranslate"></textarea>
+        <p class="field-error" *ngIf="form.get('bulk').invalid && form.get('bulk').touched">
+            {{ errors.getMessage(form.get('bulk').errors) }}
+        </p>
+    </fieldset>
+    <div class="lb-action-wrapper">
+        <button class="btn-big" variant="primary" type="submit" [disabled]="submitting" [title]="'COMMON.SAVE' | tgTranslate">
+            {{ "COMMON.SAVE" | tgTranslate }}
+        </button>
+    </div>
+</form>
