@@ -2279,6 +2279,39 @@ données du projet), changement + sauvegarde d'une valeur (`default_priority`) a
 confirmation que la valeur persiste côté composant après soumission, valeur restaurée à
 l'identique ensuite. Build Angular (`strictTemplates`) et Karma (361 specs) restent verts.
 
+### Sous-projet 4e, partie 3 : `tgProjectModules` (page "Modules")
+
+Contrairement aux deux précédents, le markup de ce formulaire vivait directement dans le
+fichier de route (`admin-project-modules.jade`), pas dans un `include` séparé.
+`AdminProjectModulesFormComponent` reproduit exactement les 3 comportements de soumission
+distincts de l'original, tous branchés sur le même `submit()` :
+- Les 5 bascules "activation directe" (epics/backlog/kanban/issues/wiki) sauvegardent
+  automatiquement au changement.
+- Les champs numériques du module scrum (nombre de sprints/points) et les attributs de
+  visioconférence ne sauvegardent que via leur propre lien "save" - ils ne sont pas dans un
+  bloc `.module-direct-active`.
+- La visioconférence a un troisième cas : la désactivation sauvegarde automatiquement
+  (mirroring le `$watch("isVideoconferenceActivated", ...)` de l'original qui ne sauvegardait
+  qu'en transition on→off), l'activation seule ne sauvegarde jamais automatiquement.
+
+Seul le type "custom" avait une vraie validation checksley (`data-required`/`data-url` sur
+`videoconferences_extra_data`) - reproduite comme une simple vérification dans `submit()`
+avec le `strictUrlValidator` déjà partagé (sous-projet 4a), pas de `FormGroup` pour un seul
+champ conditionnellement validé. Le `$watch("project.videoconferences", ...)` de l'original
+(vide `videoconferences_extra_data` quand on change de fournisseur) et le `$watch("project",
+...)` (re-synchronise `isVideoconferenceActivated` si `project` change de référence) sont
+tous deux reproduits explicitement (`onVideoconferenceTypeChange`/`ngOnChanges`), pas de
+`$watch` implicite en Angular. Le blocage de la touche espace sur les champs de
+visioconférence (`keydown`, `e.which != 32` dans l'original) est préservé tel quel bien que
+sa raison d'être ne soit documentée nulle part.
+
+Vérifié en navigateur réel : bascule d'un module (kanban) avec confirmation de persistance
+après rechargement complet ; activation de la visioconférence, sélection "custom", message
+d'erreur "requis" affiché sur soumission à vide, sauvegarde réussie avec une URL valide et
+persistance confirmée après rechargement ; désactivation avec sauvegarde automatique
+confirmée (état remis à zéro, `videoconferences: null` persistant). Build Angular
+(`strictTemplates`) et Karma (361 specs) restent verts.
+
 ## Patron à suivre pour migrer un module suivant
 
 1. Repérer ses dépendances réelles (services/directives utilisés *et* utilisateurs) avant

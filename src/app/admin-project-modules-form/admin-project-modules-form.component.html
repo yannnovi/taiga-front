@@ -1,0 +1,212 @@
+<form class="module-container">
+    <div class="module module-epics" [class.active]="project.is_epics_activated">
+        <div class="module-icon"><tg-svg svg-icon="icon-module-epic"></tg-svg></div>
+        <div class="module-name">{{ "ADMIN.MODULES.EPICS" | tgTranslate }}</div>
+        <div class="module-desc"><p>{{ "ADMIN.MODULES.EPICS_DESCRIPTION" | tgTranslate }}</p></div>
+        <div class="module-activation module-direct-active">
+            <div class="check">
+                <input
+                    class="activate-input"
+                    id="functionality-epics"
+                    name="functionality-epics"
+                    type="checkbox"
+                    [(ngModel)]="project.is_epics_activated"
+                    [ngModelOptions]="{standalone: true}"
+                    (change)="submit()"
+                />
+                <div></div>
+                <span class="check-text check-yes">{{ "COMMON.YES" | tgTranslate }}</span>
+                <span class="check-text check-no">{{ "COMMON.NO" | tgTranslate }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="module module-scrum" [class.active]="project.is_backlog_activated">
+        <div class="module-icon"><tg-svg svg-icon="icon-module-scrum"></tg-svg></div>
+        <div class="module-name">{{ "ADMIN.MODULES.BACKLOG" | tgTranslate }}</div>
+        <div class="module-desc">
+            <p>{{ "ADMIN.MODULES.BACKLOG_DESCRIPTION" | tgTranslate }}</p>
+            <div class="module-desc-options" *ngIf="project.is_backlog_activated">
+                <fieldset>
+                    <label for="total-sprints">{{ "ADMIN.MODULES.NUMBER_SPRINTS" | tgTranslate }}</label>
+                    <input
+                        id="total-sprints"
+                        name="total-sprints"
+                        type="number"
+                        min="0"
+                        [attr.placeholder]="'ADMIN.MODULES.NUMBER_SPRINTS_HELP' | tgTranslate"
+                        [(ngModel)]="project.total_milestones"
+                        [ngModelOptions]="{standalone: true}"
+                    />
+                </fieldset>
+
+                <fieldset>
+                    <label for="total-story-points">{{ "ADMIN.MODULES.NUMBER_US_POINTS" | tgTranslate }}</label>
+                    <input
+                        id="total-story-points"
+                        name="total-story-points"
+                        type="number"
+                        min="0"
+                        [attr.placeholder]="'ADMIN.MODULES.NUMBER_US_POINTS_HELP' | tgTranslate"
+                        [(ngModel)]="project.total_story_points"
+                        [ngModelOptions]="{standalone: true}"
+                    />
+                </fieldset>
+                <div class="options">
+                    <a class="save" href="" *ngIf="project.is_backlog_activated" (click)="submit(); $event.preventDefault()">
+                        <tg-svg svg-icon="icon-check-empty"></tg-svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="module-activation module-direct-active">
+            <div class="check">
+                <input
+                    class="activate-input"
+                    id="functionality-backlog"
+                    name="functionality-backlog"
+                    type="checkbox"
+                    [(ngModel)]="project.is_backlog_activated"
+                    [ngModelOptions]="{standalone: true}"
+                    (change)="submit()"
+                />
+                <div></div>
+                <span class="check-text check-yes">{{ "COMMON.YES" | tgTranslate }}</span>
+                <span class="check-text check-no">{{ "COMMON.NO" | tgTranslate }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="module module-kanban" [class.active]="project.is_kanban_activated">
+        <div class="module-icon"><tg-svg svg-icon="icon-module-kanban"></tg-svg></div>
+        <div class="module-name">{{ "ADMIN.MODULES.KANBAN" | tgTranslate }}</div>
+        <div class="module-desc">{{ "ADMIN.MODULES.KANBAN_DESCRIPTION" | tgTranslate }}</div>
+        <div class="module-activation module-direct-active">
+            <div class="check">
+                <input
+                    class="activate-input"
+                    id="functionality-kanban"
+                    name="functionality-kanban"
+                    type="checkbox"
+                    [(ngModel)]="project.is_kanban_activated"
+                    [ngModelOptions]="{standalone: true}"
+                    (change)="submit()"
+                />
+                <div></div>
+                <span class="check-text check-yes">{{ "COMMON.YES" | tgTranslate }}</span>
+                <span class="check-text check-no">{{ "COMMON.NO" | tgTranslate }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="module module-issues" [class.active]="project.is_issues_activated">
+        <div class="module-icon"><tg-svg svg-icon="icon-module-issues"></tg-svg></div>
+        <div class="module-name">{{ "ADMIN.MODULES.ISSUES" | tgTranslate }}</div>
+        <div class="module-desc">{{ "ADMIN.MODULES.ISSUES_DESCRIPTION" | tgTranslate }}</div>
+        <div class="module-activation module-direct-active">
+            <div class="check">
+                <input
+                    class="activate-input"
+                    id="functionality-issues"
+                    name="functionality-issues"
+                    type="checkbox"
+                    [(ngModel)]="project.is_issues_activated"
+                    [ngModelOptions]="{standalone: true}"
+                    (change)="submit()"
+                />
+                <div></div>
+                <span class="check-text check-yes">{{ "COMMON.YES" | tgTranslate }}</span>
+                <span class="check-text check-no">{{ "COMMON.NO" | tgTranslate }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="module module-wiki" [class.active]="project.is_wiki_activated">
+        <div class="module-icon"><tg-svg svg-icon="icon-module-wiki"></tg-svg></div>
+        <div class="module-name">{{ "ADMIN.MODULES.WIKI" | tgTranslate }}</div>
+        <div class="module-desc">{{ "ADMIN.MODULES.WIKI_DESCRIPTION" | tgTranslate }}</div>
+        <div class="module-activation module-direct-active">
+            <div class="check">
+                <input
+                    class="activate-input"
+                    id="functionality-wiki"
+                    name="functionality-wiki"
+                    type="checkbox"
+                    [(ngModel)]="project.is_wiki_activated"
+                    [ngModelOptions]="{standalone: true}"
+                    (change)="submit()"
+                />
+                <div></div>
+                <span class="check-text check-yes">{{ "COMMON.YES" | tgTranslate }}</span>
+                <span class="check-text check-no">{{ "COMMON.NO" | tgTranslate }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="module module-videoconference" [class.active]="isVideoconferenceActivated">
+        <div class="module-icon"><tg-svg svg-icon="icon-module-meet"></tg-svg></div>
+        <div class="module-name">{{ "ADMIN.MODULES.MEETUP" | tgTranslate }}</div>
+        <div class="module-desc">
+            <p>{{ "ADMIN.MODULES.MEETUP_DESCRIPTION" | tgTranslate }}</p>
+            <div class="videoconference-attributes" *ngIf="isVideoconferenceActivated">
+                <select
+                    id="videoconference-type"
+                    name="videoconference-type"
+                    [(ngModel)]="project.videoconferences"
+                    [ngModelOptions]="{standalone: true}"
+                    (keydown)="onVideoconferenceKeydown($event)"
+                    (change)="onVideoconferenceTypeChange()"
+                >
+                    <option value="">{{ "ADMIN.MODULES.SELECT_VIDEOCONFERENCE" | tgTranslate }}</option>
+                    <option *ngFor="let o of videoconferenceOptions" [value]="o.id">{{ o.name | tgTranslate }}</option>
+                </select>
+                <fieldset *ngIf="project.videoconferences && project.videoconferences !== 'custom'">
+                    <input
+                        id="videoconference-prefix"
+                        name="videoconference-prefix"
+                        type="text"
+                        maxlength="250"
+                        [(ngModel)]="project.videoconferences_extra_data"
+                        [ngModelOptions]="{standalone: true}"
+                        [attr.placeholder]="'ADMIN.MODULES.SALT_CHAT_ROOM' | tgTranslate"
+                        (keydown)="onVideoconferenceKeydown($event)"
+                    />
+                </fieldset>
+                <fieldset *ngIf="project.videoconferences === 'custom'">
+                    <input
+                        id="videoconference-url"
+                        name="videoconference-url"
+                        type="text"
+                        maxlength="250"
+                        [(ngModel)]="project.videoconferences_extra_data"
+                        [ngModelOptions]="{standalone: true}"
+                        [attr.placeholder]="'ADMIN.MODULES.URL_CHAT_ROOM' | tgTranslate"
+                        (keydown)="onVideoconferenceKeydown($event)"
+                    />
+                    <p class="field-error" *ngIf="videoconferenceError">{{ videoconferenceError }}</p>
+                </fieldset>
+                <fieldset class="options">
+                    <a class="save" href="" *ngIf="project.videoconferences" (click)="submit(); $event.preventDefault()">
+                        <tg-svg svg-icon="icon-check-empty"></tg-svg>
+                    </a>
+                </fieldset>
+            </div>
+        </div>
+        <div class="module-activation">
+            <div class="check">
+                <input
+                    class="activate-input"
+                    id="functionality-video"
+                    name="functionality-video"
+                    type="checkbox"
+                    [ngModel]="isVideoconferenceActivated"
+                    [ngModelOptions]="{standalone: true}"
+                    (ngModelChange)="onVideoconferenceToggle($event)"
+                />
+                <div></div>
+                <span class="check-text check-yes">{{ "COMMON.YES" | tgTranslate }}</span>
+                <span class="check-text check-no">{{ "COMMON.NO" | tgTranslate }}</span>
+            </div>
+        </div>
+    </div>
+</form>
