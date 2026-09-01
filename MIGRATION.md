@@ -2312,6 +2312,90 @@ persistance confirmée après rechargement ; désactivation avec sauvegarde auto
 confirmée (état remis à zéro, `videoconferences: null` persistant). Build Angular
 (`strictTemplates`) et Karma (361 specs) restent verts.
 
+### Sous-projet 4e, partie 4 : `project-values.coffee` (première tranche - le pattern `FormArray`)
+
+Le plus gros fichier restant de tout le sous-projet checksley (1476 lignes) - couvre en
+réalité **4 fonctionnalités distinctes** partageant une seule directive générique côté
+AngularJS (`tgProjectValues`/`ProjectValuesController`, `app/coffee/modules/admin/
+project-profile.coffee`) mais 4 templates jade différents : valeurs simples (statuts,
+points, priorités, sévérités, types), échéances (due dates, hérite de la même directive
+avec des champs en plus), swimlanes (mécanisme totalement différent, drag-and-drop dragula +
+formulaires imbriqués), et attributs personnalisés (CRUD de définitions de champs, hors
+sujet checksley - jamais appelé `.checksley()`). Cette passe ne traite que la **première
+fonctionnalité** (valeurs simples, 7 des 8 routes admin de `project-values`) - due
+dates/swimlanes/attributs personnalisés restent pour une suite. `project-values.coffee`
+lui-même n'a **pas été touché** dans cette passe : `ProjectValuesController`/
+`ProjectValuesDirective` restent utilisés tels quels par `tgProjectDueDatesValues` (qui
+étend l'un et appelle l'autre directement en tant que fonction, pas via le registre de
+directives AngularJS) - seule la ligne `module.directive("tgProjectValues", [...])`
+deviendrait du code mort une fois cette passe terminée, mais son retrait est reporté à une
+passe de nettoyage finale une fois due-dates/swimlanes/attributs aussi migrés, pour ne pas
+risquer une régression sur une route hors périmètre de cette passe pour un gain minime.
+
+**Architecture retenue** : une classe abstraite `ProjectValuesBaseComponent` (`@Directive()`
+sans sélecteur, base commune) portant toute la logique partagée (chargement, `FormArray` par
+ligne + `FormGroup` pour la nouvelle ligne, sauvegarde, suppression avec dialogue de
+réaffectation, réordonnancement), et **4 sous-classes concrètes**, une par template jade
+d'origine (`project-types.jade` → `ProjectValuesSimpleComponent`, `project-status.jade` →
+`ProjectValuesStatusComponent`, `project-us-status.jade` → `ProjectValuesUsStatusComponent`,
+`project-points.jade` → `ProjectValuesPointsComponent`) - même découpage que l'original
+(une directive générique, plusieurs templates), mais chaque variante devient son propre
+composant avec son propre sélecteur plutôt qu'un unique composant avec un `@Input()`
+"variant" et un template geant à branches conditionnelles : plus proche de la structure
+d'origine, et chaque template reste lisible en le comparant à son fichier jade source.
+
+Seuls `name` (requis, 255 caractères - **sauf** sur la ligne d'édition existante de la
+variante `points`, où l'original n'avait `data-required` que sur la ligne de création, quirk
+reproduit tel quel via un paramètre `isNew` sur `buildRowGroup`) et, pour `points`, `value`
+(`data-type="number"` de checksley, reproduit avec un `Validators.pattern` - pas de clé de
+message dédiée "number" dans la config checksley d'origine, utilise la clé générique
+`pattern`) avaient une vraie validation. `is_closed`/`is_archived` restent des `<select>`
+requis toujours valides par défaut. `color` ne fait jamais partie du `FormGroup` - comme
+dans l'original, il est muté directement sur l'instance `Model` de la ligne via
+`tg-color-selector` (déjà migré, réutilisé tel quel), avec la même valeur de repli
+`#A9AABC` au moment de sauvegarder si toujours vide. `form.setErrors(data)` (erreurs
+serveur par champ) simplifié en `confirm.notify("error", ...)`, même simplification que
+partout ailleurs dans ce sous-projet.
+
+Le drag-and-drop dragula de l'original (`ProjectValuesController.moveValue`, un simple
+`splice` + réassignation de `.order` + `$repo.saveAll`) est porté vers
+`@angular/cdk/drag-drop` (`cdkDropList`/`moveItemInArray`), même patron déjà établi pour
+kanban/backlog/taskboard en Phase 2 - mais ici un seul niveau de liste plate, pas de
+grille, donc nettement plus simple.
+
+**Piège découvert (nouveau, distinct de celui du binding `bind-x`/`[x]` déjà documenté
+au-dessus)** : un composant downgradé a **toujours `restrict: "E"`** (élément uniquement,
+jamais attribut) - l'écrire comme attribut sur un `div` existant (`div.foo(tg-my-component,
+...)`, le patron qu'utilisait l'original `tgProjectValues`) compile sans erreur mais **ne
+s'active jamais**, silencieusement (rien dans la console, juste une section vide). Il faut
+écrire le composant comme sa propre balise élément (`tg-my-component.foo(...)`), en
+reportant les classes CSS de l'ancien `div` conteneur sur le nouvel élément lui-même
+(`tg-project-values-simple.admin-attributes-section`, pas `div.admin-attributes-section
+(tg-project-values-simple)`). À vérifier systématiquement pour toute future migration où
+l'original posait sa directive en attribut sur un élément générique plutôt qu'en tant
+qu'élément dédié.
+
+**Piège de vérification (pas un bug du produit, mais a coûté du temps)** : `<select>` lié à
+un `<option [ngValue]="true">`/`[ngValue]="false"` par Angular rend en interne des valeurs
+d'option synthétiques du genre `"0: true"`/`"1: false"` (pas la chaîne littérale "true"),
+pour préserver l'identité par référence des valeurs non-primitives d'`ngValue`. Positionner
+un tel `<select>` par script pour un test (`select.value = "true"`) échoue silencieusement
+(aucune option ne matche, la sélection ne change pas) - il faut lire les valeurs réelles des
+`<option>` du DOM rendu (`Array.from(select.options).map(o => o.value)`) et réutiliser
+cette chaîne exacte.
+
+Vérifié en navigateur réel sur les 4 variantes : **simple** (sévérités) - chargement (5
+valeurs réelles), édition + sauvegarde avec persistance après rechargement complet, message
+"requis" sur soumission vide, ajout d'une nouvelle valeur, suppression avec dialogue de
+réaffectation (choix + confirmation), réordonnancement avec persistance après rechargement
+(et remise dans l'état d'origine) ; **priorités**/**types** - chargement seul (même
+composant, seuls `type`/`objName` changent) ; **status** - chargement des 4 sections de la
+page (epic/US/task/issue), édition + sauvegarde d'`is_closed` avec persistance confirmée ;
+**us-status** - rendu de son sixième champ `is_archived` confirmé ; **points** - chargement
+(12 valeurs), validation `Validators.pattern` bloquant une valeur non numérique avec message
+d'erreur, sauvegarde réussie après correction avec persistance confirmée. Build Angular
+(`strictTemplates`) et Karma (361 specs) restent verts.
+
 ## Patron à suivre pour migrer un module suivant
 
 1. Repérer ses dépendances réelles (services/directives utilisés *et* utilisateurs) avant
@@ -2344,7 +2428,16 @@ confirmée (état remis à zéro, `videoconferences: null` persistant). Build An
    et se parse nativement par la syntaxe `tag(attr=val)` de Jade (pas de contournement HTML
    brut nécessaire). Toujours vérifier la valeur *reçue côté composant*
    (`ng.getComponent(el)`, pas `angular.element(el).scope()` - debug info désactivé, retourne
-   toujours `undefined`), pas seulement la présence de l'attribut dans le DOM.
+   toujours `undefined`), pas seulement la présence de l'attribut dans le DOM. **Si
+   l'original posait sa directive en attribut sur un élément générique** (`div.foo(tg-x,
+   ...)`, patron courant pour les vieilles directives AngularJS) : un composant downgradé a
+   toujours `restrict: "E"` (élément uniquement) - le poser en attribut compile sans erreur
+   mais ne s'active jamais, silencieusement, rien dans la console. Il faut le réécrire comme
+   sa propre balise élément, en reportant les classes CSS du `div` d'origine dessus
+   (`tg-x.foo(...)`, pas `div.foo(tg-x, ...)`) - voir sous-projet 4e/`project-values` pour le
+   détail. Pour vérifier un `<select>` lié à `[ngValue]` par script (CDP ou autre) : Angular
+   rend des valeurs d'option synthétiques (`"0: true"`, pas `"true"`) - lire
+   `select.options` pour la valeur réelle plutôt que deviner.
 5. Remplacer la route ngRoute (ou le `templateUrl` du parent) par le tag de l'élément
    downgradé.
 6. Déclarer le nouveau composant/directive/pipe dans `src/app/app.module.ts`.

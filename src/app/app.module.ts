@@ -209,6 +209,11 @@ import { AdminProjectDefaultValuesFormComponent } from "./admin-project-default-
 import "./admin-project-default-values-form/register-legacy";
 import { AdminProjectModulesFormComponent } from "./admin-project-modules-form/admin-project-modules-form.component";
 import "./admin-project-modules-form/register-legacy";
+import { ProjectValuesSimpleComponent } from "./project-values-table/project-values-simple.component";
+import { ProjectValuesStatusComponent } from "./project-values-table/project-values-status.component";
+import { ProjectValuesUsStatusComponent } from "./project-values-table/project-values-us-status.component";
+import { ProjectValuesPointsComponent } from "./project-values-table/project-values-points.component";
+import "./project-values-table/register-legacy";
 import {
     AJS_APP_META_SERVICE,
     AJS_AVATAR_SERVICE,
@@ -385,6 +390,10 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         AdminProjectProfileFormComponent,
         AdminProjectDefaultValuesFormComponent,
         AdminProjectModulesFormComponent,
+        ProjectValuesSimpleComponent,
+        ProjectValuesStatusComponent,
+        ProjectValuesUsStatusComponent,
+        ProjectValuesPointsComponent,
         TgTranslatePipe,
         TgEmojifyPipe,
         TgMomentFormatPipe,

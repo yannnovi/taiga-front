@@ -1,4 +1,3 @@
-
 //- This source code is licensed under the terms of the
 //- GNU Affero General Public License found in the LICENSE file in
 //- the root directory of this source tree.
@@ -22,26 +21,34 @@ div.wrapper(ng-controller="ProjectValuesSectionController",
         include ../includes/components/mainTitle
         p.admin-subtitle(translate="ADMIN.PROJECT_VALUES_STATUS.SUBTITLE")
 
-        div.admin-attributes-section(tg-project-values, type="epic-statuses",
-            ng-controller="ProjectValuesController as ctrl",
-            ng-init="section='admin'; resource='epics'; type='epic-statuses'; sectionName='ADMIN.PROJECT_VALUES_STATUS.EPIC_TITLE'"
-            objName="status")
-            include ../includes/modules/admin/project-status
+        tg-project-values-status.admin-attributes-section(
+            bind-project="project"
+            bind-resource="'epics'"
+            bind-type="'epic-statuses'"
+            bind-obj-name="'status'"
+            bind-section-title-key="'ADMIN.PROJECT_VALUES_STATUS.EPIC_TITLE'"
+        )
 
-        div.admin-attributes-section(tg-project-values, type="userstory-statuses",
-            ng-controller="ProjectValuesController as ctrl",
-            ng-init="section='admin'; resource='userstories'; type='userstory-statuses'; sectionName='ADMIN.PROJECT_VALUES_STATUS.US_TITLE'",
-            objName="status")
-            include ../includes/modules/admin/project-us-status
+        tg-project-values-us-status.admin-attributes-section(
+            bind-project="project"
+            bind-resource="'userstories'"
+            bind-type="'userstory-statuses'"
+            bind-obj-name="'status'"
+            bind-section-title-key="'ADMIN.PROJECT_VALUES_STATUS.US_TITLE'"
+        )
 
-        div.admin-attributes-section(tg-project-values, type="task-statuses",
-            ng-controller="ProjectValuesController as ctrl",
-            ng-init="section='admin'; resource='tasks'; type='task-statuses'; sectionName='ADMIN.PROJECT_VALUES_STATUS.TASK_TITLE'"
-            objName="status")
-            include ../includes/modules/admin/project-status
+        tg-project-values-status.admin-attributes-section(
+            bind-project="project"
+            bind-resource="'tasks'"
+            bind-type="'task-statuses'"
+            bind-obj-name="'status'"
+            bind-section-title-key="'ADMIN.PROJECT_VALUES_STATUS.TASK_TITLE'"
+        )
 
-        div.admin-attributes-section(tg-project-values, type="issue-statuses",
-            ng-controller="ProjectValuesController as ctrl",
-            ng-init="section='admin'; resource='issues'; type='issue-statuses'; sectionName='ADMIN.PROJECT_VALUES_STATUS.ISSUE_TITLE'",
-            objName="status")
-            include ../includes/modules/admin/project-status
+        tg-project-values-status.admin-attributes-section(
+            bind-project="project"
+            bind-resource="'issues'"
+            bind-type="'issue-statuses'"
+            bind-obj-name="'status'"
+            bind-section-title-key="'ADMIN.PROJECT_VALUES_STATUS.ISSUE_TITLE'"
+        )

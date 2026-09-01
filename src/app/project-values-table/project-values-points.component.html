@@ -1,0 +1,81 @@
+<section class="project-values-table">
+    <div class="project-values-title">
+        <h2>{{ sectionTitleKey | tgTranslate }}</h2>
+        <button class="btn-small show-add-new" variant="primary" [title]="'ADMIN.PROJECT_VALUES_POINTS.ACTION_ADD' | tgTranslate" (click)="showAdd()">
+            <span>{{ "ADMIN.PROJECT_VALUES_POINTS.ACTION_ADD" | tgTranslate }}</span>
+        </button>
+    </div>
+
+    <div class="project-values-header">
+        <div class="project-values-row">
+            <div class="project-values-name"><span>{{ "COMMON.FIELDS.NAME" | tgTranslate }}</span></div>
+            <div class="project-values-value"><span>{{ "COMMON.FIELDS.VALUE" | tgTranslate }}</span></div>
+            <div class="project-values-settings"></div>
+        </div>
+    </div>
+
+    <div class="project-values-body">
+        <div class="sortable" cdkDropList (cdkDropListDropped)="drop($event)">
+            <div *ngFor="let value of values; let i = index; trackBy: trackById" cdkDrag [cdkDragData]="value">
+                <form *ngIf="!value.editing" class="project-values-row row table-main visualization">
+                    <tg-svg svg-icon="icon-draggable" cdkDragHandle></tg-svg>
+                    <div class="project-values-name"><span>{{ value.name }}</span></div>
+                    <div class="project-values-value"><span>{{ value.value }}</span></div>
+                    <div class="project-values-settings">
+                        <a class="edit-value" href="" (click)="startEdit(value); $event.preventDefault()">
+                            <tg-svg svg-icon="icon-edit" [svgTitle]="'ADMIN.COMMON.TITLE_ACTION_EDIT_VALUE' | tgTranslate"></tg-svg>
+                        </a>
+                        <a class="delete-value" href="" (click)="deleteValue(value); $event.preventDefault()">
+                            <tg-svg svg-icon="icon-trash" [svgTitle]="'ADMIN.COMMON.TITLE_ACTION_DELETE_VALUE' | tgTranslate"></tg-svg>
+                        </a>
+                    </div>
+                </form>
+
+                <form *ngIf="value.editing" class="project-values-row row table-main edition" [formGroup]="valuesForm.at(i)">
+                    <div class="project-values-name">
+                        <input name="name" type="text" formControlName="name" [attr.placeholder]="'COMMON.FIELDS.NAME' | tgTranslate" />
+                    </div>
+                    <div class="project-values-value">
+                        <input name="value" type="text" formControlName="value" [attr.placeholder]="'COMMON.FIELDS.VALUE' | tgTranslate" />
+                        <p class="field-error" *ngIf="valuesForm.at(i).get('value').invalid && valuesForm.at(i).get('value').touched">
+                            {{ errors.getMessage(valuesForm.at(i).get('value').errors) }}
+                        </p>
+                    </div>
+                    <div class="project-values-settings">
+                        <a class="save e2e-save" href="" [title]="'COMMON.SAVE' | tgTranslate" (click)="save(value, i); $event.preventDefault()">
+                            <tg-svg svg-icon="icon-check-empty"></tg-svg>
+                        </a>
+                        <a class="cancel" href="" [title]="'COMMON.CANCEL' | tgTranslate" (click)="cancelEdit(value, i); $event.preventDefault()">
+                            <tg-svg class="cancel" svg-icon="icon-close"></tg-svg>
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <form [formGroup]="newValueForm" (ngSubmit)="addNew()">
+            <div class="project-values-row new-value" [class.hidden]="!showAddForm">
+                <div class="project-values-name">
+                    <input name="name" type="text" formControlName="name" [attr.placeholder]="'COMMON.FIELDS.NAME' | tgTranslate" />
+                    <p class="field-error" *ngIf="newValueForm.get('name').invalid && newValueForm.get('name').touched">
+                        {{ errors.getMessage(newValueForm.get('name').errors) }}
+                    </p>
+                </div>
+                <div class="project-values-value">
+                    <input name="value" type="text" formControlName="value" [attr.placeholder]="'COMMON.FIELDS.VALUE' | tgTranslate" />
+                    <p class="field-error" *ngIf="newValueForm.get('value').invalid && newValueForm.get('value').touched">
+                        {{ errors.getMessage(newValueForm.get('value').errors) }}
+                    </p>
+                </div>
+                <div class="project-values-settings">
+                    <a class="add-new e2e-save" href="" [title]="'COMMON.ADD' | tgTranslate" (click)="addNew(); $event.preventDefault()">
+                        <tg-svg svg-icon="icon-check-empty"></tg-svg>
+                    </a>
+                    <a class="delete-new" href="" [title]="'COMMON.CANCEL' | tgTranslate" (click)="cancelAdd(); $event.preventDefault()">
+                        <tg-svg svg-icon="icon-close"></tg-svg>
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
