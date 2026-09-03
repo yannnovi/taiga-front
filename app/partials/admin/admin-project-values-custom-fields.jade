@@ -1,4 +1,3 @@
-
 //- This source code is licensed under the terms of the
 //- GNU Affero General Public License found in the LICENSE file in
 //- the root directory of this source tree.
@@ -24,30 +23,30 @@ div.wrapper(
         include ../includes/components/mainTitle
         p.admin-subtitle(translate="ADMIN.CUSTOM_FIELDS.SUBTITLE")
 
-        div.admin-attributes-section(
-            tg-project-custom-attributes,
-            ng-controller="ProjectCustomAttributesController as ctrl",
-            ng-init="init('epic'); customFieldSectionTitle='ADMIN.CUSTOM_FIELDS.EPIC_DESCRIPTION'; customFieldButtonTitle='ADMIN.CUSTOM_FIELDS.EPIC_ADD'"
+        tg-project-custom-attributes-table.admin-attributes-section(
+            bind-project="project"
+            bind-type="'epic'"
+            bind-section-title-key="'ADMIN.CUSTOM_FIELDS.EPIC_DESCRIPTION'"
+            bind-add-button-title-key="'ADMIN.CUSTOM_FIELDS.EPIC_ADD'"
         )
-            include ../includes/modules/admin/admin-custom-attributes
 
-        div.admin-attributes-section(
-            tg-project-custom-attributes,
-            ng-controller="ProjectCustomAttributesController as ctrl",
-            ng-init="init('userstory'); customFieldSectionTitle='ADMIN.CUSTOM_FIELDS.US_DESCRIPTION'; customFieldButtonTitle='ADMIN.CUSTOM_FIELDS.US_ADD'"
+        tg-project-custom-attributes-table.admin-attributes-section(
+            bind-project="project"
+            bind-type="'userstory'"
+            bind-section-title-key="'ADMIN.CUSTOM_FIELDS.US_DESCRIPTION'"
+            bind-add-button-title-key="'ADMIN.CUSTOM_FIELDS.US_ADD'"
         )
-            include ../includes/modules/admin/admin-custom-attributes
 
-        div.admin-attributes-section(
-            tg-project-custom-attributes,
-            ng-controller="ProjectCustomAttributesController as ctrl",
-            ng-init="init('task'); customFieldSectionTitle='ADMIN.CUSTOM_FIELDS.TASK_DESCRIPTION'; customFieldButtonTitle='ADMIN.CUSTOM_FIELDS.TASK_ADD'"
+        tg-project-custom-attributes-table.admin-attributes-section(
+            bind-project="project"
+            bind-type="'task'"
+            bind-section-title-key="'ADMIN.CUSTOM_FIELDS.TASK_DESCRIPTION'"
+            bind-add-button-title-key="'ADMIN.CUSTOM_FIELDS.TASK_ADD'"
         )
-            include ../includes/modules/admin/admin-custom-attributes
 
-        div.admin-attributes-section(
-            tg-project-custom-attributes,
-            ng-controller="ProjectCustomAttributesController as ctrl",
-            ng-init="init('issue'); customFieldSectionTitle='ADMIN.CUSTOM_FIELDS.ISSUE_DESCRIPTION'; customFieldButtonTitle='ADMIN.CUSTOM_FIELDS.ISSUE_ADD'"
+        tg-project-custom-attributes-table.admin-attributes-section(
+            bind-project="project"
+            bind-type="'issue'"
+            bind-section-title-key="'ADMIN.CUSTOM_FIELDS.ISSUE_DESCRIPTION'"
+            bind-add-button-title-key="'ADMIN.CUSTOM_FIELDS.ISSUE_ADD'"
         )
-            include ../includes/modules/admin/admin-custom-attributes

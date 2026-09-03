@@ -1,0 +1,167 @@
+<section class="custom-fields-table basic-table">
+    <div class="project-values-title">
+        <h2>{{ sectionTitleKey | tgTranslate }}</h2>
+        <button
+            class="btn-small show-add-new"
+            variant="primary"
+            [title]="addButtonTitleKey | tgTranslate"
+            *ngIf="customAttributes.length"
+            (click)="showAdd()"
+        >{{ "ADMIN.CUSTOM_ATTRIBUTES.ADD" | tgTranslate }}</button>
+    </div>
+
+    <div class="table-header">
+        <div class="row">
+            <div class="custom-name">{{ "COMMON.FIELDS.NAME" | tgTranslate }}</div>
+            <div class="custom-description">{{ "COMMON.FIELDS.DESCRIPTION" | tgTranslate }}</div>
+            <div class="custom-field-type">{{ "COMMON.FIELDS.TYPE" | tgTranslate }}</div>
+            <div class="custom-options"></div>
+        </div>
+    </div>
+
+    <div class="table-body">
+        <div class="js-sortable" cdkDropList (cdkDropListDropped)="dropAttr($event)">
+            <div class="e2e-item" *ngFor="let attr of customAttributes; let i = index; trackBy: trackById" cdkDrag [cdkDragData]="attr">
+                <form class="js-form" *ngIf="!attr.editing">
+                    <div class="row single-custom-field js-view-custom-field">
+                        <tg-svg class="e2e-drag" svg-icon="icon-draggable" cdkDragHandle></tg-svg>
+                        <div class="custom-name">
+                            <span>{{ attr.name }}</span>
+                            <a href="" *ngIf="attr.type === 'dropdown'" (click)="toggleExtraVisible(attr.id); $event.preventDefault()">
+                                <tg-svg *ngIf="!isExtraVisible[attr.id]" svg-icon="icon-arrow-right"></tg-svg>
+                                <tg-svg *ngIf="isExtraVisible[attr.id]" svg-icon="icon-arrow-down"></tg-svg>
+                            </a>
+                        </div>
+                        <div class="custom-description">{{ attr.description }}</div>
+                        <div class="custom-field-type">
+                            <span>{{ typeLabel(attr.type) | tgTranslate }}</span>
+                        </div>
+                        <div class="custom-options">
+                            <div class="custom-options-wrapper">
+                                <a class="js-edit-custom-field-button" href="" [title]="'ADMIN.CUSTOM_ATTRIBUTES.EDIT' | tgTranslate" (click)="startEdit(attr); $event.preventDefault()">
+                                    <tg-svg svg-icon="icon-edit"></tg-svg>
+                                </a>
+                                <a class="js-delete-custom-field-button" href="" [title]="'ADMIN.CUSTOM_ATTRIBUTES.DELETE' | tgTranslate" (click)="deleteAttribute(attr); $event.preventDefault()">
+                                    <tg-svg svg-icon="icon-trash"></tg-svg>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+                <form class="js-form" *ngIf="attr.editing" [formGroup]="attrsForm.at(i)">
+                    <div class="row single-custom-field">
+                        <fieldset class="custom-name">
+                            <input type="text" name="name" formControlName="name" [attr.placeholder]="'ADMIN.CUSTOM_ATTRIBUTES.SET_FIELD_NAME' | tgTranslate" maxlength="64" />
+                            <p class="field-error" *ngIf="attrsForm.at(i).get('name').invalid && attrsForm.at(i).get('name').touched">
+                                {{ errors.getMessage(attrsForm.at(i).get('name').errors) }}
+                            </p>
+                        </fieldset>
+                        <fieldset class="custom-description">
+                            <input type="text" name="description" [(ngModel)]="attr.description" [ngModelOptions]="{standalone: true}" [attr.placeholder]="'ADMIN.CUSTOM_ATTRIBUTES.SET_FIELD_DESCRIPTION' | tgTranslate" />
+                        </fieldset>
+                        <fieldset class="custom-field-type">
+                            <select [(ngModel)]="attr.type" [ngModelOptions]="{standalone: true}" (change)="onTypeChange(attr, false)">
+                                <option *ngFor="let choice of typeChoices" [value]="choice.key">{{ choice.name | tgTranslate }}</option>
+                            </select>
+                        </fieldset>
+                        <fieldset class="custom-options">
+                            <div class="custom-options-wrapper">
+                                <a class="js-update-custom-field-button" href="" [title]="'ADMIN.CUSTOM_ATTRIBUTES.ACTION_UPDATE' | tgTranslate" (click)="save(attr, i); $event.preventDefault()">
+                                    <tg-svg svg-icon="icon-check-empty"></tg-svg>
+                                </a>
+                                <a class="js-cancel-edit-custom-field-button" href="" [title]="'ADMIN.CUSTOM_ATTRIBUTES.ACTION_CANCEL_EDITION' | tgTranslate" (click)="cancelEdit(attr, i); $event.preventDefault()">
+                                    <tg-svg svg-icon="icon-close"></tg-svg>
+                                </a>
+                            </div>
+                        </fieldset>
+                    </div>
+                </form>
+
+                <div class="custom-field-extra" *ngIf="attr.type === 'dropdown' && isExtraVisible[attr.id]">
+                    <div class="js-child-sortable" cdkDropList (cdkDropListDropped)="dropExtraOption(attr, $event)">
+                        <div class="js-form" *ngFor="let option of attr.extra; let optIndex = index" cdkDrag>
+                            <div class="row js-view-custom-field-extra" *ngIf="!attr.editing">
+                                <tg-svg class="e2e-drag" svg-icon="icon-draggable" cdkDragHandle></tg-svg>
+                                <div class="custom-extra-attr-wrapper"><span>{{ option }}</span></div>
+                            </div>
+                            <div class="row js-edit-custom-field-extra" *ngIf="attr.editing">
+                                <div class="custom-extra-attr-wrapper">
+                                    <input type="text" name="name" [(ngModel)]="attr.extra[optIndex]" [ngModelOptions]="{standalone: true}" maxlength="64" />
+                                </div>
+                                <div class="custom-options">
+                                    <div class="custom-options-wrapper">
+                                        <a class="js-delete-custom-field-extra-button" href="" tabindex="-1" [title]="'ADMIN.CUSTOM_ATTRIBUTES.DELETE' | tgTranslate" *ngIf="attr.extra.length > 1" (click)="removeExtraOption(attr.extra, optIndex); $event.preventDefault()">
+                                        <tg-svg svg-icon="icon-trash"></tg-svg>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="custom-extra-actions" *ngIf="attr.editing">
+                        <a class="js-add-option-custom-field-extra-button" href="" (click)="addExtraOption(attr.extra); $event.preventDefault()">
+                            <tg-svg svg-icon="icon-add"></tg-svg>
+                            <span>Add option</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <form [formGroup]="newAttrForm" (ngSubmit)="addNew()">
+            <div class="row single-custom-field js-new-custom-field" [class.hidden]="!showAddForm">
+                <fieldset class="custom-name">
+                    <input type="text" name="name" formControlName="name" [attr.placeholder]="'ADMIN.CUSTOM_ATTRIBUTES.SET_FIELD_NAME' | tgTranslate" maxlength="64" />
+                    <p class="field-error" *ngIf="newAttrForm.get('name').invalid && newAttrForm.get('name').touched">
+                        {{ errors.getMessage(newAttrForm.get('name').errors) }}
+                    </p>
+                </fieldset>
+                <fieldset class="custom-description">
+                    <input type="text" name="description" [(ngModel)]="newAttr.description" [ngModelOptions]="{standalone: true}" [attr.placeholder]="'ADMIN.CUSTOM_ATTRIBUTES.SET_FIELD_DESCRIPTION' | tgTranslate" />
+                </fieldset>
+                <fieldset class="custom-field-type">
+                    <select [(ngModel)]="newAttr.type" [ngModelOptions]="{standalone: true}" (change)="onTypeChange(newAttr, true)">
+                        <option value="">{{ "ADMIN.CUSTOM_ATTRIBUTES.FIELD_TYPE_DEFAULT" | tgTranslate }}</option>
+                        <option *ngFor="let choice of typeChoices" [value]="choice.key">{{ choice.name | tgTranslate }}</option>
+                    </select>
+                </fieldset>
+                <fieldset class="custom-options">
+                    <div class="custom-options-wrapper">
+                        <a class="js-create-custom-field-button" href="" [title]="'ADMIN.CUSTOM_ATTRIBUTES.SAVE_TITLE' | tgTranslate" (click)="addNew(); $event.preventDefault()">
+                            <tg-svg svg-icon="icon-check-empty"></tg-svg>
+                        </a>
+                        <a class="js-cancel-new-custom-field-button" href="" *ngIf="customAttributes.length" [title]="'ADMIN.CUSTOM_ATTRIBUTES.CANCEL_TITLE' | tgTranslate" (click)="cancelAdd(); $event.preventDefault()">
+                            <tg-svg svg-icon="icon-close"></tg-svg>
+                        </a>
+                    </div>
+                </fieldset>
+            </div>
+
+            <div class="custom-field-extra" *ngIf="newAttr.type === 'dropdown' && isExtraVisible[-1]">
+                <div class="js-child-sortable">
+                    <div class="js-form" *ngFor="let option of newAttr.extra; let optIndex = index">
+                        <div class="row js-new-custom-field-extra">
+                            <div class="custom-extra-attr-wrapper">
+                                <input type="text" name="name" [(ngModel)]="newAttr.extra[optIndex]" [ngModelOptions]="{standalone: true}" maxlength="64" />
+                            </div>
+                            <div class="custom-options">
+                                <div class="custom-options-wrapper">
+                                    <a class="js-delete-custom-field-extra-button" href="" tabindex="-1" [title]="'ADMIN.CUSTOM_ATTRIBUTES.DELETE' | tgTranslate" *ngIf="newAttr.extra.length > 1" (click)="removeExtraOption(newAttr.extra, optIndex); $event.preventDefault()">
+                                        <tg-svg svg-icon="icon-trash"></tg-svg>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="custom-extra-actions">
+                    <a class="js-add-option-custom-field-extra-button" href="" (click)="addExtraOption(newAttr.extra); $event.preventDefault()">
+                        <tg-svg svg-icon="icon-add"></tg-svg>
+                        <span>Add option</span>
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>

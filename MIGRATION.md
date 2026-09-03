@@ -2445,6 +2445,71 @@ boîte de dialogue simple (`lightbox-generic-delete`, pas `lightbox-ask-choice`)
 réordonnancement avec persistance confirmée. Build Angular (`strictTemplates`) et Karma
 (361 specs) restent verts.
 
+### Sous-projet 4e, partie 6 : `project-custom-attributes-table` (attributs personnalisés admin)
+
+Dernière fonctionnalité de `project-values.coffee` relevant réellement de checksley - le
+CRUD de définitions de champs personnalisés (`admin-custom-attributes.jade` +
+`admin-custom-attributes-extra.jade`/`admin-custom-attributes-new-extra.jade`), qui
+remplaçait `tgProjectCustomAttributes`/`ProjectCustomAttributesController`. Contrairement
+aux `ProjectValuesXxxComponent`, ce composant (`ProjectCustomAttributesTableComponent`)
+n'étend PAS `ProjectValuesBaseComponent` - forme de données trop différente (types de champ,
+tableau `extra` imbriqué pour le type "dropdown", pas de couleur).
+
+**Piège trouvé en lisant le jade avant d'écrire le composant** (pas un piège de migration
+générique, spécifique à cette page - vaut la peine d'être signalé pour la suite) : dans
+l'original, `div.custom-field-extra` (qui contient les options d'un champ "dropdown", avec
+leurs propres `data-required`/`data-maxlength`) est un **frère** de `form.js-form`, pas un
+descendant. `formEl.checksley()` (`formEl` = `.closest("form")` depuis la cible du clic) ne
+peut donc jamais les voir - validation morte dans l'original malgré des attributs qui
+suggèrent le contraire. Reproduit fidèlement : les options "extra" sont de simples chaînes
+non validées, pas des `FormControl`.
+
+Seul `name` (requis, 64 caractères) est réellement validé, pour l'attribut lui-même ET pour
+la nouvelle ligne - `description`/`type` n'ont jamais eu de contrainte. `attr.setAttr("extra",
+attr.extra)` avant chaque sauvegarde reproduit un besoin réel de l'original : `extra` est un
+tableau muté en place (push/splice/réordonnancement), que le suivi de modification du
+`Model` (basé sur des accesseurs de propriété, `app/coffee/modules/base/model.coffee`) ne
+peut pas observer tout seul.
+
+Deux niveaux de glisser-déposer CDK indépendants (comme les deux instances `dragula`
+séparées de l'original) : la liste des attributs elle-même, et, seulement pour un attribut
+"dropdown" actuellement déplié, la liste de ses propres options - jamais de
+`cdkDropListGroup` partagé, l'original n'a jamais permis de glisser entre les options d'un
+attribut et la liste des attributs, ni entre les options de deux attributs différents.
+
+Le formulaire de création reste forcé ouvert (avec ses propres boutons +/annuler masqués)
+tant qu'une section n'a aucun attribut - reproduit en recalculant `showAddForm` à chaque
+`loadCustomAttributes()`, comme l'original le refaisait à chaque `$watch("customAttributes",
+...)`.
+
+**Bug trouvé pendant la vérification en navigateur** (pas dans l'original - une omission de
+la première passe d'écriture) : `startEdit()` ne révélait pas automatiquement la section
+"extra" d'un attribut dropdown en entrant en mode édition - l'original le fait
+inconditionnellement dans `showEditForm()` (`showExtra(attr.id)`, qu'importe le type),
+peu importe si elle avait déjà été dépliée via la flèche en mode lecture. Corrigé.
+
+`ProjectCustomAttributesController`/`ProjectCustomAttributesDirective` et son enregistrement
+(`tgProjectCustomAttributes`), ~440 lignes avec les constantes de type associées, retirés de
+`project-values.coffee` - confirmé sans plus aucun appelant jade. Le fichier contient encore
+deux fonctionnalités **hors du périmètre checksley** (aucune des deux n'appelle
+`.checksley()`) : les swimlanes (scope ambiant, drag-and-drop, à traiter plus tard - candidat
+naturel pour la Phase 3 plutôt que ce sous-projet) et un contrôleur "Tags" séparé
+(`ProjectTagsController`/`ProjectTagsDirective`, jamais examiné en détail) - **tout le
+sous-projet checksley pour `project-values.coffee` s'arrête ici**, ces deux-là ne sont pas
+traités.
+
+Vérifié en navigateur réel sur la section "epic" (les 3 autres - US/task/issue - partagent
+strictement le même composant, seul `type` change) : état initial vide avec le formulaire de
+création forcé ouvert sans bouton "+"/annuler, erreur "requis" sur soumission vide, création
+d'un champ "dropdown" avec 2 options, persistance confirmée après rechargement, édition avec
+révélation automatique des options, ajout d'une 3e option, sauvegarde avec persistance
+confirmée, réordonnancement des options avec persistance confirmée, suppression d'une option
+jusqu'à la dernière (bouton supprimer alors absent), création d'un second champ simple,
+réordonnancement des deux champs avec persistance confirmée, suppression des deux avec la
+bonne boîte de dialogue (nom du champ affiché), retour à l'état vide initial confirmé après
+un dernier rechargement. Build Angular (`strictTemplates`) et Karma (361 specs) restent
+verts.
+
 ## Patron à suivre pour migrer un module suivant
 
 1. Repérer ses dépendances réelles (services/directives utilisés *et* utilisateurs) avant

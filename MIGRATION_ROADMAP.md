@@ -215,18 +215,24 @@ tests), pas un "module de plus". À choisir un par un selon la priorité produit
    `[foo]`/`(foo)` avec alias kebab-case semble marcher pour du mono-mot mais échoue
    silencieusement en multi-mots - `bind-foo`/`on-foo` entièrement kebab est la forme qui
    marche à coup sûr, vérifié sur les trois composants), documenté dans `MIGRATION.md` pour
-   les fichiers restants. **`project-values.coffee` : 8 des 8 routes admin faites** (valeurs
-   simples - statuts epic/US/task/issue, points, priorités, sévérités, types - puis les 3
-   sections d'échéances/due dates US/task/issue), voir `MIGRATION.md` pour le détail
-   (5 composants `ProjectValuesXxxComponent` partageant une base commune `FormArray` +
-   drag-and-drop CDK + un piège `restrict: "E"` découvert et documenté). Le code générique
-   AngularJS devenu mort avec (`tgProjectValues`/`ProjectValuesController`/
-   `tgProjectDueDatesValues`/`ProjectDueDatesValuesController`, ~360 lignes) a été retiré du
-   fichier. Restent sur ce même fichier : swimlanes, attributs personnalisés admin (2
-   fonctionnalités distinctes et indépendantes, non commencées, jamais dépendantes du code
-   retiré) - puis `third-parties.coffee` → `user-settings` → `auth.coffee` (login/register,
-   page d'entrée non-authentifiée - en tout dernier, avec le plus de soin). Détail complet
-   dans `MIGRATION.md`.
+   les fichiers restants. **`project-values.coffee` : tout le périmètre checksley fait**
+   (valeurs simples - statuts epic/US/task/issue, points, priorités, sévérités, types -,
+   échéances/due dates US/task/issue, puis attributs personnalisés admin epic/US/task/issue),
+   voir `MIGRATION.md` pour le détail (6 composants, dont 5 `ProjectValuesXxxComponent`
+   partageant une base commune `FormArray` + drag-and-drop CDK, plus
+   `ProjectCustomAttributesTableComponent` séparé pour les attributs personnalisés - forme de
+   données trop différente pour la même base ; un piège `restrict: "E"` et un piège de
+   validation checksley morte - `div.custom-field-extra` frère du `<form>`, jamais vu par
+   `checksley()` - découverts et documentés). Le code générique AngularJS devenu mort avec
+   (`tgProjectValues`/`ProjectValuesController`/`tgProjectDueDatesValues`/
+   `ProjectDueDatesValuesController`/`tgProjectCustomAttributes`/
+   `ProjectCustomAttributesController`, ~800 lignes au total) a été retiré du fichier.
+   Restent sur ce même fichier, **hors périmètre checksley** (aucune des deux n'appelle
+   `.checksley()`, candidates pour la Phase 3 plutôt que ce sous-projet) : les swimlanes
+   (scope ambiant, drag-and-drop) et un contrôleur "Tags" séparé, jamais examinés. Le
+   sous-projet checksley continue avec `third-parties.coffee` → `user-settings` →
+   `auth.coffee` (login/register, page d'entrée non-authentifiée - en tout dernier, avec le
+   plus de soin). Détail complet dans `MIGRATION.md`.
 4. ~~Listes infinies (`ngInfiniteScroll`)~~ — fait, voir sous-projet backlog ci-dessus (item 1).
 
 Recommandation : `window.dragMultiple` d'abord (referme complètement le "gros chantier" drag
