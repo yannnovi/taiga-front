@@ -2550,6 +2550,55 @@ sauvegarde avec persistance confirmée après rechargement complet (testé sur g
 github, qui n'émet pas `reload`). Build Angular (`strictTemplates`) et Karma (361 specs)
 restent verts.
 
+### Sous-projet 4f, partie 2 : `third-parties.coffee` - la page Webhooks
+
+Deuxième et dernière partie de `third-parties.coffee` : la page "Webhooks" (CRUD complet +
+historique de logs de requêtes/réponses), remplaçant `tgWebhook`/`tgNewWebhook` par
+`WebhooksTableComponent`. `WebhooksController` (chargement des données) inchangé.
+
+Contrairement au reste de ce sous-projet, les 3 champs (`name`/`url`/`key`) sont **vraiment**
+requis, sans asymétrie ligne-existante/nouvelle-ligne cette fois. `url` utilise le même
+validateur `url` strict que partout ailleurs dans ce sous-projet (`data-type="url"` de
+checksley pointait déjà vers la version surchargée, pas la version native permissive).
+
+**Détail facile à rater en lisant vite, donc à souligner** : cette page ne montre **jamais**
+de notification de succès (création, édition, suppression) - seuls les échecs appellent
+`$confirm.notify("error")`. Le retour visuel du succès est uniquement la fermeture du
+formulaire/mode édition ou l'apparition/disparition de la ligne. Reproduit tel quel - une
+tentation naturelle en portant vers ce patron aurait été d'ajouter les notifications de
+succès "manquantes" en pensant réparer un oubli.
+
+**Compromis de mise en page assumé** : dans l'original, le bouton "Ajouter un webhook"
+vivait dans le `header.header-with-actions` de la ROUTE, à côté de `mainTitle` (directive
+encore-AngularJS), sur une même ligne flex. Comme la visibilité/le clic de ce bouton
+dépendent de l'état interne du nouveau composant, et qu'il n'existe aucun canal pour qu'un
+template encore-AngularJS appelle une méthode sur un composant downgradé, le bouton vit
+maintenant à l'intérieur du template du composant, juste au-dessus du tableau plutôt qu'à
+côté du titre de page - une différence purement visuelle (plus de ligne partagée avec le
+titre), documentée plutôt que masquée.
+
+Le panneau d'historique de l'original utilisait `.slideToggle()` de jQuery pour l'animation
+d'ouverture/fermeture - remplacé par un simple basculement de classe/`*ngIf`, même
+simplification déjà appliquée ailleurs dans cette migration pour des effets visuels jQuery
+sans poids fonctionnel.
+
+`WebhookDirective`/`NewWebhookDirective` et leurs enregistrements (`tgWebhook`/
+`tgNewWebhook`), ~210 lignes, retirés - `debounce`/`timeout`, devenus orphelins par ce
+retrait (plus aucun autre appelant dans ce fichier), retirés avec.
+
+Vérifié en navigateur réel, cycle complet : état vide avec formulaire de création forcé
+ouvert, les 3 erreurs "requis" sur soumission vide, rejet d'une URL invalide avec le bon
+message, création réussie avec persistance confirmée après rechargement, édition avec
+persistance confirmée, **test réel du webhook** (vraie requête HTTP sortante vers l'URL
+configurée, réponse 405 réellement reçue et journalisée avec `validStatus`/date formatée
+correctement calculés), ouverture du détail d'un log avec le payload/les en-têtes réels
+affichés, renvoi d'un log (nouvelle entrée d'historique confirmée), suppression avec la
+bonne boîte de dialogue (nom du webhook affiché) et retour à l'état vide confirmé après un
+dernier rechargement. Build Angular (`strictTemplates`) et Karma (361 specs) restent verts.
+
+**`third-parties.coffee` est maintenant entièrement migré** - les deux fonctionnalités du
+fichier (formulaires d'intégration git, page Webhooks) sont faites.
+
 ## Patron à suivre pour migrer un module suivant
 
 1. Repérer ses dépendances réelles (services/directives utilisés *et* utilisateurs) avant

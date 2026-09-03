@@ -219,6 +219,8 @@ import { ProjectCustomAttributesTableComponent } from "./project-custom-attribut
 import "./project-custom-attributes-table/register-legacy";
 import { ThirdPartyWebhookFormComponent } from "./third-party-webhook-form/third-party-webhook-form.component";
 import "./third-party-webhook-form/register-legacy";
+import { WebhooksTableComponent } from "./webhooks-table/webhooks-table.component";
+import "./webhooks-table/register-legacy";
 import {
     AJS_APP_META_SERVICE,
     AJS_AVATAR_SERVICE,
@@ -402,6 +404,7 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         ProjectValuesDueDatesComponent,
         ProjectCustomAttributesTableComponent,
         ThirdPartyWebhookFormComponent,
+        WebhooksTableComponent,
         TgTranslatePipe,
         TgEmojifyPipe,
         TgMomentFormatPipe,

@@ -1,0 +1,167 @@
+<header class="header-with-actions">
+    <div class="action-buttons">
+        <button
+            class="btn-small add-webhook"
+            variant="primary"
+            *ngIf="webhooks.length"
+            [title]="'ADMIN.WEBHOOKS.ADD_NEW' | tgTranslate"
+            (click)="showAdd()"
+        >{{ "ADMIN.WEBHOOKS.ADD_NEW" | tgTranslate }}</button>
+    </div>
+</header>
+
+<section class="webhooks-table basic-table">
+    <div class="table-header">
+        <div class="row">
+            <div class="webhook-service">{{ "COMMON.FIELDS.NAME" | tgTranslate }}</div>
+            <div class="webhook-url">{{ "COMMON.FIELDS.URL" | tgTranslate }}</div>
+            <div class="webhook-options"></div>
+        </div>
+    </div>
+
+    <div class="table-body">
+        <div class="single-webhook-wrapper" *ngFor="let webhook of webhooks; let i = index; trackBy: trackById">
+            <form class="edition-mode" *ngIf="webhook.editing" [formGroup]="webhooksForm.at(i)">
+                <div class="row">
+                    <fieldset class="webhook-service">
+                        <input type="text" name="name" formControlName="name" [attr.placeholder]="'ADMIN.WEBHOOKS.TYPE_NAME' | tgTranslate" />
+                        <p class="field-error" *ngIf="webhooksForm.at(i).get('name').invalid && webhooksForm.at(i).get('name').touched">
+                            {{ errors.getMessage(webhooksForm.at(i).get('name').errors) }}
+                        </p>
+                    </fieldset>
+                    <div class="webhook-url">
+                        <div class="webhook-url-inputs">
+                            <fieldset>
+                                <input type="text" name="url" formControlName="url" [attr.placeholder]="'ADMIN.WEBHOOKS.TYPE_PAYLOAD_URL' | tgTranslate" />
+                                <p class="field-error" *ngIf="webhooksForm.at(i).get('url').invalid && webhooksForm.at(i).get('url').touched">
+                                    {{ errors.getMessage(webhooksForm.at(i).get('url').errors) }}
+                                </p>
+                            </fieldset>
+                            <fieldset>
+                                <input type="text" name="key" formControlName="key" [attr.placeholder]="'ADMIN.WEBHOOKS.TYPE_SERVICE_SECRET' | tgTranslate" />
+                                <p class="field-error" *ngIf="webhooksForm.at(i).get('key').invalid && webhooksForm.at(i).get('key').touched">
+                                    {{ errors.getMessage(webhooksForm.at(i).get('key').errors) }}
+                                </p>
+                            </fieldset>
+                        </div>
+                    </div>
+                    <div class="webhook-options">
+                        <a class="edit-existing" href="" [title]="'ADMIN.WEBHOOKS.SAVE' | tgTranslate" (click)="save(webhook, i); $event.preventDefault()">
+                            <tg-svg svg-icon="icon-check-empty"></tg-svg>
+                        </a>
+                        <a class="cancel-existing" href="" [title]="'ADMIN.WEBHOOKS.CANCEL' | tgTranslate" (click)="cancelEdit(webhook, i); $event.preventDefault()">
+                            <tg-svg svg-icon="icon-close"></tg-svg>
+                        </a>
+                    </div>
+                </div>
+            </form>
+
+            <div class="visualization-mode" *ngIf="!webhook.editing">
+                <div class="row">
+                    <div class="webhook-service">{{ webhook.name }}</div>
+                    <div class="webhook-url">
+                        <span>{{ webhook.url }}</span>
+                        <a class="show-history toggle-history" href="" *ngIf="webhook.logs_counter" [title]="'ADMIN.WEBHOOKS.SHOW_HISTORY_TITLE' | tgTranslate" (click)="toggleHistory(webhook); $event.preventDefault()">
+                            {{ "ADMIN.WEBHOOKS.SHOW_HISTORY" | tgTranslate }}
+                        </a>
+                    </div>
+                    <div class="webhook-options">
+                        <div class="webhook-options-wrapper">
+                            <a class="test-webhook" href="" [title]="'ADMIN.WEBHOOKS.TEST' | tgTranslate" (click)="testWebhook(webhook); $event.preventDefault()">
+                                <tg-svg svg-icon="icon-check-empty"></tg-svg>
+                            </a>
+                            <a class="edit-webhook" href="" [title]="'ADMIN.WEBHOOKS.EDIT' | tgTranslate" (click)="startEdit(webhook); $event.preventDefault()">
+                                <tg-svg svg-icon="icon-edit"></tg-svg>
+                            </a>
+                            <a class="delete-webhook" href="" [title]="'ADMIN.WEBHOOKS.DELETE' | tgTranslate" (click)="deleteWebhook(webhook); $event.preventDefault()">
+                                <tg-svg svg-icon="icon-trash"></tg-svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="webhooks-history" [class.open]="webhook.historyOpen" *ngIf="webhook.historyOpen">
+                    <div class="history-single-wrapper" *ngFor="let log of webhook.logs">
+                        <div class="history-single" [class.history-single-open]="log.detailOpen" (click)="toggleLogDetail(log)">
+                            <div>
+                                <span class="history-response-icon" [class.history-success]="log.validStatus" [class.history-error]="!log.validStatus" [title]="log.status"></span>
+                                <span class="history-date">{{ log.prettyDate }}</span>
+                            </div>
+                            <a class="toggle-log" href="" (click)="$event.preventDefault()">
+                                <tg-svg svg-icon="icon-arrow-down"></tg-svg>
+                            </a>
+                        </div>
+
+                        <div class="history-single-response" [class.open]="log.detailOpen">
+                            <div class="history-single-request-header">
+                                <span>{{ "ADMIN.WEBHOOKS.REQUEST" | tgTranslate }}</span>
+                                <a class="resend-request" href="" [title]="'ADMIN.WEBHOOKS.RESEND_REQUEST' | tgTranslate" (click)="resendLog(webhook, log); $event.preventDefault()">
+                                    <tg-svg svg-icon="icon-reload"></tg-svg>
+                                    <span>{{ "ADMIN.WEBHOOKS.RESEND_REQUEST" | tgTranslate }}</span>
+                                </a>
+                            </div>
+                            <div class="history-single-request-body">
+                                <div class="response-container">
+                                    <span class="response-title">{{ "ADMIN.WEBHOOKS.HEADERS" | tgTranslate }}</span>
+                                    <textarea name="headers" readonly>{{ log.prettySentHeaders }}</textarea>
+                                </div>
+                                <div class="response-container">
+                                    <span class="response-title">{{ "ADMIN.WEBHOOKS.PAYLOAD" | tgTranslate }}</span>
+                                    <textarea name="payload" readonly>{{ log.prettySentData }}</textarea>
+                                </div>
+                            </div>
+                            <div class="history-single-response-header">
+                                <span>{{ "ADMIN.WEBHOOKS.RESPONSE" | tgTranslate }}</span>
+                            </div>
+                            <div class="history-single-response-body">
+                                <div class="response-container">
+                                    <textarea name="response-data" readonly>{{ log.response_data }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <form [formGroup]="newWebhookForm" (ngSubmit)="addNew()">
+            <div class="new-webhook-form row" [class.hidden]="!showAddForm">
+                <fieldset class="webhook-service">
+                    <input type="text" name="name" formControlName="name" [attr.placeholder]="'ADMIN.WEBHOOKS.TYPE_NAME' | tgTranslate" />
+                    <p class="field-error" *ngIf="newWebhookForm.get('name').invalid && newWebhookForm.get('name').touched">
+                        {{ errors.getMessage(newWebhookForm.get('name').errors) }}
+                    </p>
+                </fieldset>
+                <div class="webhook-url">
+                    <div class="webhook-url-inputs">
+                        <fieldset>
+                            <input type="text" name="url" formControlName="url" [attr.placeholder]="'ADMIN.WEBHOOKS.TYPE_PAYLOAD_URL' | tgTranslate" />
+                            <p class="field-error" *ngIf="newWebhookForm.get('url').invalid && newWebhookForm.get('url').touched">
+                                {{ errors.getMessage(newWebhookForm.get('url').errors) }}
+                            </p>
+                        </fieldset>
+                        <fieldset>
+                            <input type="text" name="key" formControlName="key" [attr.placeholder]="'ADMIN.WEBHOOKS.TYPE_SERVICE_SECRET' | tgTranslate" />
+                            <p class="field-error" *ngIf="newWebhookForm.get('key').invalid && newWebhookForm.get('key').touched">
+                                {{ errors.getMessage(newWebhookForm.get('key').errors) }}
+                            </p>
+                        </fieldset>
+                    </div>
+                </div>
+                <div class="webhook-options">
+                    <a class="add-new" href="" [title]="'ADMIN.WEBHOOKS.SAVE' | tgTranslate" (click)="addNew(); $event.preventDefault()">
+                        <tg-svg svg-icon="icon-check-empty"></tg-svg>
+                    </a>
+                    <a class="cancel-new" href="" *ngIf="webhooks.length" [title]="'ADMIN.WEBHOOKS.CANCEL' | tgTranslate" (click)="cancelAdd(); $event.preventDefault()">
+                        <tg-svg svg-icon="icon-close"></tg-svg>
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+
+<a class="help-button" href="https://docs.taiga.io/#webhooks" target="_blank">
+    <tg-svg svg-icon="icon-question"></tg-svg>
+    <span>{{ "ADMIN.HELP" | tgTranslate }}</span>
+</a>
