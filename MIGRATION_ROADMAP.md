@@ -215,15 +215,18 @@ tests), pas un "module de plus". À choisir un par un selon la priorité produit
    `[foo]`/`(foo)` avec alias kebab-case semble marcher pour du mono-mot mais échoue
    silencieusement en multi-mots - `bind-foo`/`on-foo` entièrement kebab est la forme qui
    marche à coup sûr, vérifié sur les trois composants), documenté dans `MIGRATION.md` pour
-   les fichiers restants. **`project-values.coffee` : première tranche faite** (valeurs
-   simples - statuts epic/US/task/issue, points, priorités, sévérités, types - 7 des 8
-   routes admin de ce fichier), voir `MIGRATION.md` pour le détail (pattern `FormArray` +
-   4 composants partageant une base commune + drag-and-drop CDK + un nouveau piège
-   `restrict: "E"` découvert et documenté). Restent sur ce même fichier : due-dates,
-   swimlanes, attributs personnalisés admin (3 fonctionnalités distinctes, non commencées) -
-   puis `third-parties.coffee` → `user-settings` → `auth.coffee` (login/register, page
-   d'entrée non-authentifiée - en tout dernier, avec le plus de soin). Détail complet dans
-   `MIGRATION.md`.
+   les fichiers restants. **`project-values.coffee` : 8 des 8 routes admin faites** (valeurs
+   simples - statuts epic/US/task/issue, points, priorités, sévérités, types - puis les 3
+   sections d'échéances/due dates US/task/issue), voir `MIGRATION.md` pour le détail
+   (5 composants `ProjectValuesXxxComponent` partageant une base commune `FormArray` +
+   drag-and-drop CDK + un piège `restrict: "E"` découvert et documenté). Le code générique
+   AngularJS devenu mort avec (`tgProjectValues`/`ProjectValuesController`/
+   `tgProjectDueDatesValues`/`ProjectDueDatesValuesController`, ~360 lignes) a été retiré du
+   fichier. Restent sur ce même fichier : swimlanes, attributs personnalisés admin (2
+   fonctionnalités distinctes et indépendantes, non commencées, jamais dépendantes du code
+   retiré) - puis `third-parties.coffee` → `user-settings` → `auth.coffee` (login/register,
+   page d'entrée non-authentifiée - en tout dernier, avec le plus de soin). Détail complet
+   dans `MIGRATION.md`.
 4. ~~Listes infinies (`ngInfiniteScroll`)~~ — fait, voir sous-projet backlog ci-dessus (item 1).
 
 Recommandation : `window.dragMultiple` d'abord (referme complètement le "gros chantier" drag

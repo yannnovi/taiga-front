@@ -2396,6 +2396,55 @@ page (epic/US/task/issue), édition + sauvegarde d'`is_closed` avec persistance 
 d'erreur, sauvegarde réussie après correction avec persistance confirmée. Build Angular
 (`strictTemplates`) et Karma (361 specs) restent verts.
 
+### Sous-projet 4e, partie 5 : `project-values.coffee` (deuxième tranche - échéances/due dates)
+
+Complète les 8 routes admin du fichier : les 3 sections "due dates" (US/task/issue)
+utilisaient `tgProjectDueDatesValues`/`ProjectDueDatesValuesController`, qui étendaient la
+directive/contrôleur génériques `tgProjectValues`/`ProjectValuesController` déjà remplacés
+à la tranche précédente - un cinquième composant, `ProjectValuesDueDatesComponent`, complète
+la même hiérarchie (`ProjectValuesBaseComponent`), avec 3 différences de comportement par
+rapport aux 4 variantes précédentes :
+- **Auto-provisionnement** : un projet sans aucune échéance configurée se voit créer un jeu
+  de valeurs par défaut via l'API `createDefaultValues` de la ressource - nouveau point
+  d'extension `createDefaultValues()` sur la base (retourne `false` par défaut = "n'a rien
+  fait, traiter la liste vide normalement", les 4 autres variantes ne le redéfinissent pas).
+- **Champs dérivés** : `days_to_due_abs`/`sign` (état d'affichage seulement) sont dérivés du
+  `days_to_due` signé de l'API au chargement et recombinés dedans juste avant sauvegarde -
+  deux nouveaux points d'extension `onValuesLoaded()`/`beforeSave()` sur la base, ni l'un ni
+  l'autre dans le `FormGroup` (même traitement que `color` ailleurs dans ce fichier).
+- **Suppression simplifiée** : `askDelete` (confirmation simple), pas `askChoice` (pas de
+  réaffectation - rien ne pointe vers une échéance comme un statut US/task/issue) ; la ligne
+  "par défaut" (`value.by_default`) ne peut pas être supprimée du tout (bouton absent) et
+  masque entièrement ses champs de seuil/avant-après en édition (name+couleur seulement).
+
+Piège trouvé en écrivant le template (pas un piège de migration en général, spécifique à
+cette variante) : le sélecteur avant/après ne doit **pas** lire `value.days_to_due_abs`
+directement en mode édition - ce champ est maintenant dans le `FormGroup`, donc
+`value.days_to_due_abs` reste figé à sa valeur d'AVANT l'édition tant que la ligne n'est pas
+sauvegardée, alors que l'original (`ng-model` direct sur `value.days_to_due_abs`) réagissait
+en temps réel à la frappe. Corrigé en lisant `valuesForm.at(i).get('days_to_due_abs').value`
+(l'état vivant du contrôle) dans les conditions `*ngIf`, pas la propriété de la ligne.
+
+`ProjectValuesController`/`ProjectValuesDirective`/`ProjectDueDatesValuesController`/
+`ProjectDueDatesValues` (~360 lignes) et leurs deux enregistrements de directive
+(`tgProjectValues`, `tgProjectDueDatesValues`) sont maintenant du code mort - **retirés** de
+`project-values.coffee` dans ce commit (confirmé par grep qu'aucun jade ne les référence
+plus, et que les fonctionnalités restantes du fichier - swimlanes, attributs personnalisés -
+ont toujours été des implémentations totalement indépendantes). `getDefaulColorList`/
+`defaultColor`, devenus orphelins par ce retrait, supprimés avec. `debounce`/
+`animationFrame` et les alias `trim`/`toString`/`joinStr`/`groupBy`/`bindOnce` (ces 5
+derniers déjà morts avant ce commit, pas nouvellement orphelins) laissés en l'état - hors
+périmètre de ce nettoyage ciblé.
+
+Vérifié en navigateur réel sur les 3 sections (US/task/issue) : chargement (3 valeurs
+réelles chacune, dont la ligne "par défaut"), édition + sauvegarde du seuil et du sens
+avant/après avec persistance confirmée après rechargement, ligne "par défaut" confirmée
+sans bouton supprimer et sans champs de seuil en édition, ajout avec les deux erreurs
+"requis" affichées sur soumission vide puis sauvegarde réussie, suppression avec la bonne
+boîte de dialogue simple (`lightbox-generic-delete`, pas `lightbox-ask-choice`),
+réordonnancement avec persistance confirmée. Build Angular (`strictTemplates`) et Karma
+(361 specs) restent verts.
+
 ## Patron à suivre pour migrer un module suivant
 
 1. Repérer ses dépendances réelles (services/directives utilisés *et* utilisateurs) avant

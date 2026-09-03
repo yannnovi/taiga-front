@@ -1,0 +1,148 @@
+<section class="admin-status-table">
+    <div class="colors-table">
+        <div class="project-values-title">
+            <h2>{{ sectionTitleKey | tgTranslate }}</h2>
+            <button
+                class="btn-small show-add-new"
+                variant="primary"
+                [title]="'ADMIN.PROJECT_DUE_DATE_STATUS.ACTION_ADD_STATUS' | tgTranslate"
+                (click)="showAdd()"
+            >
+                <span>{{ "ADMIN.PROJECT_DUE_DATE_STATUS.ACTION_ADD_STATUS" | tgTranslate }}</span>
+            </button>
+        </div>
+
+        <div class="table-header">
+            <div class="row">
+                <div class="color-column">{{ "COMMON.FIELDS.COLOR" | tgTranslate }}</div>
+                <div class="status-name">{{ "COMMON.FIELDS.NAME" | tgTranslate }}</div>
+                <div class="thresold-column">{{ "ADMIN.PROJECT_DUE_DATE_STATUS.DAYS_TO_DUE_DATE" | tgTranslate }}</div>
+                <div class="before-after-column">{{ "ADMIN.PROJECT_DUE_DATE_STATUS.BEFORE_AFTER" | tgTranslate }}</div>
+                <div class="options-column"></div>
+            </div>
+        </div>
+
+        <div class="table-main">
+            <div class="sortable" cdkDropList (cdkDropListDropped)="drop($event)">
+                <div *ngFor="let value of values; let i = index; trackBy: trackById" cdkDrag [cdkDragData]="value">
+                    <form *ngIf="!value.editing" class="row table-main visualization">
+                        <tg-svg svg-icon="icon-draggable" cdkDragHandle></tg-svg>
+                        <div class="color-column"><div class="current-color" [style.background]="value.color"></div></div>
+                        <div class="status-name"><span>{{ value.name }}</span></div>
+                        <div class="thresold-column">
+                            <span *ngIf="value.days_to_due != null">{{ value.days_to_due_abs }}</span>
+                        </div>
+                        <div class="before-after-column">
+                            <span *ngIf="value.days_to_due">
+                                <span *ngIf="value.days_to_due >= 0">{{ "ADMIN.PROJECT_DUE_DATE_STATUS.BEFORE" | tgTranslate }}</span>
+                                <span *ngIf="value.days_to_due < 0">{{ "ADMIN.PROJECT_DUE_DATE_STATUS.AFTER" | tgTranslate }}</span>
+                            </span>
+                        </div>
+                        <div class="options-column">
+                            <a class="edit-value" href="" (click)="startEdit(value); $event.preventDefault()">
+                                <tg-svg svg-icon="icon-edit" [svgTitle]="'ADMIN.COMMON.TITLE_ACTION_EDIT_VALUE' | tgTranslate"></tg-svg>
+                            </a>
+                            <a class="delete-due-date" href="" *ngIf="!value.by_default" (click)="deleteValue(value); $event.preventDefault()">
+                                <tg-svg svg-icon="icon-trash" [svgTitle]="'ADMIN.COMMON.TITLE_ACTION_DELETE_VALUE' | tgTranslate"></tg-svg>
+                            </a>
+                        </div>
+                    </form>
+
+                    <form *ngIf="value.editing" class="row table-main edition" [formGroup]="valuesForm.at(i)">
+                        <div class="color-column">
+                            <tg-color-selector [initColor]="value.color" (selectColor)="value.color = $event.color"></tg-color-selector>
+                        </div>
+                        <div class="status-name">
+                            <input
+                                name="name"
+                                type="text"
+                                formControlName="name"
+                                [attr.placeholder]="'ADMIN.STATUS.PLACEHOLDER_WRITE_STATUS_NAME' | tgTranslate"
+                                maxlength="255"
+                            />
+                            <p class="field-error" *ngIf="valuesForm.at(i).get('name').invalid && valuesForm.at(i).get('name').touched">
+                                {{ errors.getMessage(valuesForm.at(i).get('name').errors) }}
+                            </p>
+                        </div>
+                        <div class="thresold-column" *ngIf="!value.by_default">
+                            <input class="days-to-due-abs" type="number" min="0" name="days_to_due" formControlName="days_to_due_abs" />
+                        </div>
+                        <div class="before-after-column">
+                            <div class="before-after-selector" *ngIf="!value.by_default && valuesForm.at(i).get('days_to_due_abs').value != 0">
+                                <div class="before-after-selector-single" [class.checked]="value.sign > 0">
+                                    <input type="radio" id="due-date-status-before" name="due-date-status-after" [(ngModel)]="value.sign" [ngModelOptions]="{standalone: true}" [value]="1" />
+                                    <label class="days-to-due-sign" for="due-date-status-before">{{ "ADMIN.PROJECT_DUE_DATE_STATUS.BEFORE" | tgTranslate }}</label>
+                                </div>
+                                <div class="before-after-selector-single" [class.checked]="value.sign < 0">
+                                    <input type="radio" id="due-date-status-after" name="due-date-status-after" [(ngModel)]="value.sign" [ngModelOptions]="{standalone: true}" [value]="-1" />
+                                    <label class="days-to-due-sign" for="due-date-status-after">{{ "ADMIN.PROJECT_DUE_DATE_STATUS.AFTER" | tgTranslate }}</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="options-column">
+                            <a class="save e2e-save" href="" [title]="'COMMON.SAVE' | tgTranslate" (click)="save(value, i); $event.preventDefault()">
+                                <tg-svg svg-icon="icon-check-empty"></tg-svg>
+                            </a>
+                            <a class="cancel" href="" [title]="'COMMON.CANCEL' | tgTranslate" (click)="cancelEdit(value, i); $event.preventDefault()">
+                                <tg-svg class="cancel" svg-icon="icon-close"></tg-svg>
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <form [formGroup]="newValueForm" (ngSubmit)="addNew()">
+                <div class="row table-main new-value" [class.hidden]="!showAddForm">
+                    <div class="color-column">
+                        <tg-color-selector [initColor]="newValue.color" (selectColor)="newValue.color = $event.color"></tg-color-selector>
+                    </div>
+                    <div class="status-name">
+                        <input
+                            name="name"
+                            type="text"
+                            formControlName="name"
+                            [attr.placeholder]="'ADMIN.STATUS.PLACEHOLDER_WRITE_STATUS_NAME' | tgTranslate"
+                            maxlength="255"
+                        />
+                        <p class="field-error" *ngIf="newValueForm.get('name').invalid && newValueForm.get('name').touched">
+                            {{ errors.getMessage(newValueForm.get('name').errors) }}
+                        </p>
+                    </div>
+                    <div class="thresold-column">
+                        <input
+                            class="days-to-due-abs"
+                            type="number"
+                            min="0"
+                            name="days_to_due_abs"
+                            formControlName="days_to_due_abs"
+                            [attr.placeholder]="'ADMIN.STATUS.PLACEHOLDER_DAYS_TO_DUE_DATE' | tgTranslate"
+                        />
+                        <p class="field-error" *ngIf="newValueForm.get('days_to_due_abs').invalid && newValueForm.get('days_to_due_abs').touched">
+                            {{ errors.getMessage(newValueForm.get('days_to_due_abs').errors) }}
+                        </p>
+                    </div>
+                    <div class="before-after-column">
+                        <div class="before-after-selector" *ngIf="newValueForm.get('days_to_due_abs').value">
+                            <div class="before-after-selector-single" [class.checked]="newValue.sign > 0">
+                                <input type="radio" id="due-date-status-before" name="due-date-status-after" [(ngModel)]="newValue.sign" [ngModelOptions]="{standalone: true}" [value]="1" />
+                                <label class="days-to-due-sign" for="due-date-status-before">{{ "ADMIN.PROJECT_DUE_DATE_STATUS.BEFORE" | tgTranslate }}</label>
+                            </div>
+                            <div class="before-after-selector-single" [class.checked]="newValue.sign < 0">
+                                <input type="radio" id="due-date-status-after" name="due-date-status-after" [(ngModel)]="newValue.sign" [ngModelOptions]="{standalone: true}" [value]="-1" />
+                                <label class="days-to-due-sign" for="due-date-status-after">{{ "ADMIN.PROJECT_DUE_DATE_STATUS.AFTER" | tgTranslate }}</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="options-column">
+                        <a class="add-new-due-date e2e-save" href="" [title]="'COMMON.ADD' | tgTranslate" (click)="addNew(); $event.preventDefault()">
+                            <tg-svg svg-icon="icon-check-empty"></tg-svg>
+                        </a>
+                        <a class="delete-new" href="" [title]="'COMMON.CANCEL' | tgTranslate" (click)="cancelAdd(); $event.preventDefault()">
+                            <tg-svg svg-icon="icon-close"></tg-svg>
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>

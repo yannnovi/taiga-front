@@ -107,13 +107,42 @@ export abstract class ProjectValuesBaseComponent implements OnChanges, OnInit {
         return value.id;
     }
 
-    private loadValues(): void {
+    protected loadValues(): void {
         this.rs[this.resource].listValues(this.project.id, this.type).then((values: any[]) => {
-            this.values = values;
-            this.maxValueOrder = values.length ? _.maxBy(values, "order").order : 0;
-            this.rebuildValuesForm();
+            if (!values.length && this.createDefaultValues()) {
+                return;
+            }
+
+            this.applyLoadedValues(values);
         });
     }
+
+    /** `ProjectDueDatesValuesController`'s auto-provisioning: some variants (due dates)
+     *  create a starter set of values via the resource's own `createDefaultValues` API when
+     *  a project has none yet. No-op (returns `false`, meaning "didn't handle it, proceed
+     *  with the empty list normally") for every other variant. */
+    protected createDefaultValues(): boolean {
+        return false;
+    }
+
+    /** Post-processing hook for freshly-loaded (or freshly-defaulted) values before they're
+     *  displayed - mirrors the original's `displayValues()` (due dates derive
+     *  `days_to_due_abs`/`sign` from `days_to_due` here). No-op by default. */
+    protected onValuesLoaded(values: any[]): any[] {
+        return values;
+    }
+
+    protected applyLoadedValues(values: any[]): void {
+        this.values = this.onValuesLoaded(values);
+        this.maxValueOrder = this.values.length ? _.maxBy(this.values, "order").order : 0;
+        this.rebuildValuesForm();
+    }
+
+    /** Hook to derive/normalize fields right before a row (existing or new) is sent to the
+     *  API - mirrors the original's own inline computation at the same point (due dates
+     *  recompute the signed `days_to_due` from `days_to_due_abs`/`sign` here, since those
+     *  two live outside the `FormGroup`, same as `color`). No-op by default. */
+    protected beforeSave(_value: any): void {}
 
     private rebuildValuesForm(): void {
         this.valuesForm = new FormArray<FormGroup>(this.values.map((v) => this.buildRowGroup(v)));
@@ -139,6 +168,7 @@ export abstract class ProjectValuesBaseComponent implements OnChanges, OnInit {
         }
 
         Object.assign(value, group.value);
+        this.beforeSave(value);
 
         if ("color" in value && !value.color) {
             value.color = DEFAULT_COLOR;
@@ -183,6 +213,8 @@ export abstract class ProjectValuesBaseComponent implements OnChanges, OnInit {
             project: this.project.id,
             order: this.maxValueOrder ? this.maxValueOrder + 1 : 1,
         };
+
+        this.beforeSave(payload);
 
         if ("color" in payload && !payload.color) {
             payload.color = DEFAULT_COLOR;

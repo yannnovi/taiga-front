@@ -213,6 +213,7 @@ import { ProjectValuesSimpleComponent } from "./project-values-table/project-val
 import { ProjectValuesStatusComponent } from "./project-values-table/project-values-status.component";
 import { ProjectValuesUsStatusComponent } from "./project-values-table/project-values-us-status.component";
 import { ProjectValuesPointsComponent } from "./project-values-table/project-values-points.component";
+import { ProjectValuesDueDatesComponent } from "./project-values-table/project-values-due-dates.component";
 import "./project-values-table/register-legacy";
 import {
     AJS_APP_META_SERVICE,
@@ -394,6 +395,7 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         ProjectValuesStatusComponent,
         ProjectValuesUsStatusComponent,
         ProjectValuesPointsComponent,
+        ProjectValuesDueDatesComponent,
         TgTranslatePipe,
         TgEmojifyPipe,
         TgMomentFormatPipe,
