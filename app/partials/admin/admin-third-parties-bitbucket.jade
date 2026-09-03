@@ -1,4 +1,3 @@
-
 //- This source code is licensed under the terms of the
 //- GNU Affero General Public License found in the LICENSE file in
 //- the root directory of this source tree.
@@ -8,7 +7,6 @@
 doctype html
 
 div.wrapper.roles(
-    tg-bitbucket-webhooks
     ng-controller="BitbucketController as ctrl",
     ng-init="section='admin'"
 )
@@ -22,54 +20,11 @@ div.wrapper.roles(
     section.main.admin-common.admin-third-parties
         include ../includes/components/mainTitle
 
-        form
-            fieldset
-                label(for="secret-key", translate="ADMIN.THIRD_PARTIES.SECRET_KEY")
-                input(
-                    id="secret-key"
-                    type="text"
-                    name="secret-key"
-                    ng-model="bitbucket.secret"
-                    placeholder="{{'ADMIN.THIRD_PARTIES.SECRET_KEY' | translate}}"
-                )
-
-            fieldset
-                .select-input-text(tg-select-input-text)
-                    div
-                        label(for="payload-url", translate="ADMIN.THIRD_PARTIES.PAYLOAD_URL")
-                        .field-with-option
-                            input(
-                                id="payload-url"
-                                type="text"
-                                name="payload-url"
-                                readonly="readonly"
-                                ng-model="bitbucket.webhooks_url"
-                                placeholder="{{'ADMIN.THIRD_PARTIES.PAYLOAD_URL' | translate}}"
-                            )
-                            .option-wrapper.select-input-content(title="{{'COMMON.COPY_TO_CLIPBOARD' | translate}}")
-                                tg-svg(svg-icon="icon-clipboard")
-
-            fieldset
-                label(for="valid-origin-ips", translate="ADMIN.THIRD_PARTIES.VALID_IPS")
-                input(
-                    id="valid-origin-ips"
-                    type="text"
-                    name="valid-origin-ips"
-                    tg-valid-origin-ips
-                    ng-model="bitbucket.valid_origin_ips"
-                    placeholder="{{'ADMIN.BITBUCKET.INFO_VERIFYING_IP' | translate}}"
-                )
-
-            button.btn-small(
-                variant="primary"
-                type="submit"
-                title="{{'COMMON.SAVE' | translate}}"
-                translate="COMMON.SAVE"
-            )
-
-        a.help-button(
-            href="https://docs.taiga.io/integrations-bitbucket.html"
-            target="_blank"
+        tg-third-party-webhook-form(
+            bind-module="bitbucket"
+            bind-provider="'bitbucket'"
+            bind-has-valid-origin-ips="true"
+            bind-valid-origin-ips-placeholder-key="'ADMIN.BITBUCKET.INFO_VERIFYING_IP'"
+            bind-help-url="'https://docs.taiga.io/integrations-bitbucket.html'"
+            on-reload="ctrl.loadModules()"
         )
-            tg-svg(svg-icon="icon-question")
-            span(translate="ADMIN.HELP")

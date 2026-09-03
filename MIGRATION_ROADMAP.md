@@ -230,9 +230,12 @@ tests), pas un "module de plus". À choisir un par un selon la priorité produit
    Restent sur ce même fichier, **hors périmètre checksley** (aucune des deux n'appelle
    `.checksley()`, candidates pour la Phase 3 plutôt que ce sous-projet) : les swimlanes
    (scope ambiant, drag-and-drop) et un contrôleur "Tags" séparé, jamais examinés. Le
-   sous-projet checksley continue avec `third-parties.coffee` → `user-settings` →
-   `auth.coffee` (login/register, page d'entrée non-authentifiée - en tout dernier, avec le
-   plus de soin). Détail complet dans `MIGRATION.md`.
+   sous-projet checksley continue avec `third-parties.coffee` (2 fonctionnalités : les 4
+   formulaires d'intégration git - **faits**, `ThirdPartyWebhookFormComponent` partagé,
+   aucune validation réelle dans l'original malgré l'appel `checksley()` - puis la page
+   Webhooks avec son CRUD complet + historique de logs, plus gros, pas encore commencée) →
+   `user-settings` → `auth.coffee` (login/register, page d'entrée non-authentifiée - en tout
+   dernier, avec le plus de soin). Détail complet dans `MIGRATION.md`.
 4. ~~Listes infinies (`ngInfiniteScroll`)~~ — fait, voir sous-projet backlog ci-dessus (item 1).
 
 Recommandation : `window.dragMultiple` d'abord (referme complètement le "gros chantier" drag

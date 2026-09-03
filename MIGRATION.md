@@ -2510,6 +2510,46 @@ bonne boîte de dialogue (nom du champ affiché), retour à l'état vide initial
 un dernier rechargement. Build Angular (`strictTemplates`) et Karma (361 specs) restent
 verts.
 
+### Sous-projet 4f : `third-parties.coffee`, partie 1 - les 4 formulaires d'intégration git
+
+`admin/third-parties.coffee` couvre en fait 2 fonctionnalités bien séparées : les 4
+formulaires d'intégration git (github/gitlab/bitbucket/gogs) et la page "Webhooks"
+(CRUD complet + historique de logs, bien plus gros - traité séparément, voir la partie
+suivante). Cette passe ne fait que les 4 formulaires.
+
+Confirmé en lisant les 4 templates avant d'écrire quoi que ce soit : malgré l'appel à
+`form.checksley({"onlyOneErrorElement": true})` dans les 4 directives d'origine
+(`tgGithubWebhooks`/`tgGitlabWebhooks`/`tgBitbucketWebhooks`/`tgGogsWebhooks`), **aucun
+champ d'aucun des 4 templates n'a jamais eu de `data-required`/`data-type`** - une
+validation entièrement no-op, comme `tgProjectDefaultValues` plus haut dans ce sous-projet.
+Un seul composant partagé, `ThirdPartyWebhookFormComponent`, sans `FormGroup` - juste du
+`ngModel` simple.
+
+Deux comportements à reproduire fidèlement plutôt qu'à "corriger" :
+- **`valid_origin_ips`** (gitlab/bitbucket seulement) : l'original (`tgValidOriginIps`, un
+  simple `$ngModel.$parsers.push`) ne fait `trim()` que sur la chaîne ENTIÈRE avant de la
+  découper sur la virgule - pas sur chaque segment individuellement. `"1.2.3.4, 5.6.7.8"`
+  devient donc `["1.2.3.4", " 5.6.7.8"]` (espace de tête conservé sur le second) - reproduit
+  à l'identique via un getter/setter plutôt que "nettoyé".
+- **`reload` asymétrique** : seuls gitlab/bitbucket/gogs émettaient
+  `$scope.$emit("project:modules:reload")` en cas de succès - `GithubController` n'écoute
+  jamais cet événement (les 3 autres si). Reproduit avec un `@Output() reload` que le
+  composant n'émet que si `provider !== "github"`, câblé en jade avec `on-reload=
+  "ctrl.loadModules()"` sur les 3 routes concernées seulement.
+
+`tgSelectInputText` (copier le payload URL dans le presse-papier au clic,
+`document.execCommand('copy')`) est absorbé directement dans le nouveau composant plutôt que
+wrappé - la directive AngularJS d'origine reste enregistrée et active, encore utilisée par
+`project-csv.jade` (hors périmètre). `tgValidOriginIps`, lui, n'avait plus aucun autre
+appelant - retiré avec les 4 directives de formulaire et leur ~180 lignes.
+
+Vérifié en navigateur réel sur les 4 fournisseurs : chargement des données réelles (secret,
+URL de payload, IPs), clic copier-presse-papier (sélection du champ confirmée), conversion
+texte→tableau de `valid_origin_ips` avec l'espace de tête préservé comme dans l'original,
+sauvegarde avec persistance confirmée après rechargement complet (testé sur gitlab et sur
+github, qui n'émet pas `reload`). Build Angular (`strictTemplates`) et Karma (361 specs)
+restent verts.
+
 ## Patron à suivre pour migrer un module suivant
 
 1. Repérer ses dépendances réelles (services/directives utilisés *et* utilisateurs) avant

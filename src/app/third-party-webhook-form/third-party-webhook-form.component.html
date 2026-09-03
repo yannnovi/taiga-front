@@ -1,0 +1,57 @@
+<form (ngSubmit)="submit()">
+    <fieldset>
+        <label for="secret-key">{{ "ADMIN.THIRD_PARTIES.SECRET_KEY" | tgTranslate }}</label>
+        <input
+            id="secret-key"
+            type="text"
+            name="secret-key"
+            [(ngModel)]="module.secret"
+            [ngModelOptions]="{standalone: true}"
+            [attr.placeholder]="'ADMIN.THIRD_PARTIES.SECRET_KEY' | tgTranslate"
+        />
+    </fieldset>
+
+    <fieldset>
+        <div class="select-input-text">
+            <div>
+                <label for="payload-url">{{ "ADMIN.THIRD_PARTIES.PAYLOAD_URL" | tgTranslate }}</label>
+                <div class="field-with-option">
+                    <input
+                        #payloadUrlInput
+                        id="payload-url"
+                        type="text"
+                        name="payload-url"
+                        readonly="readonly"
+                        [ngModel]="module.webhooks_url"
+                        [ngModelOptions]="{standalone: true}"
+                        [attr.placeholder]="'ADMIN.THIRD_PARTIES.PAYLOAD_URL' | tgTranslate"
+                    />
+                    <div class="option-wrapper select-input-content" [title]="'COMMON.COPY_TO_CLIPBOARD' | tgTranslate" (click)="copyPayloadUrl()">
+                        <tg-svg svg-icon="icon-clipboard"></tg-svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset *ngIf="hasValidOriginIps">
+        <label for="valid-origin-ips">{{ "ADMIN.THIRD_PARTIES.VALID_IPS" | tgTranslate }}</label>
+        <input
+            id="valid-origin-ips"
+            type="text"
+            name="valid-origin-ips"
+            [(ngModel)]="validOriginIpsText"
+            [ngModelOptions]="{standalone: true}"
+            [attr.placeholder]="validOriginIpsPlaceholderKey | tgTranslate"
+        />
+    </fieldset>
+
+    <button class="btn-small" variant="primary" type="submit" [title]="'COMMON.SAVE' | tgTranslate" [disabled]="submitting">
+        {{ "COMMON.SAVE" | tgTranslate }}
+    </button>
+</form>
+
+<a class="help-button" [href]="helpUrl" target="_blank">
+    <tg-svg svg-icon="icon-question"></tg-svg>
+    <span>{{ "ADMIN.HELP" | tgTranslate }}</span>
+</a>
