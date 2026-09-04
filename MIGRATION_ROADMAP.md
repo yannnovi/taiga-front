@@ -235,9 +235,22 @@ tests), pas un "module de plus". À choisir un par un selon la priorité produit
    malgré l'appel `checksley()`) et la page Webhooks (`WebhooksTableComponent` - CRUD complet
    + test réel + historique de logs de requêtes/réponses avec renvoi ; particularité notable :
    l'original ne montre jamais de notification de succès sur cette page, seulement sur
-   échec - reproduit tel quel). Le sous-projet checksley continue avec `user-settings` →
-   `auth.coffee` (login/register, page d'entrée non-authentifiée - en tout
-   dernier, avec le plus de soin). Détail complet dans `MIGRATION.md`.
+   échec - reproduit tel quel). **`user-settings` entièrement fait** :
+   `UserProfileFormComponent` (username/email/full_name/bio + avatar + lang/theme non
+   validés + liens export/vérif-email/suppression) et `UserChangePasswordFormComponent`
+   (comparaison manuelle des mots de passe par toast, pas via le validateur `equalTo`
+   partagé - fidèle à l'original). A mis au jour un piège `UpgradeComponent` de fond :
+   il ne peut envelopper qu'une directive AngularJS *component-like*
+   (`template`/`templateUrl`) - une directive-attribut pure à `scope`+`link`
+   (`tgAvatarBig`) compile sans erreur mais ne rend jamais rien (`ngOnInit` lève une
+   exception avant d'assigner `bindingDestination`) ; corrigé en injectant
+   `tgAvatarService` directement plutôt qu'en enveloppant la directive. Un deuxième bug
+   trouvé seulement en vérification navigateur (build et Karma verts) : un
+   `register-legacy.ts` enregistrait son composant downgradé sous l'ancien nom de
+   directive au lieu du nom réellement utilisé par le template appelant - échec
+   silencieux, élément vide sans erreur console. Détail complet dans `MIGRATION.md`. Le
+   sous-projet checksley continue avec **`auth.coffee`** (login/register, page d'entrée
+   non-authentifiée - en tout dernier, avec le plus de soin) - dernier fichier restant.
 4. ~~Listes infinies (`ngInfiniteScroll`)~~ — fait, voir sous-projet backlog ci-dessus (item 1).
 
 Recommandation : `window.dragMultiple` d'abord (referme complètement le "gros chantier" drag

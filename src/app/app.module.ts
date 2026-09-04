@@ -221,6 +221,12 @@ import { ThirdPartyWebhookFormComponent } from "./third-party-webhook-form/third
 import "./third-party-webhook-form/register-legacy";
 import { WebhooksTableComponent } from "./webhooks-table/webhooks-table.component";
 import "./webhooks-table/register-legacy";
+import { UserAvatarComponent } from "./user-avatar/user-avatar.component";
+import "./user-avatar/register-legacy";
+import { UserProfileFormComponent } from "./user-profile-form/user-profile-form.component";
+import "./user-profile-form/register-legacy";
+import { UserChangePasswordFormComponent } from "./user-change-password-form/user-change-password-form.component";
+import "./user-change-password-form/register-legacy";
 import {
     AJS_APP_META_SERVICE,
     AJS_AVATAR_SERVICE,
@@ -405,6 +411,9 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         ProjectCustomAttributesTableComponent,
         ThirdPartyWebhookFormComponent,
         WebhooksTableComponent,
+        UserAvatarComponent,
+        UserProfileFormComponent,
+        UserChangePasswordFormComponent,
         TgTranslatePipe,
         TgEmojifyPipe,
         TgMomentFormatPipe,

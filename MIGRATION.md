@@ -2599,6 +2599,96 @@ dernier rechargement. Build Angular (`strictTemplates`) et Karma (361 specs) res
 **`third-parties.coffee` est maintenant entièrement migré** - les deux fonctionnalités du
 fichier (formulaires d'intégration git, page Webhooks) sont faites.
 
+### Sous-projet 4g : `user-settings` (`user-profile.jade`, `user-change-password.jade`)
+
+Les deux derniers formulaires "simples" de la Phase 4 avant `auth.coffee` (page d'entrée
+non-authentifiée, gardée pour la fin). `main.coffee` perd `UserProfileDirective`/
+`UserAvatarDirective`/`TaigaAvatarModelDirective` (~103 lignes) ; `change-password.coffee`
+perd `UserChangePasswordDirective` (comparaison de mots de passe faite à la main, sans
+`checksley`, comme repéré dans l'audit initial du sous-projet).
+
+**`UserProfileFormComponent`** absorbe `openDeleteLightbox`/`exportProfile`/`verifyEmail`
+(retirés du controller, plus aucun autre appelant) : seuls `username`/`email`/`full_name`/
+`bio` étaient réellement validés dans l'original - `lang`/`theme` restent de simples champs
+locaux (pas de `FormControl`), seedés une seule fois via un flag (`langThemeInitialized`)
+pour ne pas écraser un choix de l'utilisateur si le composant se re-render avant que l'appel
+réseau initial n'ait résolu. `maxFileSizeMsg` (calculé dans `UserSettingsController`) n'était
+en réalité jamais référencé dans `user-profile.jade` d'origine - dette pré-existante,
+constatée par grep et non reproduite comme `@Input()`.
+
+**`UserAvatarComponent`** absorbe l'upload d'avatar (`tgUserAvatar`) et son binder de champ
+fichier ambiant (`tgAvatarModel`, jamais utilisé ailleurs) - même patron que
+`ProjectLogoComponent`/`tgProjectLogoModel`. `showSizeInfo()` ciblait un `.size-info`
+inexistant dans `user-profile.jade` (dead code déjà noté sur `ProjectLogoComponent`, pas
+reproduit).
+
+**Piège trouvé et documenté ici pour de bon : `UpgradeComponent` ne peut pas envelopper une
+directive AngularJS sans `template`/`templateUrl`.** `tg-avatar-big` (utilisé en attribut
+sur l'`<img>` d'origine, `AvatarDirective` -
+`app/modules/components/avatar/avatar.directive.coffee` - juste `scope`+`link`, aucun
+template) a d'abord été enveloppé via un wrapper `UpgradeComponent` classique
+(`TgAvatarBigUpgradedDirective`, même patron que les 8 autres wrappers de
+`src/app/upgraded/`, avec le correctif habituel `[avatarBig]` au lieu de `[tgAvatarBig]`
+pour que le nom du `@Input()` corresponde au sélecteur). Ça compile (`strictTemplates` OK)
+mais ne rend **jamais rien** : en navigateur réel, `ng.getDirectives()` sur l'`<img>`
+montrait le wrapper bien attaché avec son `@Input()` correctement peuplé
+(`avatarBig.id: 5`), mais le `$componentScope` interne de la directive AngularJS enveloppée
+n'avait strictement aucune clé propre - son `link` (qui fait `scope.$watch("avatarBig", ...)`
+puis `el.attr('src', ...)` en jQuery) ne se déclenchait donc jamais. Lecture du code source
+réel de `@angular/upgrade` (`upgrade_component.mjs`/`upgrade_helper.mjs`) pour comprendre :
+`ngOnInit()` appelle `UpgradeHelper.compileTemplate()`, qui appelle
+`UpgradeHelper.getTemplate()` - et cette méthode **lève une exception**
+(`"Directive '...' is not a component, it is missing template."`) dès que la directive
+enveloppée n'a ni `template` ni `templateUrl`. L'exception, levée avant la ligne qui assigne
+`this.bindingDestination`, laisse ce champ non défini **pour toujours** (l'exception coupe
+`ngOnInit` avant la fin, et `ngOnInit` n'est jamais rappelé) - confirmé en lisant
+`d.bindingDestination`/`d.pendingChanges` sur l'instance vivante (`pendingChanges` contenait
+bien la valeur en attente, jamais rejouée). Autrement dit, `UpgradeComponent` ne sait
+envelopper que des directives *component-like* - jamais une directive-attribut classique à
+`scope`+`link` pur, quel que soit le nom choisi pour le sélecteur/l'`@Input()`. Même
+diagnostic déjà documenté dans le commentaire de `ProfileBarComponent` (une migration
+antérieure, dans un lot "leaf en place") pour ce même `tgAvatarBig` - découvert ici
+indépendamment avant de retrouver cette trace. **Correctif** : `TgAvatarBigUpgradedDirective`
+supprimé (aucun autre appelant), `UserAvatarComponent` injecte directement
+`tgAvatarService` (`AJS_AVATAR_SERVICE`) et appelle `getAvatar(user, "avatarBig")`,
+reproduisant l'intégralité du `link` d'origine (`url`/`fullName`/`bg`) en TypeScript/binding
+Angular plutôt que de tenter de faire tourner la vieille directive par procuration.
+
+**Deuxième bug trouvé en vérifiant en navigateur réel** (pas en Karma ni en build - les deux
+étaient verts) : `user-change-password-form/register-legacy.ts` enregistrait le composant
+downgradé sous l'ANCIEN nom de directive (`tgUserChangePassword`, celui de la directive
+`checksley` supprimée) au lieu du nom réellement utilisé par le nouveau
+`user-change-password.jade` (`tg-user-change-password-form`) - l'élément ne correspondait
+donc à aucune directive AngularJS enregistrée et restait vide (`innerHTML` de longueur 0,
+aucune erreur console). Confirmé via `injector.has('tgUserChangePasswordFormDirective')`
+retournant `false`. Corrigé en renommant l'enregistrement pour qu'il corresponde
+exactement au tag utilisé dans le template (`tgUserChangePasswordForm`) - même classe
+d'erreur que celles déjà documentées pour `bind-x`/`on-x`, mais côté nom de directive plutôt
+que côté binding : une incohérence de nom entre `register-legacy.ts` et le template appelant
+échoue silencieusement, sans jamais lever d'erreur de build ou de test.
+
+**`UserChangePasswordFormComponent`** reproduit fidèlement le comportement d'origine :
+`currentPassword` non validé (l'original ne le vérifiait pas non plus côté front - seul le
+backend peut le rejeter), la comparaison `newPassword1 !== newPassword2` reste un `if`
+manuel affichant un toast d'erreur (`confirm.notify`), **volontairement pas** routée par le
+`equalToValidator` partagé (ce validateur produit une erreur de champ inline, pas un toast -
+changer l'UX ici n'était pas demandé), et le formulaire n'est **pas** réinitialisé après un
+changement réussi (l'original ne le faisait pas). `tg-capslock` (l'icône d'avertissement
+Verr. Maj.) était déjà mort sur cette page dans l'original - seule `auth.coffee` (page de
+connexion) alimente jamais `$scope.iscapsLockActivated` - confirmé par grep, non reproduit.
+
+Vérifié en navigateur réel avec de vrais clics/événements DOM (jamais de
+`$rootScope.$broadcast` via `Runtime.evaluate`) contre le vrai `taiga-back` local,
+`admin`/`123123` : chargement réel de `user-profile` (avatar rendu avec la bonne image/
+couleur de fond par défaut, `username`/`email`/`full_name`/langue/thème pré-remplis),
+modification de la bio et sauvegarde avec persistance confirmée après un rechargement
+complet ; sur `user-change-password` : les deux erreurs "requis" sur soumission vide, le
+toast "Les mots de passe ne correspondent pas" sur un mismatch, puis un changement de mot de
+passe réel (déconnexion, reconnexion réussie avec le nouveau mot de passe, confirmant le
+aller-retour serveur), et remise du mot de passe à sa valeur d'origine par le même chemin
+pour ne pas laisser l'environnement de vérification dans un état modifié. Build Angular
+(`strictTemplates`) et Karma (361 specs) restent verts.
+
 ## Patron à suivre pour migrer un module suivant
 
 1. Repérer ses dépendances réelles (services/directives utilisés *et* utilisateurs) avant
@@ -2610,7 +2700,14 @@ fichier (formulaires d'intégration git, page Webhooks) sont faites.
 3. Pour chaque service/directive AngularJS encore utilisé par ce composant : soit
    l'injecter via un token `upgradedService(...)` (`src/app/shared/ajs-tokens.ts`) s'il
    s'agit d'un service, soit l'envelopper avec `UpgradeComponent` (`src/app/upgraded/`)
-   s'il s'agit d'une directive/composant.
+   s'il s'agit d'une directive/composant. **`UpgradeComponent` ne peut envelopper qu'une
+   directive *component-like* (`template`/`templateUrl` défini)** - une directive-attribut
+   classique à `scope`+`link` pur (ex. `tgAvatarBig`) compile sans erreur mais ne rend
+   jamais rien : `ngOnInit()` lève une exception avant d'assigner `bindingDestination`, qui
+   reste `undefined` pour toujours (voir sous-projet 4g pour la trace complète). Dans ce
+   cas, ne pas essayer d'envelopper - injecter directement le service sous-jacent
+   (`upgradedService(...)`) et reproduire la logique du `link` en TypeScript/binding
+   Angular à la place.
 4. Downgrader le nouveau composant (`downgradeComponent`) et l'enregistrer comme directive
    sur le module AngularJS existant (voir `register-legacy.ts`). **Si des templates
    encore-AngularJS appellent directement ce composant** (migration "en place", pas une

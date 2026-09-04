@@ -1,0 +1,30 @@
+<div class="project-details-image">
+    <fieldset class="image-container">
+        <img
+            class="image"
+            [src]="avatar?.url"
+            [title]="avatar?.fullName"
+            [alt]="avatar?.fullName"
+            [style.background]="avatar?.bg || ''"
+        />
+        <div class="loading-overlay" [class.active]="loading">
+            <img class="loading-spinner" [src]="spinnerSrc" [alt]="'COMMON.LOADING' | tgTranslate" />
+        </div>
+        <input class="hidden" type="file" id="avatar-field" (change)="onFileChange($event)" />
+    </fieldset>
+
+    <button
+        class="btn-small button-full js-change-avatar"
+        type="button"
+        variant="secondary"
+        [title]="'USER_PROFILE.CHANGE_PHOTO' | tgTranslate"
+        (click)="changeAvatarClick()"
+    >{{ "USER_PROFILE.CHANGE_PHOTO" | tgTranslate }}</button>
+
+    <a
+        class="use-default-image js-use-gravatar"
+        href="#"
+        [title]="'USER_PROFILE.ACTION_USE_GRAVATAR' | tgTranslate"
+        (click)="useGravatar($event)"
+    >{{ "USER_PROFILE.ACTION_USE_GRAVATAR" | tgTranslate }}</a>
+</div>

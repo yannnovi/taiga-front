@@ -1,0 +1,99 @@
+<form [formGroup]="form" (ngSubmit)="submit()">
+    <tg-user-avatar [user]="user" (userChange)="onAvatarChange($event)"></tg-user-avatar>
+
+    <div class="project-details-form-data">
+        <fieldset>
+            <label for="username">{{ "USER_PROFILE.FIELD.USERNAME" | tgTranslate }}</label>
+            <input
+                type="text"
+                autocorrect="off"
+                autocapitalize="none"
+                name="username"
+                id="username"
+                formControlName="username"
+                [attr.placeholder]="'USER_PROFILE.FIELD.USERNAME' | tgTranslate"
+            />
+            <p class="field-error" *ngIf="form.get('username').invalid && form.get('username').touched">
+                {{ errors.getMessage(form.get('username').errors) }}
+            </p>
+        </fieldset>
+
+        <fieldset>
+            <label for="email">{{ "USER_PROFILE.FIELD.EMAIL" | tgTranslate }}</label>
+            <div *ngIf="user.verified_email === false">
+                <a class="verify-email" href="" [title]="'USER_PROFILE.ACTION_VERIFY_EMAIL' | tgTranslate" (click)="verifyEmail(); $event.preventDefault()">
+                    {{ "USER_PROFILE.ACTION_VERIFY_EMAIL" | tgTranslate }}
+                </a>
+            </div>
+            <input
+                type="email"
+                name="email"
+                id="email"
+                formControlName="email"
+                [attr.placeholder]="'USER_PROFILE.FIELD.EMAIL' | tgTranslate"
+            />
+            <p class="field-error" *ngIf="form.get('email').invalid && form.get('email').touched">
+                {{ errors.getMessage(form.get('email').errors) }}
+            </p>
+        </fieldset>
+
+        <fieldset>
+            <label for="full-name">{{ "USER_PROFILE.FIELD.FULL_NAME" | tgTranslate }}</label>
+            <input
+                type="text"
+                name="full_name"
+                id="full-name"
+                formControlName="full_name"
+                [attr.placeholder]="'USER_PROFILE.FIELD.PLACEHOLDER_FULL_NAME' | tgTranslate"
+            />
+            <p class="field-error" *ngIf="form.get('full_name').invalid && form.get('full_name').touched">
+                {{ errors.getMessage(form.get('full_name').errors) }}
+            </p>
+        </fieldset>
+
+        <fieldset>
+            <label for="lang">{{ "USER_PROFILE.FIELD.LANGUAGE" | tgTranslate }}</label>
+            <select name="lang" id="lang" [(ngModel)]="localLang" [ngModelOptions]="{standalone: true}">
+                <option value="">{{ "USER_PROFILE.FIELD.LANGUAGE_DEFAULT" | tgTranslate }}</option>
+                <option *ngFor="let locale of locales" [value]="locale.code">{{ locale.name }}</option>
+            </select>
+        </fieldset>
+
+        <fieldset>
+            <label for="theme">{{ "USER_PROFILE.FIELD.THEME" | tgTranslate }}</label>
+            <select name="theme" id="theme" [(ngModel)]="localTheme" [ngModelOptions]="{standalone: true}">
+                <option value="">{{ "USER_PROFILE.FIELD.THEME_DEFAULT" | tgTranslate }}</option>
+                <option *ngFor="let t of availableThemes" [value]="t">{{ t }}</option>
+            </select>
+        </fieldset>
+
+        <fieldset>
+            <label for="bio">{{ "USER_PROFILE.FIELD.BIO" | tgTranslate }}</label>
+            <textarea
+                name="bio"
+                id="bio"
+                formControlName="bio"
+                [attr.placeholder]="'USER_PROFILE.FIELD.PLACEHOLDER_BIO' | tgTranslate"
+                maxlength="210"
+            ></textarea>
+            <p class="field-error" *ngIf="form.get('bio').invalid && form.get('bio').touched">
+                {{ errors.getMessage(form.get('bio').errors) }}
+            </p>
+        </fieldset>
+
+        <fieldset class="submit">
+            <button class="btn-small" variant="primary" type="submit" [title]="'COMMON.SAVE' | tgTranslate" [disabled]="submitting">
+                {{ "COMMON.SAVE" | tgTranslate }}
+            </button>
+        </fieldset>
+
+        <div class="actions">
+            <a class="download-profile" href="" [title]="'USER_PROFILE.ACTION_DOWNLOAD_PROFILE' | tgTranslate" (click)="exportProfile(); $event.preventDefault()">
+                {{ "USER_PROFILE.ACTION_DOWNLOAD_PROFILE" | tgTranslate }}
+            </a>
+            <a class="delete-account" href="" [title]="'USER_PROFILE.ACTION_DELETE_ACCOUNT' | tgTranslate" (click)="openDeleteLightbox(); $event.preventDefault()">
+                {{ "USER_PROFILE.ACTION_DELETE_ACCOUNT" | tgTranslate }}
+            </a>
+        </div>
+    </div>
+</form>
