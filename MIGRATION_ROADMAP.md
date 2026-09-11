@@ -30,14 +30,18 @@ tierce. Patron complet dans `MIGRATION.md` (section "Patron à suivre").
 | Blocage | Symptôme repéré | Exemples déjà écartés |
 |---|---|---|
 | Scope ambiant (hérité du contrôleur parent, pas isolé) | `scope: true` ou pas de `scope:` du tout, lit `$scope.project`/`$scope.usersById` directement | `ticket-watchers`, toute la famille `assigned-*`, `lb-select-user`, `tgSprint` (via sa dépendance `tg-backlog-sprint-header`), toute la famille `tgRelatedTask*`, `tgWikiSummary`, la famille `tgCsv*` |
-| Fichiers "grab-bag" multi-directives anciens | Même style que ci-dessus, en pire (souvent 10+ directives par fichier) | `common/components.coffee`, `admin/memberships.coffee` (le reste), `auth.coffee`, `team/main.coffee`, `related-tasks.coffee`, `backlog/sprints.coffee` |
-| Drag & drop (`dragula`) | `*-sortable` (kanban, backlog, taskboard, epics, related-userstories) | `filter` (sélecteur jQuery global en plus), `tgWikiNav` |
-| Éditeur WYSIWYG (CKEditor) | `tg-comment-edit-wysiwyg`, `tg-item-wysiwyg`, `tg-wysiwyg` | `comment`, `comments` |
-| Validation de formulaire (checksley) | `.checksley()` dans le `link` | `create-epic`, `lb-feedback` |
-| Listes infinies (`ngInfiniteScroll`) | `infinite-scroll="..."` sur le conteneur | `profile-favs`, `wiki-history` (le parent, pas ses enfants déjà migrés) |
+| Fichiers "grab-bag" multi-directives anciens | Même style que ci-dessus, en pire (souvent 10+ directives par fichier) | `common/components.coffee`, `admin/memberships.coffee` (le reste), `team/main.coffee`, `related-tasks.coffee`, `backlog/sprints.coffee` |
 | HTML compilé dynamiquement avec directives vivantes | `tg-compile-html` sur du contenu généré contenant un `tg-nav` intégré | `user-timeline-item` (voir section dédiée dans `MIGRATION.md`) |
 | Transclusion + `require` imbriqués entre 2 directives | `transclude: true` + `require: "^parentDirective"` | `profile-tabs` (bloque toute la route `/profile`) |
 | Composant énorme via `include` Jade en cascade | Un seul directive avec 15-20 sous-templates | `history`/`history-diff` (20 sous-templates, ~2 modules pour l'effort de 20) |
+
+Les blocages "drag & drop (`dragula`)", "éditeur WYSIWYG", "validation de formulaire
+(checksley)" et "listes infinies (`ngInfiniteScroll`)" figuraient aussi dans ce tableau -
+retirés : ce sont précisément les 4 items de la Phase 2 ci-dessous, tous maintenant
+**terminés** (voir le détail phase par phase, et `MIGRATION.md`). `auth.coffee` est sorti
+de la liste d'exemples "grab-bag" pour la même raison (migré avec le reste du sous-projet
+checksley) - `AuthService`/`LoginPage` y restent en AngularJS, mais ne sont plus un
+blocage : plus aucune directive de formulaire n'y dépend du scope ambiant.
 
 ## Phase 1 — Prochains gains rapides (même méthode) — ✅ terminée, résultat mitigé
 
@@ -60,21 +64,26 @@ construisait chaque lightbox comme un attribut sur un `<div>` plutôt qu'un él�
 n'appelaient jamais `lightboxService.open()` (restaient invisibles). Détails et correctifs
 dans `MIGRATION.md`.
 
-**Conclusion** : il ne reste plus de candidat "quick win" isolé identifié à ce jour. La
-suite passe forcément par la Phase 2 ou la Phase 3 ci-dessous.
+**Conclusion** : il ne reste plus de candidat "quick win" isolé identifié à ce jour, et la
+Phase 2 ci-dessous est maintenant terminée elle aussi. La suite passe forcément par la
+Phase 3 (le bloc le plus gros et le plus risqué - nécessite un vrai filet de tests avant de
+démarrer, voir sa propre section) ou par les phases 4/5/6, plus tardives par nature.
 
-## Phase 2 — Remplacer une dépendance tierce à la fois (débloque un gros bloc chacune)
+## Phase 2 — Remplacer une dépendance tierce à la fois (débloque un gros bloc chacune) — ✅ terminée
 
 Chaque ligne ci-dessous est un projet à part entière (décision d'archi + implémentation +
-tests), pas un "module de plus". À choisir un par un selon la priorité produit :
+tests), pas un "module de plus". Les 4 items ci-dessous sont maintenant tous terminés
+(drag & drop, WYSIWYG, checksley, listes infinies) - historique détaillé conservé pour
+référence :
 
 1. **Drag & drop (`dragula` → `@angular/cdk/drag-drop`)** — débloque tout le tableau
    kanban, le backlog, le taskboard (`*-sortable`, `tg-kanban-*`, `tg-backlog-*`,
    `tg-taskboard-*`), et aussi `tgWikiNav`. C'est le bloc le plus gros et le plus visible
    du reste de l'app.
 
-   **🚧 En cours.** Infrastructure en place (`@angular/cdk@17.3.10`, `DragDropModule`
-   importé). Trois modules migrés, motif "liste entière internalisée dans le composant,
+   **✅ Terminé** (voir le récapitulatif en fin de bloc). Infrastructure en place
+   (`@angular/cdk@17.3.10`, `DragDropModule` importé). Trois modules migrés en premier,
+   motif "liste entière internalisée dans le composant,
    pas de downgrade des directives CDK dans un template AngularJS" validé trois fois, avec
    un vrai geste de drag simulé en navigateur à chaque fois (pas seulement le rendu
    statique) :
