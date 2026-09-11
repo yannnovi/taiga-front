@@ -1,0 +1,85 @@
+<div class="register-form-container">
+    <form class="register-form" [formGroup]="form" (ngSubmit)="submit()">
+        <fieldset>
+            <input
+                type="text"
+                autocorrect="off"
+                autocapitalize="none"
+                name="username"
+                formControlName="username"
+                [attr.placeholder]="'REGISTER_FORM.PLACEHOLDER_NAME' | tgTranslate"
+            />
+            <p class="field-error" *ngIf="form.get('username').invalid && form.get('username').touched">
+                {{ errors.getMessage(form.get('username').errors) }}
+            </p>
+        </fieldset>
+
+        <fieldset>
+            <input
+                type="text"
+                name="full_name"
+                formControlName="full_name"
+                [attr.placeholder]="'REGISTER_FORM.PLACEHOLDER_FULL_NAME' | tgTranslate"
+            />
+            <p class="field-error" *ngIf="form.get('full_name').invalid && form.get('full_name').touched">
+                {{ errors.getMessage(form.get('full_name').errors) }}
+            </p>
+        </fieldset>
+
+        <fieldset>
+            <input
+                type="email"
+                name="email"
+                formControlName="email"
+                [attr.placeholder]="'REGISTER_FORM.PLACEHOLDER_EMAIL' | tgTranslate"
+            />
+            <p class="field-error" *ngIf="form.get('email').invalid && form.get('email').touched">
+                {{ errors.getMessage(form.get('email').errors) }}
+            </p>
+        </fieldset>
+
+        <fieldset>
+            <input
+                type="password"
+                name="password"
+                formControlName="password"
+                [attr.placeholder]="'REGISTER_FORM.PLACEHOLDER_PASSWORD' | tgTranslate"
+            />
+            <p class="field-error" *ngIf="form.get('password').invalid && form.get('password').touched">
+                {{ errors.getMessage(form.get('password').errors) }}
+            </p>
+        </fieldset>
+
+        <!-- Only displays terms notice when terms plugin is loaded. -->
+        <tg-terms-of-service-and-privacy-policy-notice
+            [target]="acceptedTerms"
+            (targetChange)="onAcceptedTermsChange($event)"
+        ></tg-terms-of-service-and-privacy-policy-notice>
+
+        <fieldset class="end">
+            <button
+                class="btn-small full"
+                variant="primary"
+                type="submit"
+                [disabled]="acceptedTerms === false"
+                [title]="'REGISTER_FORM.ACTION_SIGN_UP' | tgTranslate"
+            >{{ "REGISTER_FORM.ACTION_SIGN_UP" | tgTranslate }}</button>
+        </fieldset>
+
+        <div class="contrib-plugins-wrapper" *ngIf="authPlugins.length">
+            <label>{{ "LOGIN_COMMON.ALT_LOGIN" | tgTranslate }}</label>
+
+            <fieldset *ngFor="let plugin of authPlugins">
+                <tg-auth-plugin-slot [plugin]="plugin"></tg-auth-plugin-slot>
+            </fieldset>
+        </div>
+
+        <a
+            class="register-text-top"
+            href=""
+            [title]="'REGISTER_FORM.TITLE_LINK_LOGIN' | tgTranslate"
+            [tgNav]="'login'"
+            [tgNavGetParams]="{next: nextUrl}"
+        >{{ "REGISTER_FORM.LINK_LOGIN" | tgTranslate }}</a>
+    </form>
+</div>

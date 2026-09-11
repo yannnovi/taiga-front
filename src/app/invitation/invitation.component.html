@@ -1,0 +1,129 @@
+<ng-container *ngIf="invitation">
+    <a class="avatar" href="" [title]="invitation.invited_by?.full_name_display">
+        <img [src]="invitedByAvatar.url" [title]="invitedByAvatar.fullName" [alt]="invitedByAvatar.fullName" [style.background]="invitedByAvatar.bg || ''" />
+        <span class="person-name">{{ invitation.invited_by?.full_name_display }}</span>
+    </a>
+
+    <span class="invitation-text">
+        <p>{{ "AUTH.INVITED_YOU" | tgTranslate }}</p>
+        <p class="project-name">{{ invitation.project_name }}</p>
+    </span>
+</ng-container>
+
+<div class="invitation-form">
+    <form class="login-form" [formGroup]="loginForm" (ngSubmit)="submitLogin()">
+        <p class="form-header">{{ "LOGIN_COMMON.HEADER" | tgTranslate }}</p>
+
+        <fieldset>
+            <input
+                type="text"
+                autocorrect="off"
+                autocapitalize="none"
+                name="username"
+                formControlName="username"
+                [attr.placeholder]="'LOGIN_COMMON.PLACEHOLDER_AUTH_NAME' | tgTranslate"
+            />
+            <p class="field-error" *ngIf="loginForm.get('username').invalid && loginForm.get('username').touched">
+                {{ errors.getMessage(loginForm.get('username').errors) }}
+            </p>
+        </fieldset>
+
+        <fieldset class="login-password">
+            <input
+                type="password"
+                name="password"
+                formControlName="password"
+                [attr.placeholder]="'LOGIN_COMMON.PLACEHOLDER_AUTH_PASSWORD' | tgTranslate"
+            />
+            <a class="forgot-pass" href="" [tgNav]="'forgot-password'" [title]="'LOGIN_COMMON.TITLE_LINK_FORGOT_PASSWORD' | tgTranslate">
+                {{ "LOGIN_COMMON.LINK_FORGOT_PASSWORD" | tgTranslate }}
+            </a>
+            <p class="field-error" *ngIf="loginForm.get('password').invalid && loginForm.get('password').touched">
+                {{ errors.getMessage(loginForm.get('password').errors) }}
+            </p>
+        </fieldset>
+
+        <fieldset>
+            <button class="btn-small full" variant="primary" type="submit">
+                {{ "LOGIN_COMMON.ACTION_ENTER" | tgTranslate }}
+            </button>
+        </fieldset>
+
+        <div class="contrib-plugins-wrapper" *ngIf="authPlugins.length">
+            <label>{{ "LOGIN_COMMON.ALT_LOGIN" | tgTranslate }}</label>
+
+            <fieldset *ngFor="let plugin of authPlugins">
+                <tg-auth-plugin-slot [plugin]="plugin"></tg-auth-plugin-slot>
+            </fieldset>
+        </div>
+    </form>
+
+    <form class="register-form" [formGroup]="registerForm" (ngSubmit)="submitRegister()">
+        <p class="form-header">{{ "REGISTER_FORM.TITLE" | tgTranslate }}</p>
+
+        <fieldset>
+            <input
+                type="text"
+                autocorrect="off"
+                autocapitalize="none"
+                name="username"
+                formControlName="username"
+                [attr.placeholder]="'REGISTER_FORM.PLACEHOLDER_NAME' | tgTranslate"
+            />
+            <p class="field-error" *ngIf="registerForm.get('username').invalid && registerForm.get('username').touched">
+                {{ errors.getMessage(registerForm.get('username').errors) }}
+            </p>
+        </fieldset>
+
+        <fieldset>
+            <input
+                type="text"
+                name="full_name"
+                formControlName="full_name"
+                [attr.placeholder]="'REGISTER_FORM.PLACEHOLDER_FULL_NAME' | tgTranslate"
+            />
+            <p class="field-error" *ngIf="registerForm.get('full_name').invalid && registerForm.get('full_name').touched">
+                {{ errors.getMessage(registerForm.get('full_name').errors) }}
+            </p>
+        </fieldset>
+
+        <fieldset>
+            <input
+                type="email"
+                name="email"
+                formControlName="email"
+                [attr.placeholder]="'REGISTER_FORM.PLACEHOLDER_EMAIL' | tgTranslate"
+            />
+            <p class="field-error" *ngIf="registerForm.get('email').invalid && registerForm.get('email').touched">
+                {{ errors.getMessage(registerForm.get('email').errors) }}
+            </p>
+        </fieldset>
+
+        <fieldset>
+            <input
+                type="password"
+                name="password"
+                formControlName="password"
+                [attr.placeholder]="'REGISTER_FORM.PLACEHOLDER_PASSWORD' | tgTranslate"
+            />
+            <p class="field-error" *ngIf="registerForm.get('password').invalid && registerForm.get('password').touched">
+                {{ errors.getMessage(registerForm.get('password').errors) }}
+            </p>
+        </fieldset>
+
+        <!-- Only displays terms notice when terms plugin is loaded. -->
+        <tg-terms-of-service-and-privacy-policy-notice
+            [target]="registerAcceptedTerms"
+            (targetChange)="onRegisterAcceptedTermsChange($event)"
+        ></tg-terms-of-service-and-privacy-policy-notice>
+
+        <fieldset>
+            <button
+                class="btn-small full"
+                variant="primary"
+                type="submit"
+                [disabled]="registerAcceptedTerms === false"
+            >{{ "REGISTER_FORM.ACTION_SIGN_UP" | tgTranslate }}</button>
+        </fieldset>
+    </form>
+</div>

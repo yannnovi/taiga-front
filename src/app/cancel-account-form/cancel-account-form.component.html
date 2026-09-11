@@ -1,0 +1,14 @@
+<div class="cancel-account">
+    <p><strong>{{ "CANCEL_ACCOUNT.TITLE" | tgTranslate }}</strong></p>
+    <p><span>{{ "CANCEL_ACCOUNT.SUBTITLE" | tgTranslate }}</span></p>
+
+    <form (ngSubmit)="submit()">
+        <fieldset>
+            <button
+                class="button-cancel-account button-gray"
+                type="submit"
+                [title]="'CANCEL_ACCOUNT.ACTION_LEAVING' | tgTranslate"
+            >{{ "CANCEL_ACCOUNT.ACTION_LEAVING" | tgTranslate }}</button>
+        </fieldset>
+    </form>
+</div>

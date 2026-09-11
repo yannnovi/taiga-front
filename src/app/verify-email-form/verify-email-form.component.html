@@ -1,0 +1,18 @@
+<div class="verify-email-form">
+    <p><strong>{{ "VERIFY_EMAIL_FORM.TITLE" | tgTranslate }}</strong></p>
+    <p><span>{{ "VERIFY_EMAIL_FORM.SUBTITLE" | tgTranslate }}</span></p>
+
+    <form (ngSubmit)="submit()">
+        <fieldset>
+            <a
+                class="ng-submit-form btn-big"
+                href=""
+                [title]="'VERIFY_EMAIL_FORM.ACTION_VERIFY_EMAIL' | tgTranslate"
+                (click)="submit(); $event.preventDefault()"
+            >{{ "VERIFY_EMAIL_FORM.ACTION_VERIFY_EMAIL" | tgTranslate }}</a>
+        </fieldset>
+        <fieldset class="end">
+            <button class="btn-big hidden" type="submit"></button>
+        </fieldset>
+    </form>
+</div>

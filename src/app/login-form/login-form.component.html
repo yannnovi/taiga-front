@@ -1,0 +1,61 @@
+<div class="login-form-container">
+    <form class="login-form" *ngIf="defaultLoginEnabled" [formGroup]="form" (ngSubmit)="submit()">
+        <fieldset>
+            <input
+                type="text"
+                autocorrect="off"
+                autocapitalize="none"
+                autofocus
+                name="username"
+                formControlName="username"
+                [attr.placeholder]="'LOGIN_COMMON.PLACEHOLDER_AUTH_NAME' | tgTranslate"
+            />
+            <p class="field-error" *ngIf="form.get('username').invalid && form.get('username').touched">
+                {{ errors.getMessage(form.get('username').errors) }}
+            </p>
+        </fieldset>
+
+        <fieldset class="login-password">
+            <input
+                type="password"
+                name="password"
+                formControlName="password"
+                [attr.placeholder]="'LOGIN_COMMON.PLACEHOLDER_AUTH_PASSWORD' | tgTranslate"
+                (focus)="onFocus()"
+                (keyup)="onKeyUp($event)"
+            />
+
+            <a
+                class="forgot-pass"
+                href=""
+                [tgNav]="'forgot-password'"
+                [title]="'LOGIN_COMMON.TITLE_LINK_FORGOT_PASSWORD' | tgTranslate"
+            >{{ "LOGIN_COMMON.LINK_FORGOT_PASSWORD" | tgTranslate }}</a>
+
+            <tg-svg *ngIf="capslockIcon && iscapsLockActivated" class="capslock" svg-icon="icon-capslock" svg-title="COMMON.CAPSLOCK_WARNING"></tg-svg>
+
+            <p class="field-error" *ngIf="form.get('password').invalid && form.get('password').touched">
+                {{ errors.getMessage(form.get('password').errors) }}
+            </p>
+        </fieldset>
+
+        <fieldset class="end">
+            <button
+                class="btn-small full"
+                variant="primary"
+                type="submit"
+                [title]="'LOGIN_COMMON.ACTION_SIGN_IN' | tgTranslate"
+            >{{ "LOGIN_COMMON.ACTION_SIGN_IN" | tgTranslate }}</button>
+        </fieldset>
+    </form>
+
+    <div class="contrib-plugins-wrapper" *ngIf="authPlugins.length">
+        <label *ngIf="defaultLoginEnabled">{{ "LOGIN_COMMON.ALT_LOGIN" | tgTranslate }}</label>
+
+        <fieldset *ngFor="let plugin of authPlugins">
+            <tg-auth-plugin-slot [plugin]="plugin"></tg-auth-plugin-slot>
+        </fieldset>
+    </div>
+
+    <tg-public-register-message></tg-public-register-message>
+</div>

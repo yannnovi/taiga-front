@@ -66,6 +66,7 @@ export const AJS_ANALYTICS = new InjectionToken<any>("$tgAnalytics");
 export const AJS_ATTACHMENTS_FULL_SERVICE = new InjectionToken<any>("tgAttachmentsFullService");
 export const AJS_SELECTED_TEXT = new InjectionToken<any>("$selectedText");
 export const AJS_USER_LIST_SERVICE = new InjectionToken<any>("tgUserListService");
+export const AJS_EVENTS = new InjectionToken<any>("$tgEvents");
 
 export function upgradedService(token: InjectionToken<any>, ajsName: string): Provider {
     return {

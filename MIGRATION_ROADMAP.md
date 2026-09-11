@@ -181,7 +181,7 @@ tests), pas un "module de plus". À choisir un par un selon la priorité produit
    navigateur possible pour ce sous-projet (build + Karma verts seulement, voir
    MIGRATION.md). **Prochaine étape : sous-projet 3 ci-dessous (checksley), le dernier de
    cette liste.**
-3. **Validation de formulaire (checksley → Angular Reactive Forms)** — 🚧 **en cours**, le
+3. **Validation de formulaire (checksley → Angular Reactive Forms)** — ✅ **terminé**, le
    plus gros par nombre de fichiers (14 + la config globale des validateurs). **Config
    globale portée** (`src/app/shared/checksley-validators.ts` +
    `form-error-message.service.ts`, `linewidth`/`pikaday`/`url` + le registre de messages
@@ -248,14 +248,32 @@ tests), pas un "module de plus". À choisir un par un selon la priorité produit
    trouvé seulement en vérification navigateur (build et Karma verts) : un
    `register-legacy.ts` enregistrait son composant downgradé sous l'ancien nom de
    directive au lieu du nom réellement utilisé par le template appelant - échec
-   silencieux, élément vide sans erreur console. Détail complet dans `MIGRATION.md`. Le
-   sous-projet checksley continue avec **`auth.coffee`** (login/register, page d'entrée
-   non-authentifiée - en tout dernier, avec le plus de soin) - dernier fichier restant.
+   silencieux, élément vide sans erreur console. Détail complet dans `MIGRATION.md`.
+   **`auth.coffee` entièrement fait - le sous-projet checksley (sous-projet 4) est
+   maintenant terminé.** Login, register, mot de passe oublié, récupération de mot de
+   passe, invitation, vérification/changement d'email, suppression de compte - 9
+   directives remplacées par 9 nouveaux composants (`LoginFormComponent`,
+   `RegisterFormComponent`, `ForgotPasswordFormComponent`,
+   `ChangePasswordFromRecoveryFormComponent`, `CancelAccountFormComponent`,
+   `VerifyEmailFormComponent`/`ChangeEmailFormComponent` - base commune partagée, découverte
+   au passage qu'ils appellent en réalité la même API `changeEmail` -, `InvitationComponent`).
+   Nouveau pont `UpgradeComponent` (`tgAuthPluginSlot`/`TgAuthPluginSlotUpgradedDirective`)
+   pour garder fonctionnels les plugins de contribution externes ("auth") dont le
+   `ng-include` dynamique n'a pas d'équivalent Angular. Garde-fou anti-double-soumission
+   répliqué à l'identique (verrou 2s, pas le patron `submitting` utilisé ailleurs) sur
+   demande explicite pour ce fichier. Trois bugs `ReferenceError` préexistants trouvés et
+   corrigés (`$translate` jamais injecté sur `tgCancelAccount`, une variable `response`
+   jamais définie sur une branche déjà morte de `tgChangePasswordFromRecovery`, et un
+   `invited_by` potentiellement `null` non protégé dans `tgInvitation` - AngularJS tolérant,
+   Angular strict, même famille que le piège `tg-nav` déjà documenté). Vérifié en
+   navigateur réel de bout en bout avec de vrais tokens générés côté `taiga-back` (email,
+   mot de passe, annulation de compte, invitation avec une vraie adhésion en attente).
+   Détail complet dans `MIGRATION.md`.
 4. ~~Listes infinies (`ngInfiniteScroll`)~~ — fait, voir sous-projet backlog ci-dessus (item 1).
 
-Recommandation : `window.dragMultiple` d'abord (referme complètement le "gros chantier" drag
-& drop), puis WYSIWYG (plus petit, débloque du terrain), puis checksley (le plus gros,
-prendre son temps).
+WYSIWYG et checksley (items 2 et 3) sont maintenant tous les deux terminés. Il ne reste que
+`window.dragMultiple` (item 1, sélection multiple + drag groupé) pour clore entièrement la
+Phase 2 - sous-projet de conception à part entière, voir sa propre section plus haut.
 
 ## Phase 3 — Refactor du scope ambiant (le plus gros bloc, le plus risqué)
 
@@ -263,10 +281,11 @@ La majorité des directives "boutons de statut" sur les pages de détail (`tg-ep
 `tg-issue-status-*`, `tg-task-status-*`, `tg-us-status-*`), les widgets CRUD admin
 (`tg-memberships-row-*`, `tg-project-*-values`, `tg-roles`, `tg-edit-role`, la famille
 `tgCsv*`...), la page équipe (`tg-team-*`), les réglages de notifications utilisateur
-(`tg-user-*-notifications*`), les pages d'auth (`tg-login`, `tg-register`...), et
-maintenant aussi `tgSprint`, la famille `tgRelatedTask*` et `tgWikiSummary` partagent le
-même blocage : elles lisent le scope du contrôleur parent directement au lieu de bindings
-isolés explicites.
+(`tg-user-*-notifications*`), et maintenant aussi `tgSprint`, la famille `tgRelatedTask*`
+et `tgWikiSummary` partagent le même blocage : elles lisent le scope du contrôleur parent
+directement au lieu de bindings isolés explicites. (Les pages d'auth, `tg-login`/
+`tg-register`/..., étaient dans cette même famille mais sont maintenant migrées - voir le
+sous-projet checksley ci-dessus.)
 
 Deux options, à trancher au cas par cas :
 - Réécrire le contrôleur parent pour exposer des bindings isolés propres (le "bon" fix,

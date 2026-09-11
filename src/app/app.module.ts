@@ -166,6 +166,7 @@ import { TgWysiwygUpgradedDirective } from "./upgraded/tg-wysiwyg.upgraded-direc
 import { TgAdminProjectRestrictionsUpgradedDirective } from "./upgraded/tg-admin-project-restrictions.upgraded-directive";
 import { TgAdminProjectRequestOwnershipUpgradedDirective } from "./upgraded/tg-admin-project-request-ownership.upgraded-directive";
 import { TgAdminProjectChangeOwnerUpgradedDirective } from "./upgraded/tg-admin-project-change-owner.upgraded-directive";
+import { TgAuthPluginSlotUpgradedDirective } from "./upgraded/tg-auth-plugin-slot.upgraded-directive";
 import { LightboxFeedbackComponent } from "./lightbox-feedback/lightbox-feedback.component";
 import "./lightbox-feedback/register-legacy";
 import { LightboxCreateBulkIssuesComponent } from "./lightbox-create-bulk-issues/lightbox-create-bulk-issues.component";
@@ -227,6 +228,22 @@ import { UserProfileFormComponent } from "./user-profile-form/user-profile-form.
 import "./user-profile-form/register-legacy";
 import { UserChangePasswordFormComponent } from "./user-change-password-form/user-change-password-form.component";
 import "./user-change-password-form/register-legacy";
+import { ForgotPasswordFormComponent } from "./forgot-password-form/forgot-password-form.component";
+import "./forgot-password-form/register-legacy";
+import { ChangePasswordFromRecoveryFormComponent } from "./change-password-from-recovery-form/change-password-from-recovery-form.component";
+import "./change-password-from-recovery-form/register-legacy";
+import { CancelAccountFormComponent } from "./cancel-account-form/cancel-account-form.component";
+import "./cancel-account-form/register-legacy";
+import { VerifyEmailFormComponent } from "./verify-email-form/verify-email-form.component";
+import "./verify-email-form/register-legacy";
+import { ChangeEmailFormComponent } from "./change-email-form/change-email-form.component";
+import "./change-email-form/register-legacy";
+import { LoginFormComponent } from "./login-form/login-form.component";
+import "./login-form/register-legacy";
+import { RegisterFormComponent } from "./register-form/register-form.component";
+import "./register-form/register-legacy";
+import { InvitationComponent } from "./invitation/invitation.component";
+import "./invitation/register-legacy";
 import {
     AJS_APP_META_SERVICE,
     AJS_AVATAR_SERVICE,
@@ -276,6 +293,7 @@ import {
     AJS_ATTACHMENTS_FULL_SERVICE,
     AJS_SELECTED_TEXT,
     AJS_USER_LIST_SERVICE,
+    AJS_EVENTS,
     upgradedService,
 } from "./shared/ajs-tokens";
 import { TgTranslatePipe } from "./shared/translate.pipe";
@@ -414,6 +432,15 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         UserAvatarComponent,
         UserProfileFormComponent,
         UserChangePasswordFormComponent,
+        ForgotPasswordFormComponent,
+        ChangePasswordFromRecoveryFormComponent,
+        CancelAccountFormComponent,
+        VerifyEmailFormComponent,
+        ChangeEmailFormComponent,
+        LoginFormComponent,
+        RegisterFormComponent,
+        InvitationComponent,
+        TgAuthPluginSlotUpgradedDirective,
         TgTranslatePipe,
         TgEmojifyPipe,
         TgMomentFormatPipe,
@@ -470,6 +497,7 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         upgradedService(AJS_ATTACHMENTS_FULL_SERVICE, "tgAttachmentsFullService"),
         upgradedService(AJS_SELECTED_TEXT, "$selectedText"),
         upgradedService(AJS_USER_LIST_SERVICE, "tgUserListService"),
+        upgradedService(AJS_EVENTS, "$tgEvents"),
     ],
 })
 export class AppModule implements DoBootstrap {

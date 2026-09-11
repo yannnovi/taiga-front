@@ -2689,6 +2689,121 @@ aller-retour serveur), et remise du mot de passe à sa valeur d'origine par le m
 pour ne pas laisser l'environnement de vérification dans un état modifié. Build Angular
 (`strictTemplates`) et Karma (361 specs) restent verts.
 
+### Sous-projet 4h : `auth.coffee` - dernier fichier du sous-projet checksley
+
+`auth.coffee` (713 lignes, 9 directives - login/register/mot de passe oublié/récupération
+de mot de passe/invitation/vérification d'email/changement d'email/suppression de compte),
+la page d'entrée non-authentifiée, gardée pour la fin comme prévu au plan. `AuthService`
+(`$tgAuth`) et `LoginPage` (contrôleur de garde de la route `/login`, redirection si déjà
+authentifié) restent inchangés - seules les 9 directives de formulaire sont remplacées.
+**Le sous-projet checksley (sous-projet 4 dans son ensemble) est maintenant terminé.**
+
+Neuf nouveaux composants Angular, chacun downgradé sous un nom **différent** de l'ancienne
+directive AngularJS qu'il remplace (suffixe `-form`, même raison que dans le reste de ce
+sous-projet - les anciennes directives étaient posées en attribut, les nouvelles sont
+forcément des éléments) : `LoginFormComponent` (`tg-login-form`), `RegisterFormComponent`
+(`tg-register-form`), `ForgotPasswordFormComponent` (`tg-forgot-password-form`),
+`ChangePasswordFromRecoveryFormComponent` (`tg-change-password-from-recovery-form`),
+`CancelAccountFormComponent` (`tg-cancel-account-form`), `VerifyEmailFormComponent`/
+`ChangeEmailFormComponent` (`tg-verify-email-form`/`tg-change-email-form`, partageant une
+base commune `EmailTokenConfirmBaseComponent`), et `InvitationComponent` (`tg-invitation` -
+seul de ce lot à garder son nom d'origine tel quel, sans ambiguïté possible ici).
+
+**Nouveau pont `UpgradeComponent` pour les plugins de contribution ("auth")** :
+`$rootScope.authPlugins` (externe, non fourni dans ce dépôt) alimente un
+`.contrib-plugins-wrapper` (`ng-repeat` + `ng-include="plugin.template"`) sur `tgLogin`/
+`tgRegister`/le formulaire de connexion de `tgInvitation`. `ng-include` compile un nom de
+template arbitraire fourni à l'exécution contre `$compile` - Angular n'a aucun équivalent
+pour ça. Plutôt que d'abandonner cette extensibilité, une toute petite directive AngularJS
+neuve (`tgAuthPluginSlot`, `app/coffee/modules/auth.coffee` - isolate scope `plugin: "="`,
+un unique `template: '<div ng-include="plugin.template"></div>'`) sert de pont, enveloppée
+via `UpgradeComponent` (`TgAuthPluginSlotUpgradedDirective`) et appelée
+`<tg-auth-plugin-slot [plugin]="plugin">` depuis les 3 nouveaux templates concernés. Cette
+directive est *volontairement* component-like (un vrai `template`) - contrairement à
+`tgAvatarBig` (sous-projet 4g), qui n'en avait aucun et ne pouvait donc pas être enveloppée
+du tout ; ce pont applique directement cette leçon. Non testable en direct dans cet
+environnement (aucun plugin "auth" chargé, `window.taigaContribPlugins` vide par défaut) -
+documenté comme limite de vérification, pas comme un oubli.
+
+**Garde-fou anti-double-soumission répliqué à l'identique, contrairement au reste de cette
+migration** : `taiga.debounce` (`_.debounce(fn, 2000, {leading:true, trailing:false})`)
+verrouille 2 secondes PLEINES après le premier clic, indépendamment du moment où la requête
+réseau elle-même répond - différent du patron `submitting = false` (verrou levé seulement
+à la réponse) utilisé ailleurs dans cette migration. Comme demandé explicitement pour ce
+fichier en particulier, reproduit avec un verrou booléen qui s'auto-lève après 2000ms
+(`setTimeout`), sur les 7 formulaires qui avaient `debounce 2000` dans l'original -
+`tgVerifyEmail`/`tgChangeEmail` n'en avaient PAS (`submit = -> ...` nu), asymétrie
+préservée, pas "corrigée".
+
+**Découverte notable en lisant `tgVerifyEmail`/`tgChangeEmail` côte à côte** : les deux
+appellent en réalité **la même méthode** `$auth.changeEmail(data)` - il n'existe aucun
+endpoint "vérifier mon email" séparé côté `AuthService`. "Vérifier l'email de mon compte
+tout juste créé" et "changer mon adresse email" sont le même flux de confirmation
+back-end, seuls le texte et l'URL diffèrent. D'où une base commune partagée
+(`EmailTokenConfirmBaseComponent`, `src/app/verify-email-form/`), même patron que
+`ProjectValues*Component`/`AdminProject*FormComponent` plus haut dans ce fichier.
+
+**Trois bugs trouvés et corrigés (pas reproduits), tous des plantages `ReferenceError`
+purs et simples dans l'original** :
+1. `CancelAccountDirective` (`tgCancelAccount`) n'injectait `$translate` nulle part
+   (`($repo, $model, $auth, $confirm, $location, $params, $navUrls) ->`) mais appelait
+   `$translate.instant(...)` dans ses deux handlers - succès (le `$auth.logout()`/la
+   redirection s'exécutaient quand même, seul le toast de confirmation était perdu) et
+   échec (rien ne s'exécutait du tout, le crash était la toute première ligne du handler).
+   Corrigé en injectant réellement `$translate`.
+2. `ChangePasswordFromRecoveryDirective`'s branche "pas de token dans l'URL" référençait
+   une variable `response` jamais définie (`response.data.token.map(...)`) - un crash qui
+   aurait avorté le reste du `link` (dont l'installation de `checksley()`) avant même
+   d'atteindre le formulaire. En pratique une branche déjà morte (la route
+   `/change-password/:token` impose le segment `:token`) - remplacée par une simple
+   redirection vers `/login`, sans le message cassé.
+3. Dans `InvitationComponent`, `invitation.invited_by` peut être `null` (une adhésion
+   invitée sans utilisateur invitant réel attaché - confirmé en direct sur les données de
+   seed) : AngularJS évaluait silencieusement `null.full_name_display` comme vide, mais le
+   template Angular strict lève une exception dessus, **avortant toute la passe de
+   détection de changements** - trouvé en vérification navigateur réelle (`project_name`,
+   pourtant une propriété totalement indépendante sur le même objet, restait vide lui
+   aussi tant que cette exception n'était pas corrigée, malgré une valeur réelle côté
+   composant). Corrigé avec `?.` sur les deux références à `invited_by`. Même famille de
+   piège que celui déjà documenté pour le déploiement de `tg-nav`.
+
+**Trouvailles de code mort, documentées et non reproduites** (même politique que dans le
+reste de la migration) : `tgRegisterOptions` (point d'extension vide, `return {}`, aucun
+comportement propre et aucun moyen pour un plugin de le surcharger une fois la page passée
+côté Angular - contrairement à `authPlugins`, rien de concret à préserver) ; `tg-capslock`
+mort sur toutes les pages sauf `tgLogin` (aucun gestionnaire `ng-focus`/`ng-keyup` ne
+l'alimentait ailleurs - seule page où il fonctionnait réellement dans l'original) ;
+`$scope.publicRegisterEnabled` (calculé dans `tgInvitation`, jamais référencé par aucun
+template - confirmé par grep, tout comme la classe CSS `.public-register-disabled`
+correspondante, elle aussi jamais posée nulle part) ; les bindings
+`$el.on "click", ".button-login"/".button-register"` de `tgInvitation` (les deux
+sélecteurs ne correspondent à aucun élément réel dans les deux templates - dead code
+redondant avec le gestionnaire `submit` du formulaire, qui fonctionne réellement).
+`data-minlength="4"` sur le mot de passe du formulaire d'inscription autonome
+(`tg-register-form`) mais absent de son équivalent dans `tgInvitation` - asymétrie
+préexistante, reproduite telle quelle.
+
+Vérifié en navigateur réel avec de vrais clics/événements DOM contre le vrai `taiga-back`
+local, `admin`/`123123` : connexion réelle (réussie et échec de mot de passe), détection
+capslock (bascule au focus + heuristique à la frappe, seule page où c'est câblé), erreurs
+"requis" sur les 4 pages de formulaire simples, inscription réelle (nouvel utilisateur créé
+- bloquée en succès complet uniquement par `PUBLIC_REGISTER_ENABLED=False` côté
+`taiga-back` de cet environnement, différent de la config front qui l'active - la requête
+part bien et l'erreur serveur remonte et s'affiche correctement, preuve suffisante que le
+câblage fonctionne), mot de passe oublié réel (email envoyé, token de récupération généré
+côté serveur), changement de mot de passe depuis la récupération (mismatch détecté,
+changement réel réussi, reconnexion confirmée avec le nouveau mot de passe puis remise à
+l'identique), page d'invitation avec une vraie adhésion en attente des données de seed
+(en-tête invité-par avec `invited_by: null`, avatar par défaut correct, les deux
+sous-formulaires avec leurs erreurs "requis", connexion réelle rejetée par le serveur
+("déjà membre du projet" - preuve que la requête part bien avec le bon `invitation_token`),
+puis **inscription réelle via invitation réussie** - nouvel utilisateur créé, adhésion au
+projet confirmée, redirection vers la page du projet), changement d'email réel (token
+généré via Django shell, email effectivement modifié en base après clic), vérification
+d'email réelle (même mécanisme, confirmé de nouveau), suppression de compte réelle
+(compte désactivé et anonymisé en base, redirection vers `/discover` confirmée). Build
+Angular (`strictTemplates`) et Karma (361 specs) restent verts.
+
 ## Patron à suivre pour migrer un module suivant
 
 1. Repérer ses dépendances réelles (services/directives utilisés *et* utilisateurs) avant

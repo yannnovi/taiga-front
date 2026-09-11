@@ -1,0 +1,17 @@
+<div class="change-email-form">
+    <p><strong>{{ "CHANGE_EMAIL_FORM.TITLE" | tgTranslate }}</strong></p>
+    <p><span>{{ "CHANGE_EMAIL_FORM.SUBTITLE" | tgTranslate }}</span></p>
+
+    <form (ngSubmit)="submit()">
+        <fieldset>
+            <a
+                class="btn-small ng-submit-form"
+                variant="primary"
+                href=""
+                [title]="'CHANGE_EMAIL_FORM.ACTION_CHANGE_EMAIL' | tgTranslate"
+                (click)="submit(); $event.preventDefault()"
+            >{{ "CHANGE_EMAIL_FORM.ACTION_CHANGE_EMAIL" | tgTranslate }}</a>
+            <button class="hidden" type="submit"></button>
+        </fieldset>
+    </form>
+</div>
