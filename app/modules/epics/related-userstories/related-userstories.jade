@@ -12,11 +12,10 @@ section.related-userstories(
         span.related-userstories-title(translate="COMMON.RELATED_USERSTORIES")
         tg-related-userstories-create(
           tg-check-permission="modify_epic"
-          show-create-related-userstories-lightbox="vm.showCreateRelatedUserstoriesLightbox"
-          project="vm.project"
-          epic="vm.epic"
-          epic-userstories="vm.userstories"
-          load-related-userstories="vm.loadRelatedUserstories()"
+          bind-project="vm.project"
+          bind-epic="vm.epic"
+          bind-epic-userstories="vm.userstories"
+          on-load-related-userstories="vm.loadRelatedUserstories()"
         )
 
     tg-related-userstories-sortable(

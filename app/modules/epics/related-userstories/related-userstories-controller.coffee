@@ -16,7 +16,6 @@ class RelatedUserStoriesController
 
     constructor: (@projectService, @epicsService) ->
         @.sectionName = "Epics"
-        @.showCreateRelatedUserstoriesLightbox = false
 
     showRelatedUserStoriesSection: () ->
         return @projectService.hasPermission("view_epics") or @.userstories?.length > 0

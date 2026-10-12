@@ -244,6 +244,12 @@ import { RegisterFormComponent } from "./register-form/register-form.component";
 import "./register-form/register-legacy";
 import { InvitationComponent } from "./invitation/invitation.component";
 import "./invitation/register-legacy";
+import { CreateEpicComponent } from "./create-epic/create-epic.component";
+import "./create-epic/register-legacy";
+import { RelatedUserstoriesCreateComponent } from "./related-userstories-create/related-userstories-create.component";
+import "./related-userstories-create/register-legacy";
+import { ProjectTagsComponent } from "./project-tags/project-tags.component";
+import "./project-tags/register-legacy";
 import {
     AJS_APP_META_SERVICE,
     AJS_AVATAR_SERVICE,
@@ -441,6 +447,9 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         RegisterFormComponent,
         InvitationComponent,
         TgAuthPluginSlotUpgradedDirective,
+        CreateEpicComponent,
+        RelatedUserstoriesCreateComponent,
+        ProjectTagsComponent,
         TgTranslatePipe,
         TgEmojifyPipe,
         TgMomentFormatPipe,

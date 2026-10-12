@@ -278,6 +278,14 @@ référence :
    navigateur réel de bout en bout avec de vrais tokens générés côté `taiga-back` (email,
    mot de passe, annulation de compte, invitation avec une vraie adhésion en attente).
    Détail complet dans `MIGRATION.md`.
+   **Rectificatif : trois `.checksley()` restaient encore après `auth.coffee`**, hors des
+   fichiers audités - `tgCreateEpic`, `tgRelatedUserstoriesCreate` et `tgProjectTags`
+   (`project-values.coffee`). Les trois sont maintenant migrés (`CreateEpicComponent`,
+   `RelatedUserstoriesCreateComponent`, `ProjectTagsComponent` - voir sous-projet 4i dans
+   `MIGRATION.md`) : **plus aucun appel `.checksley()` dans l'app**. La librairie et sa
+   config globale (`app.coffee`) restent en place pour d'éventuels plugins contrib
+   externes ; les retirer est une décision à part. Vérification navigateur contre un vrai
+   `taiga-back` encore à faire pour ce dernier lot.
 4. ~~Listes infinies (`ngInfiniteScroll`)~~ — fait, voir sous-projet backlog ci-dessus (item 1).
 
 WYSIWYG et checksley (items 2 et 3) sont maintenant tous les deux terminés. Il ne reste que

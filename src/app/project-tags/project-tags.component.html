@@ -1,0 +1,184 @@
+<section>
+    <div class="admin-tags-section-wrapper-empty" *ngIf="!projectTagsAll.length && loading">
+        <img class="loading-spinner" [src]="spinnerSrc" alt="loading..." />
+    </div>
+
+    <div class="admin-tags-section-wrapper">
+        <form class="add-tag-container new-value" [class.hidden]="!showNewValue" (submit)="$event.preventDefault()">
+            <tg-color-selector
+                class="color-column"
+                [initColor]="newValueColor"
+                (selectColor)="newValueColor = $event.color"
+            ></tg-color-selector>
+
+            <div class="tag-name">
+                <input
+                    name="tag"
+                    type="text"
+                    [attr.placeholder]="'ADMIN.TYPES.PLACEHOLDER_WRITE_NAME' | tgTranslate"
+                    [formControl]="newValueName"
+                    (keyup)="onNewValueKeyup($event)"
+                />
+                <p class="field-error" *ngIf="newValueName.invalid && newValueName.touched">
+                    {{ errors.getMessage(newValueName.errors) }}
+                </p>
+            </div>
+
+            <div class="options-column">
+                <img *ngIf="loadingCreate" class="loading-spinner" [src]="spinnerSrc" alt="loading..." />
+                <ng-container *ngIf="!loadingCreate">
+                    <a class="add-new e2e-save" href="" (click)="saveNewValue(); $event.preventDefault()">
+                        <tg-svg [attr.title]="'COMMON.ADD' | tgTranslate" svg-icon="icon-check-empty"></tg-svg>
+                    </a>
+                    <a class="delete-new" href="" (click)="closeNewValue(); $event.preventDefault()">
+                        <tg-svg [attr.title]="'COMMON.CANCEL' | tgTranslate" svg-icon="icon-close"></tg-svg>
+                    </a>
+                </ng-container>
+            </div>
+        </form>
+
+        <div class="empty-large tags-empty" *ngIf="!projectTagsAll.length && !loading">
+            <img [src]="version + '/images/empty/empty_field.png'" [alt]="'BACKLOG.EMPTY' | tgTranslate" />
+            <p class="title">{{ "ADMIN.PROJECT_VALUES_TAGS.EMPTY" | tgTranslate }}</p>
+        </div>
+
+        <div class="table-header table-tags-editor" *ngIf="projectTagsAll.length">
+            <div class="row header-tag-row">
+                <div class="color-column">{{ "COMMON.FIELDS.COLOR" | tgTranslate }}</div>
+                <div class="status-name">{{ "COMMON.FIELDS.NAME" | tgTranslate }}</div>
+                <div class="color-filter">
+                    <input
+                        class="e2e-tags-filter"
+                        id="filter-tags-input"
+                        type="text"
+                        name="name"
+                        [ngModel]="tagsFilter"
+                        (ngModelChange)="onTagsFilterChange($event)"
+                    />
+                    <label for="filter-tags-input">
+                        <tg-svg svg-icon="icon-search"></tg-svg>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-main table-admin-tags" *ngIf="projectTagsAll.length">
+            <div [style.display]="mixingTags.toTag ? 'none' : ''">
+                <div class="empty-large admin-attributes-section-wrapper-empty" [style.display]="projectTags.length ? 'none' : ''">
+                    <img [src]="version + '/images/empty/empty_moon.png'" [alt]="'BACKLOG.EMPTY' | tgTranslate" />
+                    <p>{{ "ADMIN.PROJECT_VALUES_TAGS.EMPTY_SEARCH" | tgTranslate }}</p>
+                </div>
+
+                <div class="e2e-tag-row" *ngFor="let tag of projectTags; trackBy: trackByName">
+                    <form (submit)="$event.preventDefault()">
+                        <div class="row tag-row table-main visualization" [ngClass]="mixingClass(tag)" [class.hidden]="isEditing(tag)">
+                            <div class="color-column">
+                                <div class="current-color" *ngIf="tag.color" [style.background]="tag.color"></div>
+                                <div class="current-color empty-color" *ngIf="!tag.color"></div>
+                            </div>
+
+                            <div class="status-name">
+                                <span [innerHTML]="tag.name | tgEmojify"></span>
+                            </div>
+
+                            <div class="options-column">
+                                <a class="mix-tags" href="" (click)="startMixingTags(tag); $event.preventDefault()">
+                                    <tg-svg [attr.title]="'ADMIN.PROJECT_VALUES_TAGS.MIXING_MERGE' | tgTranslate" svg-icon="icon-merge"></tg-svg>
+                                    <div class="popover merge-explanation">
+                                        <span>{{ "ADMIN.PROJECT_VALUES_TAGS.MIXING_MERGE" | tgTranslate }}</span>
+                                    </div>
+                                </a>
+
+                                <a class="edit-value" href="" (click)="startEdit(tag); $event.preventDefault()">
+                                    <tg-svg svg-icon="icon-edit" [attr.title]="'ADMIN.COMMON.TITLE_ACTION_EDIT_VALUE' | tgTranslate"></tg-svg>
+                                </a>
+
+                                <a class="delete-tag" href="" (click)="deleteTag(tag); $event.preventDefault()">
+                                    <tg-svg svg-icon="icon-trash" [attr.title]="'ADMIN.COMMON.TITLE_ACTION_DELETE_VALUE' | tgTranslate"></tg-svg>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="row tag-row table-main edition" *ngIf="isEditing(tag)" [attr.data-tag]="tag.name">
+                            <tg-color-selector
+                                class="color-column"
+                                [initColor]="editions[tag.name].color"
+                                (selectColor)="editions[tag.name].color = $event.color"
+                            ></tg-color-selector>
+
+                            <div class="status-name">
+                                <input
+                                    name="to_tag"
+                                    type="text"
+                                    [attr.placeholder]="'ADMIN.TYPES.PLACEHOLDER_WRITE_NAME' | tgTranslate"
+                                    [formControl]="editions[tag.name].name"
+                                    (keyup)="onEditKeyup($event, tag)"
+                                />
+                                <p class="field-error" *ngIf="editions[tag.name].name.invalid && editions[tag.name].name.touched">
+                                    {{ errors.getMessage(editions[tag.name].name.errors) }}
+                                </p>
+                            </div>
+
+                            <div class="options-column">
+                                <img *ngIf="loadingEdit" class="loading-spinner" [src]="spinnerSrc" alt="loading..." />
+                                <ng-container *ngIf="!loadingEdit">
+                                    <a class="save e2e-save" href="" (click)="saveEdit(tag); $event.preventDefault()">
+                                        <tg-svg [attr.title]="'COMMON.SAVE' | tgTranslate" svg-icon="icon-check-empty"></tg-svg>
+                                    </a>
+                                    <a class="cancel" href="" (click)="cancelEdit(tag); $event.preventDefault()">
+                                        <tg-svg [attr.title]="'COMMON.CANCEL' | tgTranslate" svg-icon="icon-close"></tg-svg>
+                                    </a>
+                                </ng-container>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div [style.display]="mixingTags.toTag ? '' : 'none'">
+                <div *ngFor="let tag of projectTags; trackBy: trackByName">
+                    <form (submit)="$event.preventDefault()">
+                        <div class="row mixing-row table-main visualization" [ngClass]="mixingClass(tag)" (click)="toggleMixingFromTags(tag)">
+                            <div class="color-column">
+                                <div class="current-color" *ngIf="tag.color" [style.background]="tag.color"></div>
+                                <div class="current-color empty-color" *ngIf="!tag.color"></div>
+                            </div>
+
+                            <div class="status-name">
+                                <span [innerHTML]="tag.name | tgEmojify"></span>
+                            </div>
+
+                            <div class="mixing-options-column" *ngIf="mixingTags.toTag === tag.name">
+                                <img *ngIf="loadingMixing" class="loading-spinner" [src]="spinnerSrc" alt="loading..." />
+                                <ng-container *ngIf="!loadingMixing">
+                                    <div class="mixing-help-text">{{ "ADMIN.PROJECT_VALUES_TAGS.MIXING_HELP_TEXT" | tgTranslate }}</div>
+                                    <button
+                                        class="mixing-confirm btn-small"
+                                        type="button"
+                                        variant="primary"
+                                        *ngIf="mixingTags.fromTags.length"
+                                        (click)="confirmMixingTags(); $event.stopPropagation()"
+                                    >{{ "ADMIN.PROJECT_VALUES_TAGS.MIXING_MERGE" | tgTranslate }}</button>
+                                    <button
+                                        class="mixing-cancel btn-small"
+                                        type="button"
+                                        variant="secondary"
+                                        (click)="cancelMixingTags(); $event.stopPropagation()"
+                                    >{{ "COMMON.CANCEL" | tgTranslate }}</button>
+                                </ng-container>
+                            </div>
+
+                            <div class="mixing-options-column" *ngIf="mixingTags.fromTags.indexOf(tag.name) !== -1">
+                                <tg-svg
+                                    class="mixing-selected"
+                                    [attr.title]="'ADMIN.PROJECT_VALUES_TAGS.SELECTED' | tgTranslate"
+                                    svg-icon="icon-merge"
+                                ></tg-svg>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

@@ -2804,6 +2804,63 @@ d'email réelle (même mécanisme, confirmé de nouveau), suppression de compte 
 (compte désactivé et anonymisé en base, redirection vers `/discover` confirmée). Build
 Angular (`strictTemplates`) et Karma (361 specs) restent verts.
 
+### Sous-projet 4i : les 3 derniers `.checksley()` (création d'epic, US liées à une epic, tags admin)
+
+Le sous-projet checksley avait été déclaré terminé après `auth.coffee`, mais un grep sur
+`.checksley(` en trouvait encore trois, hors des fichiers audités jusque-là (deux sous
+`app/modules/epics/`, un resté dans `project-values.coffee`, explicitement noté "jamais
+examiné"). Plus aucun appel `.checksley()` ne reste dans l'app après ce lot.
+
+- `tgCreateEpic` + `CreateEpicCtrl` → `CreateEpicComponent` (`src/app/create-epic/`), même
+  nom. Ouvert par `lightboxFactory.create('tg-create-epic', ...)` depuis
+  `EpicsDashboardCtrl` - l'attribut `on-create-epic` existant correspond tel quel à
+  `@Output() createEpic`, l'appelant n'a pas changé. Réutilise directement
+  `tg-color-selector`, `tg-tag-line-common`, `tg-attachments-simple` et `tgAutoSelect`
+  déjà migrés. **Vrai bug corrigé** : `addAttachment` faisait
+  `@.attachments.push(attachment)` sur une `Immutable.List` sans réassigner le résultat -
+  les pièces jointes choisies dans cette lightbox n'étaient jamais envoyées avec la
+  nouvelle epic. Réassigné ici, et `delete` (jamais câblé dans l'original) branché aussi.
+- `tgRelatedUserstoriesCreate` + `RelatedUserstoriesCreateCtrl` →
+  `RelatedUserstoriesCreateComponent` (`src/app/related-userstories-create/`), même nom.
+  Jumeau de `LightboxRelateToEpicComponent` (même lightbox à deux modes, vue côté epic) -
+  mêmes deux bouts de code mort conservés tels quels (le `data-required` du sélecteur de
+  projet hors des deux `<form>`, et `form.setErrors(data)` sans champ `name` sur lequel
+  atterrir). Appelant (`related-userstories.jade`) passé en `bind-x`/`on-x` ; le binding
+  `showCreateRelatedUserstoriesLightbox`, déclaré mais jamais lu, est retiré des deux
+  côtés. `tg-check-permission="modify_epic"` reste sur l'élément hôte (directive-attribut
+  AngularJS toujours compilée sur l'hôte downgradé) ; celui du bouton interne (`add_us`)
+  est répliqué via `tgProjectService.canEdit`, comme `PromoteToUsButtonComponent`.
+  Attention : dans `utils.coffee`, `debounce` est *leading* et `debounceLeading` est
+  *trailing* (noms inversés) - le `debounceLeading 300` de la recherche est donc bien
+  reproduit par un debounce trailing de 300 ms.
+- `tgProjectTags` + `ProjectTagsController` → `ProjectTagsComponent`
+  (`src/app/project-tags/`), même nom (maintenant un élément). Le couple était ambiant
+  (`$el.controller()` + `ng-controller` sur le même élément, `$scope.projectId` lu sur
+  `ProjectValuesSectionController`) et pilotait le DOM en basculant des classes `.hidden`
+  via jQuery - tout devient de l'état de composant. Le `$model.make_model('tag')`
+  (`clone()`/`revert()`, utilisé seulement pour mémoriser le nom d'origine pendant
+  l'édition) devient un état d'édition séparé par ligne, indexé par le nom d'origine : le
+  tag affiché n'est jamais muté avant la confirmation du serveur. Le bouton "Nouveau tag"
+  de l'en-tête reste dans le jade (à côté de `tg-main-title`, toujours AngularJS) et
+  incrémente un compteur lié à `@Input() addNewRequests` - chaque incrément ouvre la
+  ligne "nouveau tag". Le `debounce 2000` (leading, donc un garde anti-double-clic) sur
+  "ajouter" devient le garde `loadingCreate` en vol utilisé partout ailleurs. Erreurs API
+  remappées sur les contrôles par les noms de champ d'origine (`tag` à la création,
+  `to_tag` à l'édition).
+
+Vérifié : build Angular (`strictTemplates`) vert, `gulp deploy` (coffee + jade) vert,
+Karma 354 specs vertes (361 - les 7 specs des deux contrôleurs CoffeeScript supprimés).
+**Pas de vérification navigateur contre un vrai `taiga-back` pour ce lot** : fait depuis
+une machine Windows sans backend local (Node 20.11.1 installé via nvm dans WSL, Chrome
+headless autonome pour Karma) - à faire avant de merger : création d'epic avec pièce
+jointe, US liées (nouvelle unitaire, en masse, existante), et page admin Tags (création,
+édition, suppression, filtre, fusion).
+
+La librairie checksley elle-même (`gulpfile.js`, `package.json`, et la config globale
+`checksley.updateMessages`/`updateValidators` dans `app.coffee`) est **volontairement
+conservée** : plus rien dans ce repo ne l'appelle, mais des plugins contrib externes
+pourraient encore le faire. Sa suppression est une décision séparée.
+
 ## Patron à suivre pour migrer un module suivant
 
 1. Repérer ses dépendances réelles (services/directives utilisés *et* utilisateurs) avant

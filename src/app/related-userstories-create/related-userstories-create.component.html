@@ -1,0 +1,144 @@
+<button
+    class="btn-icon add-button e2e-add-userstory-button"
+    *ngIf="canAddUs()"
+    type="button"
+    variant="primary"
+    (click)="showLightbox()"
+>
+    <tg-svg svg-icon="icon-add"></tg-svg>
+</button>
+
+<div class="lightbox lightbox-create-related-user-stories">
+    <a class="close" href="" [title]="'COMMON.CLOSE' | tgTranslate" (click)="closeLightbox(); $event.preventDefault()">
+        <tg-svg svg-icon="icon-close"></tg-svg>
+    </a>
+
+    <div class="lightbox-create-related-user-stories-wrapper">
+        <h2 class="title">{{ "EPIC.CREATE_RELATED_USERSTORIES" | tgTranslate }}</h2>
+
+        <div class="button-group">
+            <div class="button-group-single">
+                <input type="radio" name="related-with-selector" id="new-user-story" value="new-user-story" [(ngModel)]="relatedWithSelector" />
+                <label class="e2e-new-userstory-label" for="new-user-story">
+                    <span class="name">{{ "EPIC.NEW_USERSTORY" | tgTranslate }}</span>
+                </label>
+            </div>
+
+            <div class="button-group-single">
+                <input type="radio" name="related-with-selector" id="existing-user-story" value="existing-user-story" [(ngModel)]="relatedWithSelector" />
+                <label class="e2e-existing-user-story-label" for="existing-user-story">
+                    <span class="name">{{ "EPIC.EXISTING_USERSTORY" | tgTranslate }}</span>
+                </label>
+            </div>
+        </div>
+
+        <fieldset class="project-selector">
+            <label *ngIf="relatedWithSelector === 'new-user-story'" for="project-selector-dropdown">
+                {{ "EPIC.CHOOSE_PROJECT_FOR_CREATION" | tgTranslate }}
+            </label>
+            <label *ngIf="relatedWithSelector === 'existing-user-story'" for="project-selector-dropdown">
+                {{ "EPIC.CHOOSE_PROJECT_FROM" | tgTranslate }}
+            </label>
+            <select id="project-selector-dropdown" [ngModel]="selectedProject" (ngModelChange)="selectProject($event)">
+                <option *ngFor="let p of projects?.toArray()" [ngValue]="p.get('id')">{{ p.get('name') }}</option>
+            </select>
+        </fieldset>
+
+        <fieldset [style.display]="(relatedWithSelector !== 'new-user-story') ? 'none' : ''">
+            <div class="new-user-story-title">
+                <label [style.display]="(creationMode !== 'single-new-user-story') ? 'none' : ''">{{ "EPIC.SUBJECT" | tgTranslate }}</label>
+                <label [style.display]="(creationMode !== 'bulk-new-user-stories') ? 'none' : ''">{{ "EPIC.SUBJECT_BULK_MODE" | tgTranslate }}</label>
+
+                <div class="new-user-story-options">
+                    <div class="new-user-story-option-single">
+                        <input
+                            type="radio"
+                            name="new-user-story-selector"
+                            id="single-new-user-story"
+                            value="single-new-user-story"
+                            [(ngModel)]="creationMode"
+                        />
+                        <label class="e2e-single-creation-label" for="single-new-user-story">
+                            <tg-svg svg-icon="icon-add"></tg-svg>
+                        </label>
+                    </div>
+
+                    <div class="new-user-story-option-single">
+                        <input
+                            type="radio"
+                            name="new-user-story-selector"
+                            id="bulk-new-user-stories"
+                            value="bulk-new-user-stories"
+                            [(ngModel)]="creationMode"
+                        />
+                        <label class="e2e-bulk-creation-label" for="bulk-new-user-stories">
+                            <tg-svg svg-icon="icon-bulk"></tg-svg>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <form class="new-user-story-form" [formGroup]="newUserstoryForm">
+                <div class="single-creation" [style.display]="(creationMode !== 'single-new-user-story') ? 'none' : ''">
+                    <input class="e2e-new-userstory-input-text" type="text" formControlName="relatedUserstoriesText" />
+                </div>
+
+                <div class="bulk-creation" [style.display]="(creationMode !== 'bulk-new-user-stories') ? 'none' : ''">
+                    <textarea class="e2e-new-userstories-input-textarea" formControlName="relatedUserstoriesText"></textarea>
+                </div>
+
+                <p
+                    class="field-error"
+                    *ngIf="newUserstoryForm.get('relatedUserstoriesText').invalid && newUserstoryForm.get('relatedUserstoriesText').touched"
+                >
+                    {{ errors.getMessage(newUserstoryForm.get('relatedUserstoriesText').errors) }}
+                </p>
+            </form>
+
+            <button
+                class="btn-big create-user-story e2e-create-userstory-button ng-animate-disabled"
+                type="button"
+                [disabled]="loading"
+                (click)="bulkCreateRelatedUserStories()"
+            >{{ "COMMON.SAVE" | tgTranslate }}</button>
+        </fieldset>
+
+        <fieldset class="existing-user-story" [style.display]="(relatedWithSelector !== 'existing-user-story') ? 'none' : ''">
+            <label for="userstory-filter">{{ "EPIC.CHOOSE_USERSTORY" | tgTranslate }}</label>
+            <input
+                class="userstory-filter e2e-filter-userstories-input"
+                id="userstory-filter"
+                type="text"
+                [attr.placeholder]="'EPIC.FILTER_USERSTORIES' | tgTranslate"
+                [(ngModel)]="searchUserstory"
+                (ngModelChange)="onSearchUserstoryChange()"
+            />
+
+            <form class="existing-user-story-form" [formGroup]="existingUserstoryForm" [style.display]="(!projectUserstories.size) ? 'none' : ''">
+                <select class="userstory e2e-userstories-select" size="5" formControlName="selectedUserstory">
+                    <option class="hidden" value=""></option>
+                    <option *ngFor="let us of projectUserstories.toArray()" [value]="us.get('id')">
+                        #{{ us.get('ref') }} {{ us.get('subject') }}
+                    </option>
+                </select>
+                <p
+                    class="field-error"
+                    *ngIf="existingUserstoryForm.get('selectedUserstory').invalid && existingUserstoryForm.get('selectedUserstory').touched"
+                >
+                    {{ errors.getMessage(existingUserstoryForm.get('selectedUserstory').errors) }}
+                </p>
+            </form>
+
+            <p class="no-stories-found" [style.display]="(projectUserstories.size) ? 'none' : ''">
+                {{ "EPIC.NO_USERSTORIES_FOUND" | tgTranslate }}
+            </p>
+
+            <button
+                class="btn-big e2e-select-related-userstory-button"
+                type="button"
+                [disabled]="loading"
+                (click)="saveRelatedUserStory()"
+            >{{ "COMMON.SAVE" | tgTranslate }}</button>
+        </fieldset>
+    </div>
+</div>

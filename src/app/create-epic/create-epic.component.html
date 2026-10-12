@@ -1,0 +1,128 @@
+<a class="close" href="" [title]="'COMMON.CLOSE' | tgTranslate" (click)="close(); $event.preventDefault()">
+    <tg-svg svg-icon="icon-close"></tg-svg>
+</a>
+
+<div class="create-epic-container">
+    <h2 class="title">{{ "EPICS.CREATE.TITLE" | tgTranslate }}</h2>
+    <form [formGroup]="form" (ngSubmit)="submit()">
+        <div class="subject-container">
+            <div class="color-selector">
+                <fieldset>
+                    <tg-color-selector
+                        [isColorRequired]="true"
+                        [initColor]="newEpic.color"
+                        (selectColor)="selectColor($event.color)"
+                    ></tg-color-selector>
+                </fieldset>
+            </div>
+            <div class="subject">
+                <fieldset>
+                    <input
+                        class="e2e-create-epic-subject"
+                        type="text"
+                        name="subject"
+                        formControlName="subject"
+                        tgAutoSelect
+                        [attr.placeholder]="'COMMON.FIELDS.SUBJECT' | tgTranslate"
+                    />
+                    <p class="field-error" *ngIf="form.get('subject').invalid && form.get('subject').touched">
+                        {{ errors.getMessage(form.get('subject').errors) }}
+                    </p>
+                </fieldset>
+            </div>
+        </div>
+        <fieldset>
+            <select
+                class="e2e-create-epic-status"
+                id="epic-status"
+                name="status"
+                [(ngModel)]="newEpic.status"
+                [ngModelOptions]="{standalone: true}"
+            >
+                <option *ngFor="let s of epicStatuses" [ngValue]="s.id">{{ s.name }}</option>
+            </select>
+        </fieldset>
+        <fieldset class="tags-block">
+            <tg-tag-line-common
+                [project]="project"
+                [tags]="newEpic.tags"
+                permissions="add_epic"
+                (addTag)="addTag($event)"
+                (deleteTag)="deleteTag($event)"
+            ></tg-tag-line-common>
+        </fieldset>
+        <fieldset>
+            <textarea
+                class="e2e-create-epic-description"
+                [attr.placeholder]="'EPICS.CREATE.PLACEHOLDER_DESCRIPTION' | tgTranslate"
+                [(ngModel)]="newEpic.description"
+                [ngModelOptions]="{standalone: true}"
+            ></textarea>
+        </fieldset>
+        <fieldset>
+            <tg-attachments-simple
+                [attachments]="attachments"
+                (add)="addAttachment($event.attachment)"
+                (delete)="deleteAttachment($event.attachment)"
+            ></tg-attachments-simple>
+        </fieldset>
+        <div class="settings">
+            <fieldset class="team-requirement">
+                <input
+                    type="checkbox"
+                    name="team_requirement"
+                    id="team-requirement"
+                    [(ngModel)]="newEpic.team_requirement"
+                    [ngModelOptions]="{standalone: true}"
+                />
+                <label class="requirement trans-button e2e-create-epic-team-requirement" for="team-requirement">
+                    {{ "EPICS.CREATE.TEAM_REQUIREMENT" | tgTranslate }}
+                </label>
+            </fieldset>
+            <fieldset class="client-requirement">
+                <input
+                    type="checkbox"
+                    name="client_requirement"
+                    id="client-requirement"
+                    [(ngModel)]="newEpic.client_requirement"
+                    [ngModelOptions]="{standalone: true}"
+                />
+                <label class="requirement trans-button e2e-create-epic-client-requirement" for="client-requirement">
+                    {{ "EPICS.CREATE.CLIENT_REQUIREMENT" | tgTranslate }}
+                </label>
+            </fieldset>
+            <fieldset>
+                <input
+                    type="checkbox"
+                    name="blocked"
+                    id="blocked"
+                    [(ngModel)]="newEpic.is_blocked"
+                    [ngModelOptions]="{standalone: true}"
+                    (click)="displayBlockedReason = !displayBlockedReason"
+                />
+                <label class="requirement trans-button blocked e2e-create-epic-blocked" for="blocked">
+                    {{ "EPICS.CREATE.BLOCKED" | tgTranslate }}
+                </label>
+            </fieldset>
+        </div>
+        <fieldset *ngIf="displayBlockedReason">
+            <input
+                class="e2e-create-epic-blocked-note"
+                type="text"
+                name="blocked_note"
+                maxlength="140"
+                [(ngModel)]="newEpic.blocked_note"
+                [ngModelOptions]="{standalone: true}"
+                [attr.placeholder]="'EPICS.CREATE.BLOCKED_NOTE_PLACEHOLDER' | tgTranslate"
+            />
+        </fieldset>
+        <fieldset>
+            <button
+                class="btn-big create-epic-button e2e-create-epic-button"
+                type="submit"
+                [disabled]="loading"
+                [title]="'EPICS.CREATE.CREATE_EPIC' | tgTranslate"
+            >{{ "EPICS.CREATE.CREATE_EPIC" | tgTranslate }}</button>
+        </fieldset>
+    </form>
+</div>
