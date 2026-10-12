@@ -2860,6 +2860,13 @@ La librairie checksley elle-même (`gulpfile.js`, `package.json`, et la config g
 `checksley.updateMessages`/`updateValidators` dans `app.coffee`) est **volontairement
 conservée** : plus rien dans ce repo ne l'appelle, mais des plugins contrib externes
 pourraient encore le faire. Sa suppression est une décision séparée.
+**Confirmé ensuite** : le plugin officiel `taiga-contrib-slack` (installé par
+`taiga-back/requirements-contribs.txt`) appelle `$el.find("form").checksley(...)` sur sa
+page admin (`front/coffee/slack.coffee`) et s'appuie sur le validateur `url` enregistré
+dans `app.coffee` (`data-type="url"`). Retirer checksley casserait cette page. Les autres
+plugins vérifiés (github-auth, gitlab-auth, oidc-auth, protected, openid-auth
+communautaire, ldap-auth-ext) ne l'utilisent pas. Checksley ne pourra être retiré
+qu'après migration du plugin Slack lui-même (repo séparé) ou abandon de son support.
 
 ## Patron à suivre pour migrer un module suivant
 

@@ -283,8 +283,9 @@ référence :
    (`project-values.coffee`). Les trois sont maintenant migrés (`CreateEpicComponent`,
    `RelatedUserstoriesCreateComponent`, `ProjectTagsComponent` - voir sous-projet 4i dans
    `MIGRATION.md`) : **plus aucun appel `.checksley()` dans l'app**. La librairie et sa
-   config globale (`app.coffee`) restent en place pour d'éventuels plugins contrib
-   externes ; les retirer est une décision à part. Vérification navigateur contre un vrai
+   config globale (`app.coffee`) restent en place : le plugin officiel
+   `taiga-contrib-slack` les utilise encore (page admin Slack) - à ne retirer qu'après
+   migration ou abandon de ce plugin. Vérification navigateur contre un vrai
    `taiga-back` encore à faire pour ce dernier lot.
 4. ~~Listes infinies (`ngInfiniteScroll`)~~ — fait, voir sous-projet backlog ci-dessus (item 1).
 
