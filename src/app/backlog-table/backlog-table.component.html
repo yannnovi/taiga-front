@@ -27,6 +27,8 @@
 <div class="backlog-table-body" cdkDropListGroup>
     <div
         cdkDropList
+        [id]="dropListId"
+        [cdkDropListConnectedTo]="connectedIds"
         [cdkDropListDisabled]="sortingDisabled"
         [cdkDropListData]="{items: displayedUserstories}"
         (cdkDropListDropped)="drop($event)"

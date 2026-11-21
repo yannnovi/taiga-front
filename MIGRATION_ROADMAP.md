@@ -29,7 +29,7 @@ tierce. Patron complet dans `MIGRATION.md` (section "Patron à suivre").
 
 | Blocage | Symptôme repéré | Exemples déjà écartés |
 |---|---|---|
-| Scope ambiant (hérité du contrôleur parent, pas isolé) | `scope: true` ou pas de `scope:` du tout, lit `$scope.project`/`$scope.usersById` directement | `ticket-watchers`, toute la famille `assigned-*`, `lb-select-user`, `tgSprint` (via sa dépendance `tg-backlog-sprint-header`), toute la famille `tgRelatedTask*`, `tgWikiSummary`, la famille `tgCsv*` |
+| Scope ambiant (hérité du contrôleur parent, pas isolé) | `scope: true` ou pas de `scope:` du tout, lit `$scope.project`/`$scope.usersById` directement | `ticket-watchers`, toute la famille `assigned-*`, `lb-select-user`, toute la famille `tgRelatedTask*`, `tgWikiSummary`, la famille `tgCsv*` |
 | Fichiers "grab-bag" multi-directives anciens | Même style que ci-dessus, en pire (souvent 10+ directives par fichier) | `common/components.coffee`, `admin/memberships.coffee` (le reste), `team/main.coffee`, `related-tasks.coffee`, `backlog/sprints.coffee` |
 | HTML compilé dynamiquement avec directives vivantes | `tg-compile-html` sur du contenu généré contenant un `tg-nav` intégré | `user-timeline-item` (voir section dédiée dans `MIGRATION.md`) |
 | Transclusion + `require` imbriqués entre 2 directives | `transclude: true` + `require: "^parentDirective"` | `profile-tabs` (bloque toute la route `/profile`) |
@@ -290,9 +290,9 @@ référence :
 4. ~~Listes infinies (`ngInfiniteScroll`)~~ — fait, voir sous-projet backlog ci-dessus (item 1).
 
 Les 4 items (drag & drop avec `window.dragMultiple` reconstruit, WYSIWYG, checksley, listes
-infinies) sont terminés : **la Phase 2 est entièrement close.** Seule dette résiduelle
-actée : le drag backlog→sprint, à reconnecter lors de la migration du tableau sprint
-(Phase 3, même blocage scope ambiant que `tgSprint`/`tg-backlog-sprint-header`).
+infinies) sont terminés : **la Phase 2 est entièrement close.** Sa seule dette résiduelle,
+le drag backlog→sprint, a depuis été reconnectée avec la migration de la sidebar des sprints
+(Phase 3, premier groupe).
 
 ## Phase 3 — Refactor du scope ambiant (le plus gros bloc, le plus risqué)
 
@@ -300,7 +300,7 @@ La majorité des directives "boutons de statut" sur les pages de détail (`tg-ep
 `tg-issue-status-*`, `tg-task-status-*`, `tg-us-status-*`), les widgets CRUD admin
 (`tg-memberships-row-*`, `tg-project-*-values`, `tg-roles`, `tg-edit-role`, la famille
 `tgCsv*`...), la page équipe (`tg-team-*`), les réglages de notifications utilisateur
-(`tg-user-*-notifications*`), et maintenant aussi `tgSprint`, la famille `tgRelatedTask*`
+(`tg-user-*-notifications*`), et maintenant aussi la famille `tgRelatedTask*`
 et `tgWikiSummary` partagent le même blocage : elles lisent le scope du contrôleur parent
 directement au lieu de bindings isolés explicites. (Les pages d'auth, `tg-login`/
 `tg-register`/..., étaient dans cette même famille mais sont maintenant migrées - voir le
@@ -324,6 +324,13 @@ Protractor ont été évalués et écartés). Ces specs ont déjà trouvé et pe
 bug de production (boutons "Move to current/latest sprint" cassés depuis la migration du
 tableau backlog). Détail dans `MIGRATION.md`, section "Phase 3 - filet de tests". Les autres
 groupes (pages de détail, admin, équipe, notifications) n'ont pas encore de filet.
+
+**Premier groupe migré : la sidebar des sprints du backlog** ✅ → `BacklogSprintsComponent`
+(`tg-backlog-sprints`), qui absorbe `tgSprint`, `tgBacklogSprint`, `tgBacklogSprintHeader` et
+la bascule des sprints fermés (`backlog/sprints.coffee` supprimé), sans toucher à
+`BacklogController`. Le drag backlog↔sprint↔sprint est rétabli (listes CDK connectées par
+id, les deux composants n'ayant pas d'ancêtre Angular commun). Vérifié en navigateur réel
+contre `taiga-back`. Détail dans `MIGRATION.md`, section "Phase 3, premier groupe".
 
 ## Phase 4 — `tg-compile-html` et contenu HTML généré dynamiquement
 
@@ -351,13 +358,14 @@ coffee/jade, et tout ce qui reste de l'ancien bootstrap.
 1. ~~Phase 1~~ — terminée (2 modules migrés, 5 reclassés bloqués, 2 bugs de production
    corrigés au passage).
 2. ~~Phase 2~~ — terminée (drag & drop + sélection multiple, WYSIWYG, checksley, listes
-   infinies). Dette résiduelle : drag backlog→sprint (voir Phase 2, item 1).
-3. ~~Filet de tests pour le tableau sprint~~ — fait (voir Phase 3).
-   **Prochaine étape : migrer le tableau sprint** (`tgSprint`, `tg-backlog-sprint-header`,
-   `tgBacklogSprint`, bascule des sprints fermés) et reconnecter le drag backlog→sprint sous
-   un `cdkDropListGroup` commun avec `BacklogTableComponent`. Ensuite, un seul groupe de
-   Phase 3 à la fois, chacun précédé de son propre filet de tests, en tranchant au cas par
-   cas entre refactor du parent et wrapper `UpgradeComponent` en bloc.
+   infinies). Sa dette résiduelle (drag backlog→sprint) est réglée, voir point 3.
+3. ~~Filet de tests + migration de la sidebar des sprints du backlog~~ — fait (voir
+   Phase 3), drag backlog↔sprint rétabli.
+4. **Prochaine étape : choisir le groupe suivant de la Phase 3**, un seul à la fois, chacun
+   précédé de son propre filet de tests (specs Karma de caractérisation sur le contrôleur
+   parent, même méthode), en tranchant au cas par cas entre refactor du parent et wrapper
+   `UpgradeComponent` en bloc. Candidats : la famille `tgRelatedTask*` (page détail US),
+   `tgWikiSummary`, les boutons de statut des pages de détail, les widgets CRUD admin.
 
 ## Vérification (comme les lots précédents)
 

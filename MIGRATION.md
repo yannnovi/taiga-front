@@ -2884,7 +2884,8 @@ quelques bizarreries marquées `NOTE (current behaviour)` dans les specs - à ne
   stats/prévision de vélocité, pagination des US, `getLinkParams`, `moveUs` (y compris la
   file `pendingDrag`), actions de template et événements des lightboxes.
 - `backlog/sprints.spec.coffee` - `tgBacklogSprint`, `tgBacklogSprintHeader`,
-  `tgBacklogToggleClosedSprintsVisualization`, `tgSprint`.
+  `tgBacklogToggleClosedSprintsVisualization`, `tgSprint` (retiré ensuite avec ces
+  directives, voir la section suivante).
 - `backlog/backlog-directive.spec.coffee` - barre d'outils "move to sprint" de `tgBacklog`
   (`linkToolbar`) : sélection par case à cocher, boutons move-to-latest/current-sprint,
   callback après création de sprint, bouton "add to sprint" de la prévision.
@@ -2907,6 +2908,76 @@ exactement cette `TypeError` avant le correctif, vertes après) ; **pas encore v
 navigateur réel** (`taiga-back`/serveur de dev non lancés au moment du correctif).
 
 Karma : 454/454.
+
+## Phase 3, premier groupe : la sidebar des sprints du backlog (`BacklogSprintsComponent`)
+
+`app/partials/includes/modules/sprints.jade` (inclus inline dans `backlog.jade`, sur le scope
+ambiant de `BacklogController`) et les quatre directives de `backlog/sprints.coffee`
+remplacés par un seul composant downgradé `tg-backlog-sprints`
+(`src/app/backlog-sprints/`) :
+- `tgBacklogSprint` (plier/déplier, style sprint fermé, lien "éditer le sprint"),
+- `tgBacklogSprintHeader` (en-tête `$compile`é : nom, lien taskboard, dates, points),
+- `tgBacklogToggleClosedSprintsVisualization` (afficher/masquer les sprints fermés + spinner),
+- `tgSprint` (`backlog/sprint.jade` : barre de progression, lignes US, bouton taskboard).
+
+`tgSprint` avait bien un scope isolé, mais son sous-template n'était jamais utilisable seul :
+`tg-backlog-sprint-header` à l'intérieur lisait le scope parent, et `tgBacklogSprint` sur
+l'élément englobant regardait l'expression `sprint` du `ng-repeat` - d'où le choix de
+migrer le bloc entier plutôt que feuille par feuille. La communication avec
+`BacklogController` est **inchangée** : broadcasts `$rootScope` `sprintform:edit`,
+`backlog:load-closed-sprints`/`backlog:unload-closed-sprints` (le contrôleur et la lightbox
+sprint les écoutent déjà), écoute de `closed-sprints:reloaded` pour arrêter le spinner, et
+deux outputs (`on-add-sprint` → `ctrl.addNewSprint()`, `on-move-us` → `ctrl.moveUs(...)`).
+Aucune ligne de `BacklogController` modifiée. `sprints.coffee`, `sprint.jade`,
+`sprint-header.jade` et `includes/modules/sprints.jade` supprimés.
+
+**Drag backlog↔sprint rétabli** (la régression acceptée lors de la migration du tableau
+backlog) : chaque `.sprint-table` est une `cdkDropList`. `BacklogTableComponent` et
+`BacklogSprintsComponent` sont deux composants downgradés frères dans `backlog.jade`, sans
+ancêtre Angular commun - donc **pas de `cdkDropListGroup` possible** ; à la place,
+`cdkDropListConnectedTo` avec des **ids chaîne** (`BacklogDropListsService`), que CDK résout
+contre sa liste globale de drop lists au début de chaque drag (et dont il filtre lui-même
+l'id propre et les ids inconnus). Toutes les listes lient le **même tableau**, mis à jour en
+place quand les sprints changent. Couvre backlog→sprint (y compris la multi-sélection par
+cases à cocher, même lecture DOM que `BacklogTableComponent`), sprint→backlog, sprint→sprint
+et réordonnancement dans un sprint - tout passe par `ctrl.moveUs` inchangé, qui distingue les
+cas via `us.milestone`. Pas reproduit : les deux `.js-empty-backlog` qui permettaient de
+déposer dans un backlog *vide* (le tableau backlog entier est masqué quand il est vide).
+
+**Deux changements de comportement délibérés** (tous deux figés en `NOTE (current
+behaviour)` dans les specs avant la migration) : l'état plié/déplié est mémorisé par id de
+sprint et ne change qu'au clic (l'ancien `$watch` re-basculait un sprint ouvert à chaque
+`loadSprints()`, qui remplace les objets sprint - un sprint déplié se repliait après chaque
+rechargement) ; l'état affiché/masqué des sprints fermés est dérivé de `closedSprints`
+lui-même plutôt que d'un drapeau dans la closure de la factory de directive (partagé entre
+instances, survivant à la navigation alors que le contrôleur repartait sprints fermés
+masqués). L'animation `slideToggle` jQuery du pliage est conservée.
+
+Styles : `.cdk-drag-placeholder` ajouté à côté de `.gu-transit` dans la `.sprint-table`, et un
+style pour l'aperçu de drag d'une ligne sprint (`.cdk-drag-preview.milestone-us-item-row`),
+que CDK attache à `<body>`, hors de `.sprints`.
+
+Specs : `sprints.spec.coffee` (16 specs, sur les directives supprimées) retiré - même pratique
+que pour les lots précédents (pas de setup de specs côté Angular dans ce repo). Les specs
+`BacklogController` et `tgBacklog` (barre d'outils move-to-sprint) restent et passent.
+Karma **438/438** (454 - 16). Build Angular (`strictTemplates`) vert.
+
+**Vérifié en navigateur réel** (Chrome headless, profil neuf, vrai `taiga-back` local,
+gestes de souris réels via CDP `Input.dispatchMouseEvent`, chaque étape contrôlée par l'API) :
+rendu (en-tête, dates, points, barre de progression, liens taskboard/US avec
+`?milestone=`, style US fermée), plier/déplier, lightbox d'édition de sprint, sprints fermés
+(sprint fermé temporairement via l'API pour le test : affichage, libellé, spinner, pliage par
+défaut, dépliage, masquage) ; drag backlog→sprint, sprint→backlog, sprint→sprint,
+réordonnancement dans un sprint, multi-sélection backlog→sprint (2 US) ; bouton "Move to
+latest sprint" (le correctif `getUsToMove` ci-dessus, enfin vérifié en vrai). Aucune erreur
+console liée. Données de `project-3` restaurées à l'identique après coup.
+
+Incident d'environnement pendant la vérification (pas un bug du front) : le Postgres local
+tournait encore avec le binaire 14.23 alors que Homebrew avait mis à jour `postgresql@14` en
+14.25 - `plpgsql.so` ne se chargeait plus, d'où des 500 sur `bulk_update_backlog_order` et
+`filters_data`. Corrigé par un redémarrage du service (avec accord de l'utilisateur).
+`taiga-back` tourne avec `.venv` (Django 5.2) ; `npx gulp deploy` échoue localement sur
+`gulp-imagemin` (binaire x86, `errno -86` sur Apple Silicon) - utiliser `npm start`/`npx gulp`.
 
 ## Patron à suivre pour migrer un module suivant
 

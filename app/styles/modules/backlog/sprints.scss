@@ -304,7 +304,8 @@
                 text-decoration: line-through;
             }
         }
-        .gu-transit {
+        .gu-transit,
+        .cdk-drag-placeholder {
             background: lighten($gray-light, 12%);
             height: 40px;
             * {
@@ -408,5 +409,23 @@
     }
     a {
         color: $primary;
+    }
+}
+
+// CDK appends the drag preview of a sprint row to <body>, outside `.sprints`, so it loses
+// the sidebar's row styles - give it a readable look of its own.
+.cdk-drag-preview.milestone-us-item-row {
+    @include font-size(small);
+    background: lighten($primary, 60%);
+    box-shadow: 1px 1px 10px rgba($black, .1);
+    display: flex;
+    opacity: .9;
+    padding: .5em;
+    .column-us {
+        flex: 1;
+    }
+    .us-ref-text {
+        color: $color-link-primary;
+        margin-right: .25rem;
     }
 }

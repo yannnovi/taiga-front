@@ -126,6 +126,8 @@ import "./kanban-table/register-legacy";
 import { BacklogRowComponent } from "./backlog-row/backlog-row.component";
 import { BacklogTableComponent } from "./backlog-table/backlog-table.component";
 import "./backlog-table/register-legacy";
+import { BacklogSprintsComponent } from "./backlog-sprints/backlog-sprints.component";
+import "./backlog-sprints/register-legacy";
 import { AttachmentsPreviewComponent } from "./attachments-preview/attachments-preview.component";
 import "./attachments-preview/register-legacy";
 import { NoMoreMembershipsExplanationComponent } from "./no-more-memberships-explanation/no-more-memberships-explanation.component";
@@ -379,6 +381,7 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         KanbanTableComponent,
         BacklogRowComponent,
         BacklogTableComponent,
+        BacklogSprintsComponent,
         AttachmentsPreviewComponent,
         NoMoreMembershipsExplanationComponent,
         DutyComponent,

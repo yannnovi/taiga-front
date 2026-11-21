@@ -207,7 +207,15 @@ div.wrapper(tg-backlog, ng-controller="BacklogController as ctrl",
                         )
 
         sidebar.sidebar
-            include ../includes/modules/sprints
+            tg-backlog-sprints(
+                bind-project="project"
+                bind-sprints="sprints"
+                bind-closed-sprints="closedSprints"
+                bind-total-milestones="totalMilestones"
+                bind-total-closed-milestones="totalClosedMilestones"
+                on-add-sprint="ctrl.addNewSprint()"
+                on-move-us="ctrl.moveUs('sprint:us:move', $event.usList, $event.index, $event.sprintId, $event.previousUs, $event.nextUs)"
+            )
 
     tg-lb-create-edit.lightbox.lightbox-generic-form.lightbox-create-edit(bind-users-by-id="usersById" bind-project="project")
 

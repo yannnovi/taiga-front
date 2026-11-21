@@ -1,0 +1,167 @@
+<section class="sprints">
+    <header class="sprint-header">
+        <h1>
+            <span class="number" *ngIf="totalMilestones">{{ totalMilestones }}</span>
+            <span class="title">{{ "BACKLOG.SPRINTS.TITLE" | tgTranslate }}</span>
+        </h1>
+        <a
+            class="btn-link"
+            href=""
+            *ngIf="totalMilestones && hasPermission('add_milestone')"
+            [title]="'BACKLOG.SPRINTS.TITLE_ACTION_NEW_SPRINT' | tgTranslate"
+            (click)="addSprint.emit(); $event.preventDefault()"
+        >
+            <span>Add</span>
+            <tg-svg svg-icon="icon-add"></tg-svg>
+        </a>
+    </header>
+
+    <div class="empty-small" *ngIf="totalMilestones === 0">
+        <img [src]="emptySprintImage" [alt]="'BACKLOG.SPRINTS.EMPTY' | tgTranslate" />
+        <p class="title">{{ "BACKLOG.SPRINTS.EMPTY" | tgTranslate }}</p>
+        <a class="btn-link" href="" title="" *ngIf="hasPermission('add_milestone')" (click)="addSprint.emit(); $event.preventDefault()">
+            <span>{{ "BACKLOG.SPRINTS.TITLE_ACTION_NEW_SPRINT" | tgTranslate }}</span>
+            <tg-svg svg-icon="icon-add"></tg-svg>
+        </a>
+    </div>
+
+    <ng-container *ngFor="let sprint of openSprints; trackBy: trackById">
+        <ng-container *ngTemplateOutlet="sprintTpl; context: { $implicit: sprint }"></ng-container>
+    </ng-container>
+
+    <a class="filter-closed-sprints" href="" *ngIf="totalClosedMilestones" (click)="toggleClosedSprints($event)">
+        <tg-svg svg-icon="icon-folder"></tg-svg>
+        <span class="text">{{
+            (closedSprintsShown ? "BACKLOG.SPRINTS.ACTION_HIDE_CLOSED_SPRINTS" : "BACKLOG.SPRINTS.ACTION_SHOW_CLOSED_SPRINTS") | tgTranslate
+        }}</span>
+    </a>
+    <div *ngIf="totalClosedMilestones">
+        <img class="loading-spinner" *ngIf="loadingClosedSprints" [src]="spinnerSrc" alt="loading..." />
+    </div>
+
+    <ng-container *ngFor="let sprint of closedSprints; trackBy: trackById">
+        <ng-container *ngTemplateOutlet="sprintTpl; context: { $implicit: sprint }"></ng-container>
+    </ng-container>
+</section>
+
+<ng-template #sprintTpl let-sprint>
+    <div class="sprint" [class.sprint-open]="!sprint.closed" [class.sprint-closed]="sprint.closed" [attr.data-sprint-id]="sprint.id">
+        <header>
+            <div class="sprint-summary">
+                <div class="sprint-name-container">
+                    <div class="sprint-name">
+                        <button
+                            class="compact-sprint"
+                            [class.active]="isExpanded(sprint)"
+                            [title]="'BACKLOG.COMPACT_SPRINT' | tgTranslate"
+                            (click)="toggleSprint(sprint, $event)"
+                        >
+                            <tg-svg svg-icon="icon-arrow-right"></tg-svg>
+                        </button>
+                        <a
+                            *ngIf="hasPermission('view_milestones')"
+                            href=""
+                            [tgNav]="'project-taskboard'"
+                            [tgNavParams]="{ project: project.slug, sprint: sprint.slug }"
+                            [title]="'BACKLOG.GO_TO_TASKBOARD' | tgTranslate"
+                        >
+                            <span>{{ sprint.name }}</span>
+                        </a>
+                    </div>
+                    <div class="sprint-date">{{ estimatedDateRange(sprint) }}</div>
+                </div>
+                <div class="sprint-points">
+                    <a class="edit-sprint" href="" *ngIf="isEditable()" [title]="'BACKLOG.EDIT_SPRINT' | tgTranslate" (click)="editSprint(sprint, $event)">
+                        <tg-svg svg-icon="icon-edit"></tg-svg>
+                    </a>
+                    <div class="sprint-info">
+                        <ul>
+                            <li>
+                                <span class="number">{{ sprint.closed_points || 0 | number }}</span>
+                                <span class="description">{{ "BACKLOG.CLOSED_POINTS" | tgTranslate }}</span>
+                            </li>
+                            <li>
+                                <span class="number">{{ sprint.total_points || 0 | number }}</span>
+                                <span class="description">{{ "BACKLOG.TOTAL_POINTS" | tgTranslate }}</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="summary-progress-wrapper">
+            <div class="sprint-progress-bar">
+                <div class="current-progress" [style.width.%]="progress(sprint)"></div>
+            </div>
+        </div>
+
+        <div
+            class="sprint-table"
+            [class.open]="isExpanded(sprint)"
+            [class.sprint-empty-wrapper]="!sprint.user_stories.length"
+            cdkDropList
+            [id]="dropListId(sprint)"
+            [cdkDropListData]="sprint"
+            [cdkDropListConnectedTo]="connectedIds"
+            [cdkDropListDisabled]="sortingDisabled"
+            (cdkDropListDropped)="drop($event, sprint)"
+        >
+            <div class="sprint-empty" *ngIf="!sprint.user_stories.length">
+                <span *ngIf="!hasPermission('modify_us')">{{ "BACKLOG.SPRINTS.WARNING_EMPTY_SPRINT_ANONYMOUS" | tgTranslate }}</span>
+                <span *ngIf="hasPermission('modify_us')">{{ "BACKLOG.SPRINTS.WARNING_EMPTY_SPRINT" | tgTranslate }}</span>
+            </div>
+            <div
+                *ngFor="let us of sprint.user_stories; trackBy: trackById"
+                class="row milestone-us-item-row"
+                [attr.data-id]="us.id"
+                [class.readonly]="!hasPermission('modify_us')"
+                [class.closedRow]="us.is_closed"
+                [class.blockedRow]="us.is_blocked"
+                cdkDrag
+                [cdkDragData]="us"
+                [cdkDragDisabled]="sortingDisabled"
+            >
+                <div class="column-us">
+                    <a
+                        *ngIf="us.milestone"
+                        class="us-name clickable"
+                        href=""
+                        [class.closed]="us.is_closed"
+                        [class.blocked]="us.is_blocked"
+                        [title]="'#' + us.ref + ' ' + us.subject"
+                        [tgNav]="'project-userstories-detail'"
+                        [tgNavParams]="{ project: project.slug, ref: us.ref }"
+                        [tgNavGetParams]="{ milestone: us.milestone }"
+                    >
+                        <span class="us-ref-text">{{ "#" + us.ref + " " }}</span>
+                        <span class="us-name-text" [innerHTML]="us.subject | tgEmojify"></span>
+                        <tg-belong-to-epics class="us-epic-container" format="pill" *ngIf="us.epics" [epics]="us.epics"></tg-belong-to-epics>
+                        <tg-svg
+                            class="due-date due-date-icon"
+                            *ngIf="us.due_date"
+                            svg-icon="icon-clock"
+                            [svgFill]="dueDateColor(us)"
+                            [svgTitle]="dueDateTitle(us)"
+                        ></tg-svg>
+                    </a>
+                </div>
+                <div class="column-points width-1" *ngIf="us.total_points" [class.closed]="us.is_closed" [class.blocked]="us.is_blocked">
+                    <span class="points-container">{{ us.total_points }}</span>
+                </div>
+            </div>
+        </div>
+
+        <a
+            class="btn-small"
+            href=""
+            variant="secondary"
+            *ngIf="hasPermission('view_milestones')"
+            [title]="'BACKLOG.SPRINTS.TITLE_LINK_TASKBOARD' | tgTranslate: { name: sprint.name }"
+            [tgNav]="'project-taskboard'"
+            [tgNavParams]="{ project: project.slug, sprint: sprint.slug }"
+        >
+            <span>{{ "BACKLOG.SPRINTS.LINK_TASKBOARD" | tgTranslate }}</span>
+        </a>
+    </div>
+</ng-template>

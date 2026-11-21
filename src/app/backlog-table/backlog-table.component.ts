@@ -1,5 +1,6 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, Output, ViewChild } from "@angular/core";
 import { CdkDragDrop } from "@angular/cdk/drag-drop";
+import { BACKLOG_DROP_LIST_ID, BacklogDropListsService } from "../backlog-sprints/backlog-drop-lists.service";
 
 declare const $: any;
 
@@ -15,18 +16,17 @@ declare const $: any;
  * a refactor of one). `BacklogController` itself is untouched apart from the drag/status/
  * points/edit-menu directives it used to host ambiently.
  *
- * **Known, accepted regression - backlog→sprint drag no longer works.** The original
- * `tgBacklogSortable` ran a SINGLE dragula instance shared between the backlog table body
- * and every `.sprint-table` in the sidebar (found dynamically via an `isContainer`
- * predicate - `app/partials/backlog/sprint.jade`, a separate, still-unmigrated AngularJS
- * subtree blocked by the same ambient-scope issue already tracked for `tgSprint`/
- * `tg-backlog-sprint-header`). Deleting `sortable.coffee` removes that shared instance
- * entirely, not just the backlog-internal reordering. Confirmed and explicitly accepted by
- * the user as a temporary regression - same category as `window.dragMultiple` - pending a
- * follow-up sub-project that migrates the sprint table and reconnects both boards under one
- * `cdkDropListGroup`. The two `.js-empty-backlog` placeholders (which only existed to
- * receive a drop coming FROM a sprint) and the `isContainer` predicate are therefore not
- * reproduced here - they have no purpose left in backlog-only reordering.
+ * **Backlog <-> sprint drag.** The original `tgBacklogSortable` ran a SINGLE dragula
+ * instance shared between the backlog table body and every `.sprint-table` in the sidebar
+ * (found dynamically via an `isContainer` predicate). That was lost when this table was
+ * migrated alone, and is restored now that the sidebar is `BacklogSprintsComponent`: the
+ * two are sibling downgraded components with no common Angular ancestor, so instead of a
+ * `cdkDropListGroup` this list and every sprint list are connected by id
+ * (`BacklogDropListsService`). A drop coming from a sprint lands in `drop()` below like any
+ * reorder - `ctrl.moveUs` tells the two cases apart from the user story's `milestone`.
+ * Not reproduced: the two `.js-empty-backlog` placeholders that let you drop a sprint's
+ * user story into an *empty* backlog (the whole table is hidden when the backlog is
+ * empty).
  *
  * `ngInfiniteScroll` (`infinite-scroll="ctrl.loadUserstories()"`) is replaced by a plain
  * `IntersectionObserver` on a sentinel element after the last row - this was
@@ -69,8 +69,15 @@ export class BacklogTableComponent implements OnChanges, AfterViewInit, OnDestro
     spinnerSrc = `${(window as any)._version}/svg/spinner-circle.svg`;
     selectedDisplayRoleId: any = null;
 
+    readonly dropListId = BACKLOG_DROP_LIST_ID;
+    readonly connectedIds: string[];
+
     private observer: IntersectionObserver;
     private hasSeenSentinel = false;
+
+    constructor(dropLists: BacklogDropListsService) {
+        this.connectedIds = dropLists.connectedIds;
+    }
 
     ngOnChanges(): void {
         this.sortingDisabled = this.project.my_permissions.indexOf("modify_us") === -1 && !this.project.archived_code;
