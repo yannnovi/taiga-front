@@ -12,4 +12,4 @@ section.policy-table
                 span(translate="USER_SETTINGS.EVENTS.COLUMN_PROJECT")
             div.policy-table-enabled
                 span(translate="USER_SETTINGS.EVENTS.COLUMN_ENABLED")
-    div.policy-table-body(tg-user-web-notifications-list, ng-model="notifyPolicies")
+    tg-notify-policies-list.policy-table-body(bind-policies="notifyPolicies" mode="web")

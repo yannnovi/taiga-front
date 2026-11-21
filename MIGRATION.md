@@ -3147,6 +3147,17 @@ colonnes de statistiques (opacités, totaux), filtre par rôle (titre et item ac
 par nom, saisie de regexp invalide, ouverture du dialogue "quitter le projet" (annulé, pas
 de départ réel). Console propre. Karma 431/431.
 
+## Phase 3, groupe 6 : réglages de notifications utilisateur
+
+`tgUserNotificationsList`, `tgUserLiveNotificationsList`, `tgUserWebNotificationsList` (lignes
+de politique par projet, templates lodash, lecture ambiante de `$scope.notifyPolicies`) → un
+seul composant `tg-notify-policies-list` (`src/app/notify-policies/`, input `mode` =
+`mail`/`live`/`web` : `notify_level`, `live_notify_level` ou interrupteur `web_notify_level`).
+Les trois directives de page `tgUserNotifications`/`tgUserLiveNotifications`/
+`tgUserWebNotifications` ne faisaient que `$el.off()` : attribut retiré des jade. Contrôleurs
+inchangés. Vérifié en navigateur réel : les 3 pages, niveau courant coché, changement
+enregistré (API), interrupteur web ; politique restaurée. Karma 431/431.
+
 ## Correctif transversal : icônes `tg-svg` vides dans tous les composants Angular
 
 Trouvé en vérifiant le lot checksley : dans les templates Angular, `<tg-svg

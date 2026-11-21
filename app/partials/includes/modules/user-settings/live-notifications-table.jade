@@ -16,4 +16,4 @@ section.policy-table
                 span(translate="USER_SETTINGS.NOTIFICATIONS.COLUMN_ONLY_INVOLVED")
             div.policy-table-none
                 span(translate="USER_SETTINGS.NOTIFICATIONS.COLUMN_NO_NOTIFICATIONS")
-    div.policy-table-body(tg-user-live-notifications-list, ng-model="notifyPolicies")
+    tg-notify-policies-list.policy-table-body(bind-policies="notifyPolicies" mode="live")

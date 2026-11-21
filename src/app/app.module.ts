@@ -149,6 +149,8 @@ import { WikiNavComponent, WikiSummaryComponent, WikiWysiwygComponent } from "./
 import "./wiki/register-legacy";
 import { TeamFiltersComponent, TeamTableComponent } from "./team/team.components";
 import "./team/register-legacy";
+import { NotifyPoliciesListComponent } from "./notify-policies/notify-policies-list.component";
+import "./notify-policies/register-legacy";
 import { TgWysiwygHtmlDirective } from "./shared/wysiwyg-html.directive";
 import { AttachmentsPreviewComponent } from "./attachments-preview/attachments-preview.component";
 import "./attachments-preview/register-legacy";
@@ -423,6 +425,7 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         TgWysiwygHtmlDirective,
         TeamFiltersComponent,
         TeamTableComponent,
+        NotifyPoliciesListComponent,
         AttachmentsPreviewComponent,
         NoMoreMembershipsExplanationComponent,
         DutyComponent,
