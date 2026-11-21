@@ -72,7 +72,7 @@ div.wrapper(
                         bind-item="task"
                         permissions="modify_task"
                     )
-                    tg-created-by-display.ticket-created-by(ng-model="task")
+                    tg-detail-created-by.ticket-created-by(bind-item="task")
 
         .detail-content(ng-if="attachmentsReady")
             section.duty-content
@@ -109,13 +109,15 @@ div.wrapper(
     sidebar.sidebar.ticket-data
 
         section.ticket-header
-            span.ticket-title(
-                tg-task-status-display
-                ng-model="task"
+            tg-detail-status-display.ticket-title(
+                bind-item="task"
+                bind-status-list="statusList"
             )
-            span.detail-status(
-                tg-task-status-button
-                ng-model="task"
+            tg-detail-status-button.detail-status(
+                bind-item="task"
+                bind-status-list="statusList"
+                bind-project="project"
+                permission="modify_task"
             )
 
         section.ticket-section(
@@ -142,16 +144,16 @@ div.wrapper(
                 obj-type="task"
                 tg-check-permission="modify_task"
             )
-            tg-task-is-iocaine-button(ng-model="task")
+            tg-detail-iocaine-button(bind-item="task" bind-project="project")
             tg-promote-to-us-button(
                 bind-item="task"
             )
-            tg-block-button(tg-check-permission="modify_task", ng-model="task")
-            tg-delete-button(
+            tg-detail-block-button(tg-check-permission="modify_task", bind-item="task", bind-project="project")
+            tg-detail-delete-button(
                 tg-check-permission="delete_task"
-                on-delete-title="{{'TASK.TITLE_DELETE_ACTION' | translate}}"
-                on-delete-go-to-url="onDeleteGoToUrl"
-                ng-model="task"
+                delete-title="{{'TASK.TITLE_DELETE_ACTION' | translate}}"
+                bind-go-to-url="onDeleteGoToUrl"
+                bind-item="task"
             )
 
-    div.lightbox.lightbox-block(tg-lb-block, ng-model="task", title="TASK.LIGHTBOX_TITLE_BLOKING_TASK")
+    tg-lb-block.lightbox.lightbox-block(bind-item="task", lb-title="TASK.LIGHTBOX_TITLE_BLOKING_TASK")

@@ -103,7 +103,7 @@ div.wrapper(
                         bind-item="us"
                         permissions="modify_us"
                     )
-                    tg-created-by-display.ticket-created-by(ng-model="us")
+                    tg-detail-created-by.ticket-created-by(bind-item="us")
 
         .detail-content(ng-if="attachmentsReady")
             section.duty-content
@@ -148,13 +148,15 @@ div.wrapper(
     sidebar.sidebar.ticket-data
 
         section.ticket-header
-            span.ticket-title(
-                tg-us-status-display
-                ng-model="us"
+            tg-detail-status-display.ticket-title(
+                bind-item="us"
+                bind-status-list="statusList"
             )
-            span.detail-status(
-                tg-us-status-button
-                ng-model="us"
+            tg-detail-status-button.detail-status(
+                bind-item="us"
+                bind-status-list="statusList"
+                bind-project="project"
+                permission="modify_us"
             )
 
         section.ticket-section.ticket-estimation(
@@ -197,28 +199,32 @@ div.wrapper(
                 obj-type="us"
                 tg-check-permission="modify_us"
             )
-            tg-us-team-requirement-button(
-                ng-model="us"
+            tg-detail-requirement-button(
+                bind-item="us"
+                bind-project="project"
+                kind="team"
                 tg-check-permission="modify_us"
             )
-            tg-us-client-requirement-button(
-                ng-model="us"
+            tg-detail-requirement-button(
+                bind-item="us"
+                bind-project="project"
+                kind="client"
                 tg-check-permission="modify_us"
             )
-            tg-block-button(
+            tg-detail-block-button(
                 tg-check-permission="modify_us"
-                ng-model="us"
+                bind-item="us"
+                bind-project="project"
             )
-            tg-delete-button(
+            tg-detail-delete-button(
                 tg-check-permission="delete_us"
-                on-delete-title="{{'Delete User Story' | translate}}"
-                on-delete-go-to-url="onDeleteGoToUrl"
-                ng-model="us"
+                delete-title="{{'Delete User Story' | translate}}"
+                bind-go-to-url="onDeleteGoToUrl"
+                bind-item="us"
             )
 
-    div.lightbox.lightbox-block(
-        tg-lb-block
-        title="{{ 'US.LIGHTBOX_TITLE_BLOKING_US' | translate }}"
-        ng-model="us"
+    tg-lb-block.lightbox.lightbox-block(
+        lb-title="{{ 'US.LIGHTBOX_TITLE_BLOKING_US' | translate }}"
+        bind-item="us"
     )
     tg-lb-relatetoepic.lightbox.lightbox-relate-to-epic(bind-project="project")

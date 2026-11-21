@@ -67,7 +67,7 @@ div.wrapper(
                         bind-item="issue"
                         permissions="modify_issue"
                     )
-                    tg-created-by-display.ticket-created-by(ng-model="issue")
+                    tg-detail-created-by.ticket-created-by(bind-item="issue")
 
 
         .detail-content(ng-if="attachmentsReady")
@@ -103,13 +103,15 @@ div.wrapper(
 
     sidebar.sidebar.ticket-data
         section.ticket-header
-            span.ticket-title(
-                tg-issue-status-display
-                ng-model="issue"
+            tg-detail-status-display.ticket-title(
+                bind-item="issue"
+                bind-status-list="statusList"
             )
-            span.detail-status(
-                tg-issue-status-button
-                ng-model="issue"
+            tg-detail-status-button.detail-status(
+                bind-item="issue"
+                bind-status-list="statusList"
+                bind-project="project"
+                permission="modify_issue"
             )
 
         section.ticket-section.ticket-data-container
@@ -173,15 +175,16 @@ div.wrapper(
                 ng-model="issue"
                 ng-if="project.is_backlog_activated"
             )
-            tg-block-button(
-                tg-check-permission="modify_issue",
-                ng-model="issue"
+            tg-detail-block-button(
+                tg-check-permission="modify_issue"
+                bind-item="issue"
+                bind-project="project"
             )
-            tg-delete-button(
-                tg-check-permission="delete_issue",
-                on-delete-title="{{'ISSUES.ACTION_DELETE' | translate}}",
-                on-delete-go-to-url="onDeleteGoToUrl",
-                ng-model="issue"
+            tg-detail-delete-button(
+                tg-check-permission="delete_issue"
+                delete-title="{{'ISSUES.ACTION_DELETE' | translate}}"
+                bind-go-to-url="onDeleteGoToUrl"
+                bind-item="issue"
             )
 
-    div.lightbox.lightbox-block(tg-lb-block, ng-model="issue", title="ISSUES.LIGHTBOX_TITLE_BLOKING_ISSUE")
+    tg-lb-block.lightbox.lightbox-block(bind-item="issue", lb-title="ISSUES.LIGHTBOX_TITLE_BLOKING_ISSUE")

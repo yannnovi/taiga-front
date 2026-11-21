@@ -130,6 +130,17 @@ import { BacklogSprintsComponent } from "./backlog-sprints/backlog-sprints.compo
 import "./backlog-sprints/register-legacy";
 import { RelatedTasksComponent } from "./related-tasks/related-tasks.component";
 import "./related-tasks/register-legacy";
+import {
+    DetailBlockButtonComponent,
+    DetailCreatedByComponent,
+    DetailDeleteButtonComponent,
+    DetailIocaineButtonComponent,
+    DetailRequirementButtonComponent,
+    DetailStatusButtonComponent,
+    DetailStatusDisplayComponent,
+    LightboxBlockComponent,
+} from "./detail-buttons/detail-buttons.components";
+import "./detail-buttons/register-legacy";
 import { AttachmentsPreviewComponent } from "./attachments-preview/attachments-preview.component";
 import "./attachments-preview/register-legacy";
 import { NoMoreMembershipsExplanationComponent } from "./no-more-memberships-explanation/no-more-memberships-explanation.component";
@@ -385,6 +396,14 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         BacklogTableComponent,
         BacklogSprintsComponent,
         RelatedTasksComponent,
+        DetailStatusDisplayComponent,
+        DetailStatusButtonComponent,
+        DetailRequirementButtonComponent,
+        DetailIocaineButtonComponent,
+        DetailBlockButtonComponent,
+        DetailDeleteButtonComponent,
+        DetailCreatedByComponent,
+        LightboxBlockComponent,
         AttachmentsPreviewComponent,
         NoMoreMembershipsExplanationComponent,
         DutyComponent,

@@ -41,7 +41,7 @@ div.wrapper(
                         bind-item="epic"
                         permissions="modify_epic"
                     )
-                    tg-created-by-display.ticket-created-by(ng-model="epic")
+                    tg-detail-created-by.ticket-created-by(bind-item="epic")
 
 
         .detail-content(ng-if="attachmentsReady")
@@ -84,13 +84,15 @@ div.wrapper(
     sidebar.sidebar.ticket-data
 
         section.ticket-header
-            span.ticket-title(
-                tg-epic-status-display
-                ng-model="epic"
+            tg-detail-status-display.ticket-title(
+                bind-item="epic"
+                bind-status-list="statusList"
             )
-            span.detail-status(
-                tg-epic-status-button
-                ng-model="epic"
+            tg-detail-status-button.detail-status(
+                bind-item="epic"
+                bind-status-list="statusList"
+                bind-project="project"
+                permission="modify_epic"
             )
 
         section.ticket-section.ticket-assigned-to(
@@ -109,17 +111,18 @@ div.wrapper(
         )
 
         section.ticket-section.ticket-detail-settings
-            tg-us-team-requirement-button(ng-model="epic")
-            tg-us-client-requirement-button(ng-model="epic")
-            tg-block-button(
-                tg-check-permission="modify_epic",
-                ng-model="epic"
+            tg-detail-requirement-button(bind-item="epic" bind-project="project" kind="team")
+            tg-detail-requirement-button(bind-item="epic" bind-project="project" kind="client")
+            tg-detail-block-button(
+                tg-check-permission="modify_epic"
+                bind-item="epic"
+                bind-project="project"
             )
-            tg-delete-button(
-                tg-check-permission="delete_epic",
-                on-delete-title="{{'EPIC.ACTION_DELETE' | translate}}",
-                on-delete-go-to-url="onDeleteGoToUrl",
-                ng-model="epic"
+            tg-detail-delete-button(
+                tg-check-permission="delete_epic"
+                delete-title="{{'EPIC.ACTION_DELETE' | translate}}"
+                bind-go-to-url="onDeleteGoToUrl"
+                bind-item="epic"
             )
 
-    div.lightbox.lightbox-block(tg-lb-block, ng-model="epic", title="EPIC.LIGHTBOX_TITLE_BLOKING_EPIC")
+    tg-lb-block.lightbox.lightbox-block(bind-item="epic", lb-title="EPIC.LIGHTBOX_TITLE_BLOKING_EPIC")

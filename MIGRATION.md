@@ -3024,6 +3024,45 @@ changement de statut par le popover, édition du titre (Entrée) et annulation (
 création ×2 (Entrée puis icône), assignation via la lightbox (mode single), réordonnancement
 par vrai drag, suppression ×2 avec confirmation. Aucune erreur console.
 
+## Phase 3, groupe 3a : widgets de la barre latérale des pages de détail
+
+Sur les 4 pages de détail (epic, US, tâche, issue), toutes les petites directives de la barre
+latérale lisaient le scope ambiant du contrôleur de détail (`project`, `statusById`/
+`statusList`, l'objet via `ng-model`) et reconstruisaient leur markup par templates lodash
+`$compile`és. Remplacées par des composants à inputs explicites
+(`src/app/detail-buttons/detail-buttons.components.ts`) :
+- `tg{Epic,Us,Task,Issue}StatusDisplay` → `tg-detail-status-display` ;
+- `tg{Epic,Us,Task,Issue}StatusButton` → `tg-detail-status-button` (input `permission`) ;
+- `tgUs{Team,Client}RequirementButton` → `tg-detail-requirement-button` (input `kind`) -
+  conservé : l'éditabilité teste `modify_us` y compris sur la page epic, comme l'original ;
+- `tgTaskIsIocaineButton` → `tg-detail-iocaine-button` ;
+- `tgBlockButton` → `tg-detail-block-button` - conservé : la classe `editable` teste
+  `modify_us` sur toutes les pages, comme l'original ;
+- `tgDeleteButton` → `tg-detail-delete-button` (`delete-title` interpolé côté jade,
+  `bind-go-to-url="onDeleteGoToUrl"`) ;
+- `tgCreatedByDisplay` → `tg-detail-created-by` (calcul unique, comme le `bindOnce`) ;
+- `tgLbBlock` → même nom, maintenant un élément (`tg-lb-block.lightbox.lightbox-block`,
+  input `lb-title`, clé ou texte déjà traduit - les deux passaient par `$translate.instant`).
+
+Toutes les sauvegardes passent toujours par `$tgQueueModelTransformation` (les contrôleurs
+enregistrent leur objet via `modelTransform.setObject`), suivies du même broadcast
+`object:updated` ; bloquer/débloquer garde le protocole `block`/`unblock` entre le bouton et
+la lightbox. Aucun contrôleur modifié, donc pas de specs de caractérisation à ajouter.
+Restent sur ces pages pour le groupe 3b : `tgAssignSprintToIssueButton` (dépend de
+`tg-search-list`) et `tgUsEstimation`.
+
+**Au passage** : `VoteButtonComponent` (préexistant, documenté plus haut comme non corrigé)
+plantait sur `item` pas encore chargé - garde `*ngIf="item"` ajouté à la racine de son
+template. Ce type d'exception peut avorter la détection de changement des composants
+Angular frères de la même page (cf. `TaskboardTableComponent` plus haut), donc des
+nouveaux boutons de la page issue.
+
+**Vérifié en navigateur réel** contre `taiga-back` sur une US, une tâche, une issue et une
+epic jetables créées via l'API puis supprimées par l'interface : rendu (statut, "créé par",
+icônes), changement de statut (bouton + affichage ouvert/fermé suivent), exigences
+équipe/client (US, epic), iocaine (tâche), blocage avec motif puis déblocage, suppression
+avec confirmation et redirection. Plus aucune erreur console sur ces pages.
+
 ## Correctif transversal : icônes `tg-svg` vides dans tous les composants Angular
 
 Trouvé en vérifiant le lot checksley : dans les templates Angular, `<tg-svg
