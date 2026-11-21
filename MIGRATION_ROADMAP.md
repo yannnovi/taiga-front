@@ -332,6 +332,45 @@ la bascule des sprints fermés (`backlog/sprints.coffee` supprimé), sans touche
 id, les deux composants n'ayant pas d'ancêtre Angular commun). Vérifié en navigateur réel
 contre `taiga-back`. Détail dans `MIGRATION.md`, section "Phase 3, premier groupe".
 
+**Avancement Phase 3 (au 21/11/2026)** - groupes migrés, chacun vérifié en navigateur réel
+contre `taiga-back` (détail par groupe dans `MIGRATION.md`, sections "Phase 3, groupe N") :
+1. ✅ sidebar des sprints du backlog (+ drag backlog↔sprint) ;
+2. ✅ tâches liées du détail d'une US (`tgRelatedTask*`, `tgTasksSortable`) ;
+3. ✅ widgets de la barre latérale des 4 pages de détail (statut, exigences, iocaine,
+   bloquer/débloquer, supprimer, "créé par", `tgLbBlock`), estimation par rôle, assigner une
+   issue à un sprint (`tg-search-list` supprimé) ;
+4. ✅ wiki (`tgWikiNav`, `tgWikiSummary`, `tgWikiWysiwyg`) + directive partagée
+   `[tgWysiwygHtml]` ;
+5. ✅ page équipe ;
+6. ✅ réglages de notifications utilisateur (mail/live/web) ;
+7. ✅ admin > membres ;
+8. ✅ admin > permissions (rôles).
+
+Leçon de méthode : aucun de ces groupes n'a eu besoin de modifier son contrôleur parent
+(sauf un `setQuery` d'une ligne pour l'équipe) - les composants prennent des inputs
+explicites et rappellent le contrôleur via les broadcasts `$rootScope` existants ou des
+expressions `on-*` liées à ses méthodes. Les specs de caractérisation ne s'imposent donc que
+si un contrôleur doit vraiment être refactoré. Piège récurrent : ne jamais faire
+d'affectation dans une expression `on-*` (elle tombe sur le scope enfant du composant
+downgradé) - passer par une méthode du contrôleur.
+
+**Reste à faire en Phase 3** (dans l'ordre suggéré) :
+- admin > rapports CSV et export (`tgCsvEpic/Us/Task/Issue` + `CsvExporter*Controller`,
+  `tgProjectExport`, `tgSelectInputText`) - lu, pas commencé ;
+- admin > swimlanes kanban (`tgProjectSwimlanesValues/Single/Wip`, `tgSortableSwimlanes` -
+  dernier usage de dragula avec les menus admin) ;
+- liste des issues (`tgIssueStatusInlineEdition`, `tgIssueAssignedToInlineEdition`,
+  `tgIssuesOrdering`, `tgIssuesPagination`, `tgListitem*`) ;
+- `ticket-watchers`, famille `assigned-*` (`tg-assigned-to`, `tg-assigned-users`),
+  `lb-select-user` ;
+- petits restes : `tgBacklog` (barre d'outils move-to-sprint, doom line),
+  `tgToggleBurndownVisibility`, `tgBurndownBacklogGraph`, `tgBacklogProgressBar`,
+  `tgTaskboard`, `tgSprintChart`, `tgDateRange`, `tgDateSelector`, `tgLbSetDueDate`,
+  `tgUserDisplay`, `tgMainTitle`, lightboxes admin (`tgLbChangeOwner`,
+  `tgLbRequestOwnership`, `tgLbDeleteProject`, `tgLbDeleteUser`).
+Les primitives transversales (`tgNav`, `tgSvg`, `tgCheckPermission`, `tgBo*`, `lightbox`,
+`tgLoading`, `tgLightboxClose`, `tgMain`…) restent jusqu'aux phases 5/6.
+
 ## Phase 4 — `tg-compile-html` et contenu HTML généré dynamiquement
 
 `user-timeline-item` (voir `MIGRATION.md`) et le même schéma dans
@@ -361,11 +400,9 @@ coffee/jade, et tout ce qui reste de l'ancien bootstrap.
    infinies). Sa dette résiduelle (drag backlog→sprint) est réglée, voir point 3.
 3. ~~Filet de tests + migration de la sidebar des sprints du backlog~~ — fait (voir
    Phase 3), drag backlog↔sprint rétabli.
-4. **Prochaine étape : choisir le groupe suivant de la Phase 3**, un seul à la fois, chacun
-   précédé de son propre filet de tests (specs Karma de caractérisation sur le contrôleur
-   parent, même méthode), en tranchant au cas par cas entre refactor du parent et wrapper
-   `UpgradeComponent` en bloc. Candidats : la famille `tgRelatedTask*` (page détail US),
-   `tgWikiSummary`, les boutons de statut des pages de détail, les widgets CRUD admin.
+4. Phase 3 : 8 groupes migrés (voir "Avancement Phase 3").
+   **Prochaine étape : admin > rapports CSV et export**, puis la suite de la liste "Reste à
+   faire en Phase 3", un groupe par commit, chacun vérifié en navigateur réel.
 
 ## Vérification (comme les lots précédents)
 
