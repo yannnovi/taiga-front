@@ -45,7 +45,7 @@
     <ng-container *ngIf="notFoundUserstories">
         <p class="title">{{ "KANBAN.US_NOT_FOUND_TITLE" | tgTranslate }}</p>
         <p>{{ "KANBAN.US_NOT_FOUND_TEXT_P1" | tgTranslate }}</p>
-        <p>{{ "KANBAN.US_NOT_FOUND_TEXT_P2" | tgTranslate }}</p>
+        <p [innerHTML]="'KANBAN.US_NOT_FOUND_TEXT_P2' | tgTranslate"></p>
     </ng-container>
 </div>
 

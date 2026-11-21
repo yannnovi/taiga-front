@@ -13,20 +13,24 @@ div.wrapper(
     ng-init="section='wiki'"
 )
     tg-project-menu
-    sidebar.menu-secondary.wiki-nav(
-        ng-if="linksVisible"
-        tg-wiki-nav
-        ng-model="wikiLinks"
-    )
+    sidebar.menu-secondary.wiki-nav(ng-if="linksVisible")
+        tg-wiki-nav(
+            bind-links="wikiLinks"
+            bind-project="project"
+            bind-active-slug="wiki.slug"
+            on-reload-links="ctrl.loadWikiLinks()"
+        )
     section.main.wiki.wiki-main(ng-if="attachmentsReady")
         header
             h1(translate="PROJECT.SECTION.WIKI")
 
-        tg-wiki-wysiwyg(model="wiki")
+        tg-wiki-wysiwyg(bind-item="wiki" bind-project="project")
 
-        .summary.wiki-summary(
-            tg-wiki-summary
-            ng-model="wiki"
+        tg-wiki-summary.summary.wiki-summary(
+            bind-wiki="wiki"
+            bind-users-by-id="usersById"
+            bind-project="project"
+            on-delete-page="ctrl.delete()"
             ng-if="wiki.id"
         )
 

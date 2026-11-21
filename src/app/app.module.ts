@@ -145,6 +145,9 @@ import { UsEstimationComponent } from "./us-estimation/us-estimation.component";
 import "./us-estimation/register-legacy";
 import { AssignSprintToIssueButtonComponent } from "./assign-sprint-to-issue/assign-sprint-to-issue-button.component";
 import "./assign-sprint-to-issue/register-legacy";
+import { WikiNavComponent, WikiSummaryComponent, WikiWysiwygComponent } from "./wiki/wiki.components";
+import "./wiki/register-legacy";
+import { TgWysiwygHtmlDirective } from "./shared/wysiwyg-html.directive";
 import { AttachmentsPreviewComponent } from "./attachments-preview/attachments-preview.component";
 import "./attachments-preview/register-legacy";
 import { NoMoreMembershipsExplanationComponent } from "./no-more-memberships-explanation/no-more-memberships-explanation.component";
@@ -293,6 +296,8 @@ import {
     AJS_WINDOW,
     AJS_XHR_ERROR_SERVICE,
     AJS_WYSIWYG_SERVICE,
+    AJS_SCE,
+    AJS_ACTIVITY_SERVICE,
     AJS_LIGHTBOX_FACTORY,
     AJS_ATTACHMENTS_SERVICE,
     AJS_LIKE_PROJECT_BUTTON_SERVICE,
@@ -410,6 +415,10 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         LightboxBlockComponent,
         UsEstimationComponent,
         AssignSprintToIssueButtonComponent,
+        WikiNavComponent,
+        WikiSummaryComponent,
+        WikiWysiwygComponent,
+        TgWysiwygHtmlDirective,
         AttachmentsPreviewComponent,
         NoMoreMembershipsExplanationComponent,
         DutyComponent,
@@ -512,6 +521,8 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         upgradedService(AJS_CONFIRM, "$tgConfirm"),
         upgradedService(AJS_EMOJIS, "$tgEmojis"),
         upgradedService(AJS_WYSIWYG_SERVICE, "tgWysiwygService"),
+        upgradedService(AJS_SCE, "$sce"),
+        upgradedService(AJS_ACTIVITY_SERVICE, "tgActivityService"),
         upgradedService(AJS_LIGHTBOX_FACTORY, "tgLightboxFactory"),
         upgradedService(AJS_ATTACHMENTS_SERVICE, "tgAttachmentsService"),
         upgradedService(AJS_LIKE_PROJECT_BUTTON_SERVICE, "tgLikeProjectButtonService"),

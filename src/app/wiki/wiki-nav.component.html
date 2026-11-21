@@ -1,0 +1,56 @@
+<header>
+    <h1 class="title">{{ "WIKI.NAVIGATION.SECTION_NAME" | tgTranslate }}</h1>
+</header>
+
+<ul class="wiki-link-container">
+    <li class="wiki-link fixed-link">
+        <a class="link-title" href="" [tgNav]="'project-wiki'" [tgNavParams]="{ project: project?.slug }">{{ "WIKI.NAVIGATION.HOME" | tgTranslate }}</a>
+    </li>
+</ul>
+
+<ul class="sortable wiki-link-container" cdkDropList [cdkDropListData]="links" [cdkDropListDisabled]="!canAdd" (cdkDropListDropped)="drop($event)">
+    <li
+        *ngFor="let link of links; trackBy: trackById"
+        class="wiki-link e2e-wiki-page-link"
+        [class.is-sortable]="canAdd"
+        [class.active]="activeSlug && activeSlug === link.href"
+        [attr.data-id]="link.id"
+        cdkDrag
+        [cdkDragData]="link"
+        [cdkDragDisabled]="!canAdd"
+    >
+        <tg-svg *ngIf="canAdd" class="dragger" svg-icon="icon-drag"></tg-svg>
+        <a class="link-title" [title]="link.title" [attr.href]="link.url">{{ link.title }}</a>
+        <a *ngIf="canDelete" class="js-delete-link remove-wiki-page" href="" [title]="'WIKI.DELETE_LINK_TITLE' | tgTranslate" (click)="deleteLink(link, $event)">
+            <tg-svg svg-icon="icon-trash"></tg-svg>
+        </a>
+    </li>
+</ul>
+
+<ul class="sortable wiki-link-container">
+    <li class="new" [class.hidden]="!showNew">
+        <img *ngIf="creating" class="loading-spinner" [src]="spinnerSrc" alt="loading..." />
+        <input
+            *ngIf="!creating"
+            type="text"
+            [placeholder]="'COMMON.FIELDS.NAME' | tgTranslate"
+            [(ngModel)]="newTitle"
+            (keyup)="onNewKeyup($event)"
+        />
+    </li>
+</ul>
+
+<a *ngIf="canAdd && !showNew" class="add-button" href="" [title]="'WIKI.NAVIGATION.ACTION_ADD_LINK' | tgTranslate" (click)="openNew($event)">
+    <div class="button-primary button-small">
+        <tg-svg svg-icon="icon-add"></tg-svg>
+    </div>
+    <span>{{ "WIKI.NAVIGATION.ACTION_ADD_LINK" | tgTranslate }}</span>
+</a>
+
+<ul class="wiki-link-container wiki-all-links" *ngIf="links?.length">
+    <li class="wiki-link fixed-link">
+        <a class="link-title secondary" href="" [tgNav]="'project-wiki-list'" [tgNavParams]="{ project: project?.slug }">{{
+            "WIKI.NAVIGATION.ALL_PAGES" | tgTranslate
+        }}</a>
+    </li>
+</ul>

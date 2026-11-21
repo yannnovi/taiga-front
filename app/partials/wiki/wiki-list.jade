@@ -13,11 +13,12 @@ div.wrapper(
     ng-init="section='wiki'"
 )
     tg-project-menu
-    sidebar.menu-secondary.wiki-nav(
-        ng-if="linksVisible"
-        tg-wiki-nav
-        ng-model="wikiLinks"
-    )
+    sidebar.menu-secondary.wiki-nav(ng-if="linksVisible")
+        tg-wiki-nav(
+            bind-links="wikiLinks"
+            bind-project="project"
+            on-reload-links="ctrl.loadWikiLinks()"
+        )
     section.main.wiki-main
         header.wiki-list-header
             h1

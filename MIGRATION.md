@@ -3088,6 +3088,44 @@ avant cette session) lisait `user.get(...)` sans garde quand `auth.userData` est
 popover de points, sauvegarde et total recalculé ; liste des sprints, filtre, sélection,
 rattachement, puis détachement avec confirmation. Console propre. Karma 431/431.
 
+## Phase 3, groupe 4 : wiki (`tgWikiNav`, `tgWikiSummary`, `tgWikiWysiwyg`)
+
+Les trois directives (mêmes noms, maintenant des éléments, `src/app/wiki/`) lisaient le scope
+ambiant de `WikiDetailController`/`WikiPagesListController`.
+- `tgWikiNav` (`wiki/nav.coffee`, supprimé) : template lodash re-rendu à la main après chaque
+  changement, tri par dragula (avant-dernier usage de dragula). Le `sidebar.wiki-nav` reste
+  dans le jade (CSS), le composant est dedans. Réordonner broadcast toujours
+  `wiki:links:move` (lien, index), traité par `WikiDetailController.moveLink` - le
+  contrôleur de la liste des pages ne l'a jamais traité, donc réordonner y restait non
+  persisté (inchangé). Après création/suppression, `on-reload-links="ctrl.loadWikiLinks()"`
+  (l'original rechargeait puis re-rendait).
+- `tgWikiSummary` : idem en composant ; l'icône de suppression déclenche
+  `on-delete-page="ctrl.delete()"` (garde `delete_wiki_page`, ex-`tg-check-permission`).
+- `tgWikiWysiwyg` : contenu de la page via le wrapper `tg-wysiwyg` existant, ou en lecture
+  seule via la nouvelle directive Angular partagée **`[tgWysiwygHtml]`**
+  (`src/app/shared/wysiwyg-html.directive.ts`), équivalent de `tg-bind-wysiwyg-html` : même
+  pipeline (`getHTML`, `relativePaths`, `refreshAttachmentURL`), assainissement par `$sce`
+  d'AngularJS (mêmes exceptions `input`/`checked` que l'original, plutôt que le sanitizer
+  Angular), coloration highlight.js et ancres internes. Nouveaux tokens `AJS_SCE`,
+  `AJS_ACTIVITY_SERVICE`. **Bug corrigé** : à la création d'une page, le succès référençait
+  une variable `project` inexistante (`project.get("archived_code")`) et levait avant le
+  rafraîchissement de l'activité et la notification de succès.
+
+**Au passage (transversal)** : plusieurs traductions contiennent du HTML (`<br />`,
+`<strong>`, `<a>`) que la directive AngularJS `translate` injectait comme HTML, mais que
+`{{ 'X' | tgTranslate }}` affiche en texte brut. Trouvé sur le résumé du wiki ; corrigé
+aussi dans 4 composants plus anciens qui avaient le même défaut (colonne kanban vide,
+lightbox newsletter, avertissements de limite de membres ×2) via `[innerHTML]`. Repéré par
+un script croisant les clés `| tgTranslate` des templates Angular avec `locale-en.json`.
+
+**Vérifié en navigateur réel** (project-1) : liens (actif, accueil, toutes les pages),
+création d'un lien (Entrée), réordonnancement par vrai drag (persisté), suppression ;
+résumé ; éditeur présent ; sauvegarde du contenu (via la méthode du composant, l'éditeur
+étant un custom element tiers) puis restauration ; création d'une nouvelle page (le résumé
+apparaît via `wikipage:add`) puis suppression depuis l'icône du résumé ; liste des pages
+sans lien actif. Console propre ; ordre des liens restauré (le compteur d'éditions de la
+page de test garde +2). Karma 431/431.
+
 ## Correctif transversal : icônes `tg-svg` vides dans tous les composants Angular
 
 Trouvé en vérifiant le lot checksley : dans les templates Angular, `<tg-svg

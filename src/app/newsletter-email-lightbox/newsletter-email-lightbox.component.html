@@ -12,9 +12,9 @@
         <div class="text-container">
             <label class="confirm-label" for="confirm-email">{{ "PROJECT.NEWSLETTER_OPENING.CONFIRMATION" | tgTranslate }}</label>
             <p class="text-info">
-                <span class="italic">{{ "PROJECT.NEWSLETTER_OPENING.NO_SHARE" | tgTranslate }}</span>
+                <span class="italic" [innerHTML]="'PROJECT.NEWSLETTER_OPENING.NO_SHARE' | tgTranslate"></span>
                 <br />
-                <span class="italic">{{ "PROJECT.NEWSLETTER_OPENING.OPT_OUT" | tgTranslate }}</span>
+                <span class="italic" [innerHTML]="'PROJECT.NEWSLETTER_OPENING.OPT_OUT' | tgTranslate"></span>
             </p>
         </div>
     </div>
