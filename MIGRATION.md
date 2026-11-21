@@ -2907,7 +2907,7 @@ le drag multi-sélection de `BacklogTableComponent`). Confirmé par les specs (4
 exactement cette `TypeError` avant le correctif, vertes après) ; **pas encore vérifié en
 navigateur réel** (`taiga-back`/serveur de dev non lancés au moment du correctif).
 
-Karma : 454/454.
+Karma : 447/447 (354 + 93 nouvelles specs).
 
 ## Phase 3, premier groupe : la sidebar des sprints du backlog (`BacklogSprintsComponent`)
 
@@ -2960,7 +2960,7 @@ que CDK attache à `<body>`, hors de `.sprints`.
 Specs : `sprints.spec.coffee` (16 specs, sur les directives supprimées) retiré - même pratique
 que pour les lots précédents (pas de setup de specs côté Angular dans ce repo). Les specs
 `BacklogController` et `tgBacklog` (barre d'outils move-to-sprint) restent et passent.
-Karma **438/438** (454 - 16). Build Angular (`strictTemplates`) vert.
+Karma **431/431** (447 - 16). Build Angular (`strictTemplates`) vert.
 
 **Vérifié en navigateur réel** (Chrome headless, profil neuf, vrai `taiga-back` local,
 gestes de souris réels via CDP `Input.dispatchMouseEvent`, chaque étape contrôlée par l'API) :
