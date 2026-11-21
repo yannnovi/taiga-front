@@ -29,12 +29,16 @@ div.wrapper(
                 //- Each click bumps the counter bound to tg-project-tags' `addNewRequests`,
                 //- which opens its "new tag" row (the button sits next to tg-main-title,
                 //- still AngularJS, so it can't live inside the Angular component).
+                //- `translate` must NOT be on the button itself: angular-translate's
+                //- directive creates a child scope (`scope: true`), so the assignment
+                //- below would land on that child scope and tg-project-tags would never
+                //- see it - the button silently did nothing.
                 button.btn-small.show-add-new(
                     variant="primary"
                     title="{{ 'ADMIN.PROJECT_VALUES_TAGS.NEW_TAG'|translate }}"
-                    translate="ADMIN.PROJECT_VALUES_TAGS.NEW_TAG"
                     ng-click="addTagRequests = (addTagRequests || 0) + 1"
                 )
+                    span(translate="ADMIN.PROJECT_VALUES_TAGS.NEW_TAG")
 
         tg-project-tags.admin-attributes-section(
             bind-project="project"

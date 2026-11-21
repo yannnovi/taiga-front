@@ -2856,6 +2856,20 @@ headless autonome pour Karma) - à faire avant de merger : création d'epic avec
 jointe, US liées (nouvelle unitaire, en masse, existante), et page admin Tags (création,
 édition, suppression, filtre, fusion).
 
+**Vérifié ensuite en navigateur réel** (Chrome headless, profil neuf, vrai `taiga-back`
+local, chaque étape contrôlée par l'API, données de test supprimées après coup) : création
+d'epic (erreur "requis", pièce jointe listée puis **réellement envoyée avec l'epic** - le
+correctif `Immutable.List` confirmé -, `team_requirement` enregistré, fermeture de la
+lightbox, epic listée) ; US liées (erreur "requis", nouvelle unitaire, en masse ×2,
+existante via le filtre) ; Tags admin (erreur "requis", création, filtre, renommage,
+fusion, suppression). **Un vrai bug trouvé et corrigé** : le bouton "New tag" de l'en-tête
+ne faisait rien. `translate="..."` était posé sur le `button` lui-même, or la directive
+`translate` d'angular-translate crée un scope enfant (`scope: true`) - le
+`ng-click="addTagRequests = ..."` écrivait donc sur ce scope enfant, invisible pour
+`tg-project-tags` (vérifié avec `angular.reloadWithDebugInfo()` : scope du bouton hors de la
+chaîne de scopes du composant). `translate` déplacé sur un `span` intérieur. Aucune autre
+affectation `ng-click="x = ..."` du repo n'a `translate` sur le même élément.
+
 La librairie checksley elle-même (`gulpfile.js`, `package.json`, et la config globale
 `checksley.updateMessages`/`updateValidators` dans `app.coffee`) est **volontairement
 conservée** : plus rien dans ce repo ne l'appelle, mais des plugins contrib externes
