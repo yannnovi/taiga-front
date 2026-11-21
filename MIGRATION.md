@@ -2993,6 +2993,24 @@ tournait encore avec le binaire 14.23 alors que Homebrew avait mis à jour `post
 `taiga-back` tourne avec `.venv` (Django 5.2) ; `npx gulp deploy` échoue localement sur
 `gulp-imagemin` (binaire x86, `errno -86` sur Apple Silicon) - utiliser `npm start`/`npx gulp`.
 
+## Correctif transversal : icônes `tg-svg` vides dans tous les composants Angular
+
+Trouvé en vérifiant le lot checksley : dans les templates Angular, `<tg-svg
+svg-icon="icon-add">` rendait `<use href="#">` - aucune icône. `TgSvgUpgradedDirective` est
+un `UpgradeComponent`, qui ne transmet au scope AngularJS que les *inputs* Angular ; un
+attribut statique kebab-case `svg-icon` n'alimente pas l'input `svgIcon` (seuls
+`svgIcon="..."` ou `[svgIcon]` le feraient). ~230 occurrences dans 77 templates, depuis les
+premières migrations. Corrigé une seule fois dans le wrapper plutôt que dans chaque
+template : son `ngOnInit` lit les attributs statiques `svg-icon`/`svg-title`/
+`svg-title-translate` (les trois bindings `@` utilisés sous cette forme) et les injecte
+comme changements initiaux avant `super.ngOnInit()`, sauf si l'input correspondant est
+réellement lié. Vérifié en navigateur : sidebar des sprints, lignes du backlog, lightbox de
+création d'epic, tags admin - plus aucune icône vide ; icônes côté AngularJS inchangées.
+Note : `dropdown-project-list` affiche maintenant la clé brute
+`PROJECT.BLOCKED_PROJECT.BLOCKED` en infobulle de l'icône "projet bloqué" - c'était déjà le
+cas du template jade d'origine (`svg-title` au lieu de `svg-title-translate`), reproduit
+fidèlement et laissé tel quel.
+
 ## Patron à suivre pour migrer un module suivant
 
 1. Repérer ses dépendances réelles (services/directives utilisés *et* utilisateurs) avant
