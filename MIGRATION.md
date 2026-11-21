@@ -2993,6 +2993,37 @@ tournait encore avec le binaire 14.23 alors que Homebrew avait mis à jour `post
 `taiga-back` tourne avec `.venv` (Django 5.2) ; `npx gulp deploy` échoue localement sur
 `gulp-imagemin` (binaire x86, `errno -86` sur Apple Silicon) - utiliser `npm start`/`npx gulp`.
 
+## Phase 3, groupe 2 : tâches liées du détail d'une US (`RelatedTasksComponent`)
+
+`includes/modules/related-tasks.jade` + tout le module `taigaRelatedTasks`
+(`related-tasks.coffee` : `tgRelatedTasks`, `tgRelatedTaskRow`, `tgRelatedTaskCreateForm`,
+`tgRelatedTaskCreateButton`, `tgRelatedTaskAssignedToInlineEdition`), plus
+`tgRelatedTaskStatus` (`common/popovers.coffee`) et `tgTasksSortable` (dernier usage de
+dragula hors admin swimlanes/wiki nav) → un composant downgradé `tg-related-tasks-section`
+(`src/app/related-tasks/`). Tous lisaient le scope ambiant de `UserStoryDetailController`
+(`project`, `us`, `tasks`, `usersById`, `activeUsers`, `taskStatusById`) et
+reconstruisaient leurs lignes par templates lodash `$compile`és à la main. Le contrôleur
+n'est **pas modifié** : mêmes broadcasts `$rootScope` qu'avant (`related-tasks:update` après
+toute sauvegarde/création/suppression, `task:reorder` (task, newIndex) au drop, traité par
+`reorderTask`). Le module `taigaRelatedTasks` est retiré de `app.coffee` (composant
+enregistré sur `taigaUserStories`). Réordonnancement : dragula → `@angular/cdk/drag-drop`
+(même sémantique d'index qu'avant). Conservé : garde anti-double-clic (le `debounce 2000`
+leading devient un garde en vol), changement de statut autorisé par la seule permission
+(pas par l'état archivé, comme l'original), Entrée dans le formulaire de création garde le
+formulaire ouvert pour la tâche suivante / l'icône "enregistrer" le ferme, Échap ferme le
+formulaire / annule l'édition. L'assignation ouvre toujours `tg-lb-select-user` (AngularJS)
+via `tgLightboxFactory`. Simplification assumée : le clic d'assignation est désactivé dès
+que l'utilisateur n'a pas `modify_task` ou que le projet est archivé (l'original laissait
+le clic actif sur un projet archivé, où la sauvegarde échouait côté serveur).
+
+Pas de nouvelles specs de caractérisation : aucun contrôleur parent n'est modifié (toute la
+logique migrée vivait dans les directives supprimées, qui n'avaient pas de specs). Karma
+inchangé. **Vérifié en navigateur réel** contre `taiga-back` (US #5 de `project-1`, chaque
+étape contrôlée par l'API, données restaurées) : rendu (statuts, assignés, icônes),
+changement de statut par le popover, édition du titre (Entrée) et annulation (Échap),
+création ×2 (Entrée puis icône), assignation via la lightbox (mode single), réordonnancement
+par vrai drag, suppression ×2 avec confirmation. Aucune erreur console.
+
 ## Correctif transversal : icônes `tg-svg` vides dans tous les composants Angular
 
 Trouvé en vérifiant le lot checksley : dans les templates Angular, `<tg-svg

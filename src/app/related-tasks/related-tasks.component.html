@@ -1,0 +1,162 @@
+<section class="related-tasks" [style.display]="visible ? '' : 'none'">
+    <div class="related-tasks-header">
+        <span class="related-tasks-title">{{ "COMMON.RELATED_TASKS" | tgTranslate }}</span>
+        <div>
+            <button *ngIf="canAdd" class="btn-icon add-button e2e-add-userstory-button" type="button" variant="primary" (click)="openCreateForm()">
+                <tg-svg svg-icon="icon-add"></tg-svg>
+            </button>
+        </div>
+    </div>
+
+    <div
+        class="related-tasks-body"
+        cdkDropList
+        [cdkDropListData]="tasks"
+        [cdkDropListDisabled]="sortingDisabled"
+        (cdkDropListDropped)="drop($event)"
+    >
+        <div
+            *ngFor="let task of tasks; trackBy: trackById"
+            class="row single-related-task js-related-task"
+            [class.closed]="task.is_closed"
+            [class.blocked]="task.is_blocked"
+            [class.iocaine]="task.is_iocaine"
+            [class.editing]="editingTaskId === task.id"
+            [attr.data-id]="task.id"
+            cdkDrag
+            [cdkDragData]="task"
+            [cdkDragDisabled]="sortingDisabled || editingTaskId === task.id"
+        >
+            <div class="task-reorder">
+                <tg-svg *ngIf="canModify" class="icon-drag" svg-icon="icon-draggable"></tg-svg>
+            </div>
+
+            <!-- view mode -->
+            <ng-container *ngIf="editingTaskId !== task.id">
+                <div class="task-name">
+                    <a class="clickable" href="" [tgNav]="'project-tasks-detail'" [tgNavParams]="{ project: project.slug, ref: task.ref }">
+                        <span class="task-name-ref">#{{ task.ref }}</span>
+                        <span class="task-name-subject" [innerHTML]="task.subject | tgEmojify"></span>
+                    </a>
+                    <tg-svg
+                        *ngIf="task.due_date"
+                        class="due-date due-date-icon"
+                        svg-icon="icon-clock"
+                        [svgFill]="dueDateColor(task)"
+                        [svgTitle]="dueDateTitle(task)"
+                    ></tg-svg>
+                </div>
+                <div class="task-settings">
+                    <a *ngIf="canModify" class="edit-task" href="" [title]="'COMMON.EDIT' | tgTranslate" (click)="startEdit(task, $event)">
+                        <tg-svg svg-icon="icon-edit"></tg-svg>
+                    </a>
+                    <a *ngIf="canDelete" class="delete-task" href="" [title]="'COMMON.DELETE' | tgTranslate" (click)="deleteTask(task, $event)">
+                        <tg-svg svg-icon="icon-trash"></tg-svg>
+                    </a>
+                </div>
+            </ng-container>
+
+            <!-- edit mode -->
+            <ng-container *ngIf="editingTaskId === task.id">
+                <div class="task-name">
+                    <img *ngIf="savingTaskIds.has(task.id)" class="loading-spinner" [src]="spinnerSrc" alt="loading..." />
+                    <input
+                        *ngIf="!savingTaskIds.has(task.id)"
+                        type="text"
+                        [placeholder]="'TASK.PLACEHOLDER_SUBJECT' | tgTranslate"
+                        [(ngModel)]="editSubject"
+                        (keyup)="onEditKeyup(task, $event)"
+                    />
+                </div>
+                <div class="task-settings">
+                    <a class="save-task" href="" [title]="'COMMON.SAVE' | tgTranslate" (click)="saveEdit(task, $event)">
+                        <tg-svg svg-icon="icon-save"></tg-svg>
+                    </a>
+                    <a class="cancel-edit" href="" [title]="'COMMON.CANCEL' | tgTranslate" (click)="cancelEdit($event)">
+                        <tg-svg svg-icon="icon-cancel"></tg-svg>
+                    </a>
+                </div>
+            </ng-container>
+
+            <div class="status">
+                <a
+                    class="task-status"
+                    href=""
+                    [class.not-clickable]="!canChangeStatus"
+                    [title]="'TASK.TITLE_SELECT_STATUS' | tgTranslate"
+                    [style.color]="statusOf(task)?.color"
+                    (click)="openStatusPopover($event)"
+                >
+                    <span class="task-status-bind">{{ statusOf(task)?.name }}</span>
+                    <tg-svg *ngIf="canModify" svg-icon="icon-arrow-down" [svgFill]="statusOf(task)?.color"></tg-svg>
+                </a>
+                <ul class="popover pop-status">
+                    <li *ngFor="let status of project.task_statuses">
+                        <a href="" class="status" [title]="status.name" (click)="selectStatus(task, status.id, $event, true)">
+                            <span class="item-text">{{ status.name }}</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="assigned-to">
+                <div
+                    class="task-assignedto"
+                    [class.editable]="canModify"
+                    [title]="assignedName(task)"
+                    (click)="openAssignedTo(task, $event, true)"
+                >
+                    <figure class="avatar">
+                        <img [style.background-color]="avatar(task).bg" [src]="avatar(task).url" [alt]="assignedName(task)" />
+                        <figcaption>{{ assignedName(task) }}</figcaption>
+                    </figure>
+                    <tg-svg *ngIf="canModify" svg-icon="icon-arrow-down"></tg-svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div *ngIf="showCreateForm" class="row single-related-task related-task-create-form active">
+        <div class="task-name">
+            <img *ngIf="creating" class="loading-spinner" [src]="spinnerSrc" alt="loading..." />
+            <form *ngIf="!creating" style="width: 100%" (submit)="submitCreate($event)">
+                <input
+                    type="text"
+                    name="subject"
+                    [placeholder]="'TASK.PLACEHOLDER_SUBJECT' | tgTranslate"
+                    [(ngModel)]="newTask.subject"
+                    (keyup)="onCreateKeyup($event)"
+                />
+            </form>
+        </div>
+        <div class="task-settings">
+            <a class="save-task" href="" [title]="'COMMON.SAVE' | tgTranslate" (click)="saveCreate($event)">
+                <tg-svg svg-icon="icon-save"></tg-svg>
+            </a>
+        </div>
+
+        <div class="status">
+            <a class="task-status" href="" [title]="'TASK.TITLE_SELECT_STATUS' | tgTranslate" [style.color]="statusOf(newTask)?.color" (click)="openStatusPopover($event)">
+                <span class="task-status-bind">{{ statusOf(newTask)?.name }}</span>
+                <tg-svg svg-icon="icon-arrow-down"></tg-svg>
+            </a>
+            <ul class="popover pop-status">
+                <li *ngFor="let status of project.task_statuses">
+                    <a href="" class="status" [title]="status.name" (click)="selectStatus(newTask, status.id, $event, false)">
+                        <span class="item-text">{{ status.name }}</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="assigned-to">
+            <div class="task-assignedto" [title]="'COMMON.FIELDS.ASSIGNED_TO' | tgTranslate" (click)="openAssignedTo(newTask, $event, false)">
+                <figure class="avatar">
+                    <img [style.background-color]="avatar(newTask).bg" [src]="avatar(newTask).url" [alt]="assignedName(newTask)" />
+                    <figcaption>{{ assignedName(newTask) }}</figcaption>
+                </figure>
+                <tg-svg svg-icon="icon-arrow-down"></tg-svg>
+            </div>
+        </div>
+    </div>
+</section>

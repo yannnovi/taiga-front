@@ -128,6 +128,8 @@ import { BacklogTableComponent } from "./backlog-table/backlog-table.component";
 import "./backlog-table/register-legacy";
 import { BacklogSprintsComponent } from "./backlog-sprints/backlog-sprints.component";
 import "./backlog-sprints/register-legacy";
+import { RelatedTasksComponent } from "./related-tasks/related-tasks.component";
+import "./related-tasks/register-legacy";
 import { AttachmentsPreviewComponent } from "./attachments-preview/attachments-preview.component";
 import "./attachments-preview/register-legacy";
 import { NoMoreMembershipsExplanationComponent } from "./no-more-memberships-explanation/no-more-memberships-explanation.component";
@@ -382,6 +384,7 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         BacklogRowComponent,
         BacklogTableComponent,
         BacklogSprintsComponent,
+        RelatedTasksComponent,
         AttachmentsPreviewComponent,
         NoMoreMembershipsExplanationComponent,
         DutyComponent,

@@ -128,7 +128,13 @@ div.wrapper(
                 edit-permission = "modify_us"
             )
 
-            include ../includes/modules/related-tasks
+            tg-related-tasks-section(
+                bind-project="project"
+                bind-us="us"
+                bind-tasks="tasks"
+                bind-users-by-id="usersById"
+                bind-active-users="activeUsers"
+            )
 
             tg-history-section(
                 ng-if="us"

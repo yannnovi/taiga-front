@@ -1061,7 +1061,6 @@ modules = [
     "taigaHome",
     "taigaNavigationBar",
     "taigaProjects",
-    "taigaRelatedTasks",
     "taigaBacklog",
     "taigaTaskboard",
     "taigaKanban",

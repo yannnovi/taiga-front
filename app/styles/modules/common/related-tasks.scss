@@ -20,6 +20,14 @@
 
 .related-tasks-body {
     width: 100%;
+    // CDK drag & drop (RelatedTasksComponent): placeholder left where the row will land
+    .cdk-drag-placeholder {
+        background: $whitish;
+        min-height: 40px;
+        * {
+            visibility: hidden;
+        }
+    }
     .row {
         @include font-size(small);
         align-items: center;
