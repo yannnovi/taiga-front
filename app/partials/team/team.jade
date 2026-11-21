@@ -11,7 +11,23 @@ tg-project-archived-warning
 div.wrapper(ng-controller="TeamController as ctrl", ng-init="section='team'")
     tg-project-menu
     sidebar.menu-secondary
-        include ../includes/modules/team/team-filters
+        tg-team-filters(
+            bind-roles="roles"
+            bind-filters-role="filtersRole"
+            on-query-change="ctrl.setQuery($event)"
+            on-select-role="ctrl.setRole($event)"
+        )
     section.main.team
         include ../includes/components/mainTitle
-        include ../includes/modules/team/team-table
+        tg-team-table(
+            bind-project="project"
+            bind-current-user="currentUser"
+            bind-memberships="memberships"
+            bind-stats="stats"
+            bind-filters-q="filtersQ"
+            bind-filters-role="filtersRole"
+            bind-issues-enabled="issuesEnabled"
+            bind-tasks-enabled="tasksEnabled"
+            bind-wiki-enabled="wikiEnabled"
+            bind-owner="owner"
+        )

@@ -1,0 +1,123 @@
+<section class="table-team basic-table">
+    <header class="row team-header">
+        <div class="username"></div>
+        <div class="member-stats">
+            <div class="attribute attribute-name" *ngIf="issuesEnabled">
+                <span>{{ "TEAM.COLUMN_MR_WOLF" | tgTranslate }}</span>
+                <div class="tooltip attribute-explanation">
+                    <span>{{ "TEAM.EXPLANATION_COLUMN_MR_WOLF" | tgTranslate }}</span>
+                </div>
+            </div>
+            <div class="attribute" *ngIf="tasksEnabled">
+                <span>{{ "TEAM.COLUMN_IOCAINE" | tgTranslate }}</span>
+                <div class="tooltip attribute-explanation">
+                    <span>{{ "TEAM.EXPLANATION_COLUMN_IOCAINE" | tgTranslate }}</span>
+                </div>
+            </div>
+            <div class="attribute" *ngIf="wikiEnabled">
+                <span>{{ "TEAM.COLUMN_CERVANTES" | tgTranslate }}</span>
+                <div class="tooltip attribute-explanation">
+                    <span>{{ "TEAM.EXPLANATION_COLUMN_CERVANTES" | tgTranslate }}</span>
+                </div>
+            </div>
+            <div class="attribute" *ngIf="issuesEnabled">
+                <span>{{ "TEAM.COLUMN_BUG_HUNTER" | tgTranslate }}</span>
+                <div class="tooltip attribute-explanation">
+                    <span>{{ "TEAM.EXPLANATION_COLUMN_BUG_HUNTER" | tgTranslate }}</span>
+                </div>
+            </div>
+            <div class="attribute" *ngIf="tasksEnabled">
+                <span>{{ "TEAM.COLUMN_NIGHT_SHIFT" | tgTranslate }}</span>
+                <div class="tooltip attribute-explanation">
+                    <span>{{ "TEAM.EXPLANATION_COLUMN_NIGHT_SHIFT" | tgTranslate }}</span>
+                </div>
+            </div>
+            <div class="attribute">
+                <span>{{ "TEAM.COLUMN_TOTAL_POWER" | tgTranslate }}</span>
+                <div class="tooltip attribute-explanation">
+                    <span>{{ "TEAM.EXPLANATION_COLUMN_TOTAL_POWER" | tgTranslate }}</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- current user (was tgTeamCurrentUser) -->
+    <div class="hero" *ngIf="currentUser">
+        <div class="row">
+            <div class="username">
+                <div class="avatar">
+                    <img
+                        [src]="avatar(currentUser).url"
+                        [title]="avatar(currentUser).fullName"
+                        [alt]="currentUser.full_name_display"
+                        [style.background]="avatar(currentUser).bg || ''"
+                    />
+                    <div class="avatar-data">
+                        <div class="name">
+                            <span>{{ currentUser.full_name_display }}</span>
+                            <tg-svg *ngIf="currentUser.id === owner" svg-icon="icon-badge" svg-title-translate="COMMON.OWNER"></tg-svg>
+                        </div>
+                        <div class="position">{{ currentUser.role_name }}</div>
+                        <div>
+                            <a class="leave-project" href="" (click)="leave($event)">
+                                <tg-svg svg-icon="icon-close"></tg-svg>
+                                <span>{{ "TEAM.ACTION_LEAVE_PROJECT" | tgTranslate }}</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="member-stats">
+                <ng-container *ngTemplateOutlet="statsTpl; context: { $implicit: currentUser.id }"></ng-container>
+            </div>
+        </div>
+    </div>
+</section>
+
+<h2 [style.display]="memberships?.length ? '' : 'none'">
+    <span>{{ "TEAM.SECTION_TITLE_TEAM" | tgTranslate }}</span>
+    <span> {{ filtersRole?.name || ("TEAM.SECTION_FILTER_ALL" | tgTranslate) }}</span>
+</h2>
+
+<!-- other members (was tgTeamMembers + membersFilter) -->
+<section class="table-team basic-table">
+    <div class="row member" *ngFor="let user of filteredMembers; trackBy: trackById">
+        <div class="username">
+            <div class="avatar">
+                <img [src]="avatar(user).url" [title]="avatar(user).fullName" [alt]="user.full_name_display" [style.background]="avatar(user).bg || ''" />
+                <div class="avatar-data">
+                    <a class="name" href="" [tgNav]="'user-profile'" [tgNavParams]="{ username: user.username }" [title]="user.full_name_display"
+                        >{{ user.full_name_display }}
+                        <tg-svg *ngIf="user.id === owner" svg-icon="icon-badge" svg-title-translate="COMMON.OWNER"></tg-svg>
+                    </a>
+                    <span class="position">{{ user.role_name }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="member-stats">
+            <ng-container *ngTemplateOutlet="statsTpl; context: { $implicit: user.id }"></ng-container>
+        </div>
+    </div>
+</section>
+
+<!-- was tgTeamMemberStats -->
+<ng-template #statsTpl let-userId>
+    <div class="attribute" *ngIf="issuesEnabled">
+        <tg-svg svg-icon="icon-briefcase" [style.opacity]="stat('closed_bugs', userId)" [class.top]="stat('closed_bugs', userId) === 1"></tg-svg>
+    </div>
+    <div class="attribute" *ngIf="tasksEnabled">
+        <tg-svg svg-icon="icon-iocaine" [style.opacity]="stat('iocaine_tasks', userId)" [class.top]="stat('iocaine_tasks', userId) === 1"></tg-svg>
+    </div>
+    <div class="attribute" *ngIf="wikiEnabled">
+        <tg-svg svg-icon="icon-edit" [style.opacity]="stat('wiki_changes', userId)" [class.top]="stat('wiki_changes', userId) === 1"></tg-svg>
+    </div>
+    <div class="attribute" *ngIf="issuesEnabled">
+        <tg-svg svg-icon="icon-bug" [style.opacity]="stat('created_bugs', userId)" [class.top]="stat('created_bugs', userId) === 1"></tg-svg>
+    </div>
+    <div class="attribute" *ngIf="tasksEnabled">
+        <tg-svg svg-icon="icon-task" [style.opacity]="stat('closed_tasks', userId)" [class.top]="stat('closed_tasks', userId) === 1"></tg-svg>
+    </div>
+    <div class="attribute">
+        <span class="points">{{ stats?.totals?.[userId] }}</span>
+    </div>
+</ng-template>

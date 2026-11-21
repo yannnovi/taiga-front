@@ -3126,6 +3126,27 @@ apparaît via `wikipage:add`) puis suppression depuis l'icône du résumé ; lis
 sans lien actif. Console propre ; ordre des liens restauré (le compteur d'éditions de la
 page de test garde +2). Karma 431/431.
 
+## Phase 3, groupe 5 : page équipe
+
+`tgTeamFilters`, `tgTeamCurrentUser`, `tgTeamMembers`, `tgTeamMemberStats`, `tgLeaveProject`,
+le filtre `membersFilter` et les deux blocs `includes/modules/team/*.jade` → deux
+composants (`src/app/team/`) : `tg-team-filters` (barre latérale) et `tg-team-table`
+(tableau). Le champ de recherche écrivait `filtersQ` directement sur le scope de
+`TeamController` via `ng-model` ; il passe maintenant par une nouvelle méthode
+`TeamController.setQuery(q)` (seule modification du contrôleur - une affectation dans une
+expression `on-*` tomberait sur le scope enfant du composant downgradé, même piège que le
+bouton "New tag"). Le rôle passe par `ctrl.setRole` existant. Le filtre par nom garde la
+regexp insensible à la casse de l'original, avec repli échappé si la saisie n'est pas une
+regexp valide (l'original levait une exception sur `(`). **Bug corrigé** : quitter le projet
+quand l'API refuse - le gestionnaire d'erreur masquait la réponse du dialogue de
+confirmation par l'erreur HTTP et appelait `.finish()` dessus (TypeError) : spinner infini,
+aucun message.
+
+**Vérifié en navigateur réel** sur project-1 et project-3 : utilisateur courant + 9 membres,
+colonnes de statistiques (opacités, totaux), filtre par rôle (titre et item actif), recherche
+par nom, saisie de regexp invalide, ouverture du dialogue "quitter le projet" (annulé, pas
+de départ réel). Console propre. Karma 431/431.
+
 ## Correctif transversal : icônes `tg-svg` vides dans tous les composants Angular
 
 Trouvé en vérifiant le lot checksley : dans les templates Angular, `<tg-svg

@@ -147,6 +147,8 @@ import { AssignSprintToIssueButtonComponent } from "./assign-sprint-to-issue/ass
 import "./assign-sprint-to-issue/register-legacy";
 import { WikiNavComponent, WikiSummaryComponent, WikiWysiwygComponent } from "./wiki/wiki.components";
 import "./wiki/register-legacy";
+import { TeamFiltersComponent, TeamTableComponent } from "./team/team.components";
+import "./team/register-legacy";
 import { TgWysiwygHtmlDirective } from "./shared/wysiwyg-html.directive";
 import { AttachmentsPreviewComponent } from "./attachments-preview/attachments-preview.component";
 import "./attachments-preview/register-legacy";
@@ -419,6 +421,8 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         WikiSummaryComponent,
         WikiWysiwygComponent,
         TgWysiwygHtmlDirective,
+        TeamFiltersComponent,
+        TeamTableComponent,
         AttachmentsPreviewComponent,
         NoMoreMembershipsExplanationComponent,
         DutyComponent,
