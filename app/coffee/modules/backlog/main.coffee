@@ -783,11 +783,18 @@ BacklogDirective = ($repo, $rootscope, $translate, $rs) ->
             # Calculating the us's to be modified
             ussDom = $el.find(".backlog-table-body input:checkbox:checked")
 
-            return _.map ussDom, (item) ->
-                item =  $(item).closest('.tg-scope')
-                itemScope = item.scope()
-                itemScope.us.milestone = $scope.sprints[0].id
-                return itemScope.us
+            # Rows are Angular components (BacklogRowComponent) since the backlog table
+            # migration: there is no per-row AngularJS scope (`.tg-scope`) to read the us
+            # from anymore - resolve them by the row's data-id instead, same as
+            # BacklogTableComponent's multi-select drag does.
+            ids = _.map ussDom, (item) ->
+                return parseInt($(item).closest(".us-item-row").attr("data-id"), 10)
+
+            uss = _.filter $scope.userstories, (us) -> _.includes(ids, us.id)
+
+            return _.map uss, (us) ->
+                us.milestone = $scope.sprints[0].id
+                return us
 
         moveUssToSprint = (selectedUss, sprint) ->
             ussCurrent = _($scope.userstories)
