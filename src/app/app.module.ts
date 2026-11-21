@@ -151,6 +151,8 @@ import { TeamFiltersComponent, TeamTableComponent } from "./team/team.components
 import "./team/register-legacy";
 import { NotifyPoliciesListComponent } from "./notify-policies/notify-policies-list.component";
 import "./notify-policies/register-legacy";
+import { MembershipsTableComponent } from "./memberships-table/memberships-table.component";
+import "./memberships-table/register-legacy";
 import { TgWysiwygHtmlDirective } from "./shared/wysiwyg-html.directive";
 import { AttachmentsPreviewComponent } from "./attachments-preview/attachments-preview.component";
 import "./attachments-preview/register-legacy";
@@ -426,6 +428,7 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         TeamFiltersComponent,
         TeamTableComponent,
         NotifyPoliciesListComponent,
+        MembershipsTableComponent,
         AttachmentsPreviewComponent,
         NoMoreMembershipsExplanationComponent,
         DutyComponent,

@@ -1,0 +1,80 @@
+<section class="admin-membership-table basic-table">
+    <div class="row title">
+        <div class="header-member">{{ "ADMIN.MEMBERSHIP.COLUMN_MEMBER" | tgTranslate }}</div>
+        <div class="header-admin">{{ "ADMIN.MEMBERSHIP.COLUMN_ADMIN" | tgTranslate }}</div>
+        <div class="header-role">{{ "ADMIN.MEMBERSHIP.COLUMN_ROLE" | tgTranslate }}</div>
+        <div class="header-status">{{ "ADMIN.MEMBERSHIP.COLUMN_STATUS" | tgTranslate }}</div>
+    </div>
+
+    <div class="row" *ngFor="let member of memberships; trackBy: trackById" [attr.data-id]="member.id">
+        <!-- was tgMembershipsRowAvatar -->
+        <div class="row-member">
+            <div class="avatar">
+                <img [src]="avatar(member).url" [alt]="member.full_name || ''" [style.background-color]="avatar(member).bg" />
+                <div class="user-data">
+                    <div class="name">
+                        <span>{{ member.full_name || "" }}</span>
+                        <tg-svg *ngIf="member.is_owner" class="owner-badge" svg-icon="icon-badge" svg-title-translate="COMMON.OWNER"></tg-svg>
+                    </div>
+                    <div class="data">
+                        <span class="email">{{ email(member) }}</span>
+                        <span *ngIf="!member.is_user_active" class="pending">{{ "ADMIN.MEMBERSHIP.STATUS_PENDING" | tgTranslate }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- was tgMembershipsRowAdminCheckbox -->
+        <div class="row-admin">
+            <div class="check js-check" *ngIf="!member.is_owner">
+                <input type="checkbox" [id]="'is-admin-' + member.id" [checked]="!!member.is_admin" (click)="toggleAdmin(member, $event)" />
+                <div></div>
+                <span class="check-text check-yes">{{ "COMMON.YES" | tgTranslate }}</span>
+                <span class="check-text check-no">{{ "COMMON.NO" | tgTranslate }}</span>
+            </div>
+        </div>
+
+        <!-- was tgMembershipsRowRoleSelector -->
+        <div class="row-role">
+            <select (change)="changeRole(member, $any($event.target).value)">
+                <option *ngFor="let role of project?.roles" [value]="role.id" [selected]="member.role === role.id">{{ role.name }}</option>
+            </select>
+        </div>
+
+        <!-- was tgMembershipsRowActions -->
+        <div class="row-status">
+            <ng-container *ngIf="member.user">
+                <div class="active">{{ "ADMIN.MEMBERSHIP.STATUS_ACTIVE" | tgTranslate }}</div>
+            </ng-container>
+            <a *ngIf="!member.user" class="resend js-resend" href="" [title]="'ADMIN.MEMBERSHIP.RESEND' | tgTranslate" (click)="resend(member, $event)">{{
+                "ADMIN.MEMBERSHIP.RESEND" | tgTranslate
+            }}</a>
+            <a class="delete" href="" [title]="'ADMIN.MEMBERSHIP.DELETE_MEMBER' | tgTranslate" (click)="remove(member, $event)">
+                <tg-svg svg-icon="icon-trash"></tg-svg>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- was the tgMemberships paginator -->
+<div class="paginator memberships-paginator" *ngIf="numPages > 1">
+    <ul class="paginator">
+        <li class="previous" *ngIf="page > 1">
+            <a href="" class="previous next_prev_button disabled" (click)="goTo(page - 1, $event)">
+                <span>{{ "PAGINATION.PREVIOUS" | tgTranslate }}</span>
+            </a>
+        </li>
+        <ng-container *ngFor="let item of pages">
+            <li *ngIf="item.type === 'page'" class="page">
+                <a href="" [attr.data-pagenum]="item.num" (click)="goTo(item.num!, $event)">{{ item.num }}</a>
+            </li>
+            <li *ngIf="item.type === 'page-active'" class="active"><span class="active">{{ item.num }}</span></li>
+            <li *ngIf="item.type === 'dots'" class="dots"><span>...</span></li>
+        </ng-container>
+        <li class="next" *ngIf="page !== numPages">
+            <a href="" class="next next_prev_button disabled" (click)="goTo(page + 1, $event)">
+                <span>{{ "PAGINATION.NEXT" | tgTranslate }}</span>
+            </a>
+        </li>
+    </ul>
+</div>

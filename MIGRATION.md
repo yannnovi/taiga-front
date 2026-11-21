@@ -3158,6 +3158,26 @@ Les trois directives de page `tgUserNotifications`/`tgUserLiveNotifications`/
 inchangés. Vérifié en navigateur réel : les 3 pages, niveau courant coché, changement
 enregistré (API), interrupteur web ; politique restaurée. Karma 431/431.
 
+## Phase 3, groupe 7 : admin > membres
+
+`includes/modules/admin/admin-membership-table.jade` + `tgMembershipsRowAvatar`,
+`tgMembershipsRowAdminCheckbox`, `tgMembershipsRowRoleSelector`, `tgMembershipsRowActions` et
+la pagination de `tgMemberships` (tous sur le scope de `MembershipsController`, appelé via
+`$el.controller()`) → `tg-memberships-table` (`src/app/memberships-table/`). Contrôleur
+inchangé : pagination et rechargement passent par des expressions `on-*` liées à ses
+méthodes existantes (`ctrl.selectFilter('page', $event); ctrl.loadMembers()` et
+`ctrl.loadInitialData()`, avec retour à la page précédente si on supprime la dernière ligne
+d'une page). Comportements conservés : case admin et rôle enregistrés immédiatement (la
+case revient en arrière avec le message de l'API en cas d'erreur), "renvoyer" pour une
+invitation en attente, supprimer le propriétaire ouvre l'avertissement "quitter le
+projet", se supprimer soi-même renvoie à l'accueil. L'utilisateur courant est lu via
+`$tgAuth.getUser()` (l'original lisait un `$scope.user` hérité).
+
+**Vérifié en navigateur réel** (project-1, invitation jetable créée puis supprimée par
+l'interface) : 12 lignes (membres actifs + invitations), badge propriétaire sans case admin,
+case admin et rôle aller-retour (API), renvoi d'invitation (notification), suppression puis
+rechargement du tableau, suppression du propriétaire → avertissement. Karma 431/431.
+
 ## Correctif transversal : icônes `tg-svg` vides dans tous les composants Angular
 
 Trouvé en vérifiant le lot checksley : dans les templates Angular, `<tg-svg
