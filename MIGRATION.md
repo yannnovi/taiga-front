@@ -3178,6 +3178,26 @@ l'interface) : 12 lignes (membres actifs + invitations), badge propriétaire san
 case admin et rôle aller-retour (API), renvoi d'invitation (notification), suppression puis
 rechargement du tableau, suppression du propriétaire → avertissement. Karma 431/431.
 
+## Phase 3, groupe 8 : admin > permissions (rôles)
+
+`tgEditRole` (nom du rôle en édition inline), `tgNewRole` (création dans le sous-menu) et
+`tgRolePermissions` (matrice des permissions, templates lodash `$compile`és) → composants
+de mêmes noms (`src/app/admin-roles/`) ; `tgRoles` était vide (attribut retiré).
+`RolesController` inchangé : création → `on-created="ctrl.setRole($event);
+ctrl.forceLoadProject()"`, sauvegarde de permissions → `on-saved="ctrl.forceLoadProject()"`
+(+ broadcast `projects:reload` comme avant) ; son `setRole` broadcast toujours
+`role:changed`, les composants réagissent au changement de l'input `role`. Règles
+conservées : sur un projet public les `view_*` publiques sont verrouillées, pour
+"utilisateur externe" la sauvegarde porte sur `public_permissions`/`anon_permissions` du
+projet, `view_project` ajouté dès qu'une permission est active, le nouveau rôle est inséré
+avant la pseudo-entrée "utilisateur externe".
+
+**Vérifié en navigateur réel** (project-1) : sous-menu, 6 catégories avec compteurs,
+tiroir, bascule d'une permission aller-retour (API, compteur mis à jour), changement de rôle,
+renommage (Entrée), utilisateur externe (`view_*` verrouillées sur projet public, pas
+d'éditeur de nom), création d'un rôle jetable (inséré avant "External user" et sélectionné),
+supprimé ensuite. Karma 431/431.
+
 ## Correctif transversal : icônes `tg-svg` vides dans tous les composants Angular
 
 Trouvé en vérifiant le lot checksley : dans les templates Angular, `<tg-svg

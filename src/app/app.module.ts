@@ -153,6 +153,8 @@ import { NotifyPoliciesListComponent } from "./notify-policies/notify-policies-l
 import "./notify-policies/register-legacy";
 import { MembershipsTableComponent } from "./memberships-table/memberships-table.component";
 import "./memberships-table/register-legacy";
+import { EditRoleComponent, NewRoleComponent, RolePermissionsComponent } from "./admin-roles/admin-roles.components";
+import "./admin-roles/register-legacy";
 import { TgWysiwygHtmlDirective } from "./shared/wysiwyg-html.directive";
 import { AttachmentsPreviewComponent } from "./attachments-preview/attachments-preview.component";
 import "./attachments-preview/register-legacy";
@@ -429,6 +431,9 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         TeamTableComponent,
         NotifyPoliciesListComponent,
         MembershipsTableComponent,
+        EditRoleComponent,
+        NewRoleComponent,
+        RolePermissionsComponent,
         AttachmentsPreviewComponent,
         NoMoreMembershipsExplanationComponent,
         DutyComponent,
