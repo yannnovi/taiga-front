@@ -289,9 +289,10 @@ référence :
    `taiga-back` encore à faire pour ce dernier lot.
 4. ~~Listes infinies (`ngInfiniteScroll`)~~ — fait, voir sous-projet backlog ci-dessus (item 1).
 
-WYSIWYG et checksley (items 2 et 3) sont maintenant tous les deux terminés. Il ne reste que
-`window.dragMultiple` (item 1, sélection multiple + drag groupé) pour clore entièrement la
-Phase 2 - sous-projet de conception à part entière, voir sa propre section plus haut.
+Les 4 items (drag & drop avec `window.dragMultiple` reconstruit, WYSIWYG, checksley, listes
+infinies) sont terminés : **la Phase 2 est entièrement close.** Seule dette résiduelle
+actée : le drag backlog→sprint, à reconnecter lors de la migration du tableau sprint
+(Phase 3, même blocage scope ambiant que `tgSprint`/`tg-backlog-sprint-header`).
 
 ## Phase 3 — Refactor du scope ambiant (le plus gros bloc, le plus risqué)
 
@@ -341,11 +342,13 @@ coffee/jade, et tout ce qui reste de l'ancien bootstrap.
 
 1. ~~Phase 1~~ — terminée (2 modules migrés, 5 reclassés bloqués, 2 bugs de production
    corrigés au passage).
-2. Choisir **un seul** sous-projet de la Phase 2 (drag & drop recommandé en premier vu
-   son impact) plutôt que de viser un "gros lot de modules" — ces migrations-là sont des
-   projets, pas des leaves.
-3. Revenir à la Phase 3 seulement une fois qu'un vrai filet de tests existe pour les
-   contrôleurs parents concernés.
+2. ~~Phase 2~~ — terminée (drag & drop + sélection multiple, WYSIWYG, checksley, listes
+   infinies). Dette résiduelle : drag backlog→sprint (voir Phase 2, item 1).
+3. **Prochaine étape : préparer le filet de tests de la Phase 3** pour les contrôleurs
+   parents concernés, avant toute migration. Puis attaquer la Phase 3 par un seul groupe
+   à la fois (par exemple le tableau sprint, qui débloque aussi le drag backlog→sprint),
+   en tranchant au cas par cas entre refactor du parent et wrapper `UpgradeComponent` en
+   bloc.
 
 ## Vérification (comme les lots précédents)
 
