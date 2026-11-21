@@ -2868,6 +2868,46 @@ plugins vérifiés (github-auth, gitlab-auth, oidc-auth, protected, openid-auth
 communautaire, ldap-auth-ext) ne l'utilisent pas. Checksley ne pourra être retiré
 qu'après migration du plugin Slack lui-même (repo séparé) ou abandon de son support.
 
+## Phase 3 - filet de tests avant le tableau sprint du backlog
+
+**Les e2e Protractor (`e2e/`, `conf.e2e.js`) ont été évalués et écartés comme filet** :
+Protractor n'est ni installé ni déclaré dans `package.json` (installation globale +
+webdriver-manager + serveur Selenium requis), les suites n'ont pas évolué
+fonctionnellement depuis des années, et elles ciblent le DOM d'avant migration
+(`div[tg-lb-create-edit-sprint]`, lignes `ng-repeat`, `.gu-mirror` de dragula) - autant
+réécrire qu'essayer de les réparer.
+
+**Specs Karma de caractérisation ajoutées à la place** (comportement *actuel* figé, y compris
+quelques bizarreries marquées `NOTE (current behaviour)` dans les specs - à ne pas
+"corriger" sans décider sciemment du changement de comportement) :
+- `backlog/main.spec.coffee` - `BacklogController` (66 specs) : chargement initial, sprints,
+  stats/prévision de vélocité, pagination des US, `getLinkParams`, `moveUs` (y compris la
+  file `pendingDrag`), actions de template et événements des lightboxes.
+- `backlog/sprints.spec.coffee` - `tgBacklogSprint`, `tgBacklogSprintHeader`,
+  `tgBacklogToggleClosedSprintsVisualization`, `tgSprint`.
+- `backlog/backlog-directive.spec.coffee` - barre d'outils "move to sprint" de `tgBacklog`
+  (`linkToolbar`) : sélection par case à cocher, boutons move-to-latest/current-sprint,
+  callback après création de sprint, bouton "add to sprint" de la prévision.
+
+Bizarreries figées notables : `moveUs` sans US précédente ni suivante insère à l'index 1 ;
+la suppression d'US en échec ne restaure pas l'US retirée de la liste ; "move to current
+sprint" déplace localement vers le sprint courant mais sauvegarde contre `sprints[0]` (le
+dernier sprint) ; l'état affiché/masqué des sprints fermés vit dans la closure de la
+factory de directive (partagé entre instances, survit à la navigation) ; un rechargement
+des sprints (nouvel objet `sprint`) replie un sprint ouvert.
+
+**Bug de production trouvé et corrigé par ces specs** : les boutons "Move to current
+sprint"/"Move to latest sprint" levaient `TypeError: Cannot read properties of undefined
+(reading 'us')` au clic depuis la migration du tableau backlog. `getUsToMove()` lisait l'US
+via `$(checkbox).closest('.tg-scope').scope().us` - or les lignes sont maintenant des
+`BacklogRowComponent` Angular, sans scope AngularJS par ligne ni ancêtre `.tg-scope`. Corrigé
+en résolvant les US par le `data-id` de la ligne dans `$scope.userstories` (même approche que
+le drag multi-sélection de `BacklogTableComponent`). Confirmé par les specs (4 en échec avec
+exactement cette `TypeError` avant le correctif, vertes après) ; **pas encore vérifié en
+navigateur réel** (`taiga-back`/serveur de dev non lancés au moment du correctif).
+
+Karma : 454/454.
+
 ## Patron à suivre pour migrer un module suivant
 
 1. Repérer ses dépendances réelles (services/directives utilisés *et* utilisateurs) avant

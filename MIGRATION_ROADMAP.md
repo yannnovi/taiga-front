@@ -317,6 +317,14 @@ Deux options, à trancher au cas par cas :
 Ne pas se lancer dans cette phase sans un vrai filet de tests, vu le nombre de modules
 concernés et le risque de régression sur du code non touché depuis longtemps.
 
+**Filet de tests : en place pour le tableau sprint du backlog** (premier groupe ciblé) -
+specs Karma de caractérisation sur `BacklogController`, les directives de
+`backlog/sprints.coffee` et la barre d'outils "move to sprint" de `tgBacklog` (les e2e
+Protractor ont été évalués et écartés). Ces specs ont déjà trouvé et permis de corriger un
+bug de production (boutons "Move to current/latest sprint" cassés depuis la migration du
+tableau backlog). Détail dans `MIGRATION.md`, section "Phase 3 - filet de tests". Les autres
+groupes (pages de détail, admin, équipe, notifications) n'ont pas encore de filet.
+
 ## Phase 4 — `tg-compile-html` et contenu HTML généré dynamiquement
 
 `user-timeline-item` (voir `MIGRATION.md`) et le même schéma dans
@@ -344,11 +352,12 @@ coffee/jade, et tout ce qui reste de l'ancien bootstrap.
    corrigés au passage).
 2. ~~Phase 2~~ — terminée (drag & drop + sélection multiple, WYSIWYG, checksley, listes
    infinies). Dette résiduelle : drag backlog→sprint (voir Phase 2, item 1).
-3. **Prochaine étape : préparer le filet de tests de la Phase 3** pour les contrôleurs
-   parents concernés, avant toute migration. Puis attaquer la Phase 3 par un seul groupe
-   à la fois (par exemple le tableau sprint, qui débloque aussi le drag backlog→sprint),
-   en tranchant au cas par cas entre refactor du parent et wrapper `UpgradeComponent` en
-   bloc.
+3. ~~Filet de tests pour le tableau sprint~~ — fait (voir Phase 3).
+   **Prochaine étape : migrer le tableau sprint** (`tgSprint`, `tg-backlog-sprint-header`,
+   `tgBacklogSprint`, bascule des sprints fermés) et reconnecter le drag backlog→sprint sous
+   un `cdkDropListGroup` commun avec `BacklogTableComponent`. Ensuite, un seul groupe de
+   Phase 3 à la fois, chacun précédé de son propre filet de tests, en tranchant au cas par
+   cas entre refactor du parent et wrapper `UpgradeComponent` en bloc.
 
 ## Vérification (comme les lots précédents)
 
