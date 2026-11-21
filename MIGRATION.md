@@ -3063,6 +3063,31 @@ icônes), changement de statut (bouton + affichage ouvert/fermé suivent), exige
 équipe/client (US, epic), iocaine (tâche), blocage avec motif puis déblocage, suppression
 avec confirmation et redirection. Plus aucune erreur console sur ces pages.
 
+## Phase 3, groupe 3b : estimation par rôle et "assigner à un sprint"
+
+- `tgUsEstimation` (+ `$tgEstimationsService`, dont c'était le dernier appelant) →
+  `UsEstimationComponent`, même nom, maintenant un élément
+  (`tg-us-estimation.ticket-section.ticket-estimation`, `bind-us`/`bind-project`). Le
+  popover de points, injecté en chaîne HTML par le service, devient un vrai état de
+  template ; sauvegarde inchangée (`$tgQueueModelTransformation`, `object:updated`).
+- `tgAssignSprintToIssueButton` → `AssignSprintToIssueButtonComponent`, même nom. Le
+  sélecteur `tg-search-list` (AngularJS, `ng-model`), dont c'était le dernier appelant, est
+  intégré au composant avec le même comportement pour les sprints (filtre texte
+  nom/début/fin, sprints fermés derrière "afficher les sprints fermés", clic pour
+  (dé)sélectionner) - même choix que `LightboxCreateEditComponent` pour les issues.
+  `tg-search-list` (directive + templates) supprimé ; son SCSS est conservé (réutilisé).
+  Détacher demande toujours confirmation ; les deux chemins broadcastent
+  `assign-sprint-to-issue:success`.
+
+**Au passage** : `DropdownUserComponent` (menu utilisateur de la barre du haut, migré
+avant cette session) lisait `user.get(...)` sans garde quand `auth.userData` est `null`
+(session pas encore posée, déconnexion) - garde `*ngIf="user"` ajouté, même raison que
+`VoteButtonComponent`.
+
+**Vérifié en navigateur réel** sur une US et une issue jetables (supprimées ensuite) :
+popover de points, sauvegarde et total recalculé ; liste des sprints, filtre, sélection,
+rattachement, puis détachement avec confirmation. Console propre. Karma 431/431.
+
 ## Correctif transversal : icônes `tg-svg` vides dans tous les composants Angular
 
 Trouvé en vérifiant le lot checksley : dans les templates Angular, `<tg-svg

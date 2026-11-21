@@ -159,9 +159,9 @@ div.wrapper(
                 permission="modify_us"
             )
 
-        section.ticket-section.ticket-estimation(
-            tg-us-estimation
-            ng-model="us"
+        tg-us-estimation.ticket-section.ticket-estimation(
+            bind-us="us"
+            bind-project="project"
         )
 
         section.ticket-section.ticket-assigned-users(

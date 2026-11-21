@@ -1,4 +1,4 @@
-<div class="dropdown-user-inner">
+<div class="dropdown-user-inner" *ngIf="user">
     <div class="dropdown-user-navbar">
         <a class="user-avatar" [tgNav]="'profile'" [title]="user.get('full_name_display')">
             <img [src]="getAvatarUrl()" [alt]="user.get('full_name_display')" />

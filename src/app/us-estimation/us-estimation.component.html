@@ -1,0 +1,39 @@
+<ng-container *ngIf="us && project">
+    <div class="ticket-section-label">
+        <span>{{ "COMMON.FIELDS.POINTS" | tgTranslate }}</span>
+    </div>
+
+    <ul class="points-per-role">
+        <li
+            *ngFor="let role of roles; trackBy: trackById"
+            class="ticket-role-points total"
+            [class.clickable]="editable"
+            [class.active]="openRoleId === role.id"
+            [attr.data-role-id]="role.id"
+            [title]="role.name"
+            (click)="openRole(role.id, $event)"
+        >
+            <img *ngIf="loadingRoleId === role.id" class="loading-spinner" [src]="spinnerSrc" alt="loading..." />
+            <span *ngIf="loadingRoleId !== role.id" class="role">{{ role.name }}</span>
+            <span class="points">{{ role.points }}</span>
+
+            <ul *ngIf="openRoleId === role.id" class="popover pop-points-open" [class.horizontal]="horizontal" [class.pop-bottom]="popBottom">
+                <li *ngFor="let point of points">
+                    <a
+                        href=""
+                        class="point"
+                        [class.active]="isSelected(role.id, point.id)"
+                        [title]="point.name"
+                        (click)="selectPoint(role.id, point.id, $event)"
+                    >
+                        <span class="item-text">{{ point.name }}</span>
+                    </a>
+                </li>
+            </ul>
+        </li>
+        <li class="ticket-role-points total">
+            <span class="role">{{ "US.TOTAL_POINTS" | tgTranslate }}</span>
+            <span class="points">{{ totalPoints }}</span>
+        </li>
+    </ul>
+</ng-container>

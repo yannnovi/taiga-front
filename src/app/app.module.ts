@@ -141,6 +141,10 @@ import {
     LightboxBlockComponent,
 } from "./detail-buttons/detail-buttons.components";
 import "./detail-buttons/register-legacy";
+import { UsEstimationComponent } from "./us-estimation/us-estimation.component";
+import "./us-estimation/register-legacy";
+import { AssignSprintToIssueButtonComponent } from "./assign-sprint-to-issue/assign-sprint-to-issue-button.component";
+import "./assign-sprint-to-issue/register-legacy";
 import { AttachmentsPreviewComponent } from "./attachments-preview/attachments-preview.component";
 import "./attachments-preview/register-legacy";
 import { NoMoreMembershipsExplanationComponent } from "./no-more-memberships-explanation/no-more-memberships-explanation.component";
@@ -404,6 +408,8 @@ import { TgNavDirective } from "./shared/tg-nav.directive";
         DetailDeleteButtonComponent,
         DetailCreatedByComponent,
         LightboxBlockComponent,
+        UsEstimationComponent,
+        AssignSprintToIssueButtonComponent,
         AttachmentsPreviewComponent,
         NoMoreMembershipsExplanationComponent,
         DutyComponent,

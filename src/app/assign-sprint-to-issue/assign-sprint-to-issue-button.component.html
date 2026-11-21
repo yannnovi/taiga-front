@@ -1,0 +1,68 @@
+<ng-container *ngIf="item && canModify">
+    <button
+        *ngIf="!item.milestone"
+        class="btn-icon assign-issue-button is-editable button-unset is-active"
+        [title]="'ISSUES.ACTION_ATTACH_SPRINT' | tgTranslate"
+        (click)="openAttach($event)"
+    >
+        <tg-svg svg-icon="icon-attach"></tg-svg>
+    </button>
+
+    <button
+        *ngIf="item.milestone"
+        class="btn-icon assign-issue-button is-editable button-set is-active"
+        [title]="'ISSUES.ACTION_DETACH_SPRINT' | tgTranslate"
+        (mouseenter)="detachHover = true"
+        (mouseleave)="detachHover = false"
+        (click)="detach($event)"
+    >
+        <tg-svg *ngIf="detachHover" svg-icon="icon-detach"></tg-svg>
+        <tg-svg *ngIf="!detachHover" svg-icon="icon-attach"></tg-svg>
+    </button>
+</ng-container>
+
+<div class="lightbox lightbox-assign-sprint-to-issue">
+    <a class="close" href="" [title]="'COMMON.CLOSE' | tgTranslate" (click)="closeLightbox($event)">
+        <tg-svg svg-icon="icon-close"></tg-svg>
+    </a>
+
+    <div class="lightbox-assign-related-sprint">
+        <h2 class="title">{{ "ISSUES.ACTION_ATTACH_SPRINT" | tgTranslate }}</h2>
+
+        <fieldset class="search-list">
+            <label for="items-filter">{{ "ISSUES.CHOOSE_SPRINT" | tgTranslate }}</label>
+
+            <a class="btn-link show-closed" href="" (click)="toggleShowClosed($event)">
+                <tg-svg svg-icon="icon-folder"></tg-svg>
+                <span *ngIf="!showClosed">{{ "BACKLOG.SPRINTS.ACTION_SHOW_CLOSED_SPRINTS" | tgTranslate }}</span>
+                <span *ngIf="showClosed">{{ "BACKLOG.SPRINTS.ACTION_HIDE_CLOSED_SPRINTS" | tgTranslate }}</span>
+            </a>
+
+            <input
+                class="items-filter"
+                id="items-filter"
+                type="text"
+                [placeholder]="'ISSUES.FILTER_SPRINTS' | tgTranslate"
+                [(ngModel)]="searchText"
+                (ngModelChange)="onSearchChange()"
+            />
+            <ul>
+                <li
+                    *ngFor="let milestone of visibleMilestones"
+                    class="choice"
+                    [class.selected]="selectedSprint?.id === milestone.id"
+                    [attr.data-choice-id]="milestone.id"
+                    (click)="choose(milestone)"
+                >
+                    <div class="title">{{ milestone.name }}</div>
+                    <div class="info">{{ milestone.estimated_start }} - {{ milestone.estimated_finish }}</div>
+                </li>
+            </ul>
+        </fieldset>
+
+        <button class="btn-big select-option" [disabled]="!selectedSprint || saving" (click)="save($event)">
+            <img *ngIf="saving" class="loading-spinner" [src]="spinnerSrc" alt="loading..." />
+            <span *ngIf="!saving">{{ "COMMON.SAVE" | tgTranslate }}</span>
+        </button>
+    </div>
+</div>
